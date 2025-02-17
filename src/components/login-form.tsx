@@ -10,7 +10,7 @@ import { Github, Mail, LogIn } from "lucide-react";
 
 export function LoginForm({
   className,
-  onSuccess,
+  onSuccess = () => {},
   ...props
 }: React.ComponentPropsWithoutRef<"div"> & { onSuccess?: () => void }) {
   const [email, setEmail] = useState("");
@@ -26,7 +26,7 @@ export function LoginForm({
     });
 
     if (result?.ok) {
-      onSuccess?.();
+      onSuccess();
     }
 
     setLoading(false);
@@ -34,8 +34,6 @@ export function LoginForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <h1 className="text-xl font-bold text-center">Sign in to Vizify</h1>
-
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="grid gap-2">
           <Label htmlFor="email">Email</Label>
@@ -68,7 +66,7 @@ export function LoginForm({
         <Button
           variant="outline"
           className="w-full flex items-center gap-2"
-          onClick={() => signIn("github").then(() => onSuccess?.())}
+          onClick={() => signIn("github").then(() => onSuccess())}
         >
           <Github className="h-5 w-5" />
           GitHub
@@ -76,7 +74,7 @@ export function LoginForm({
         <Button
           variant="outline"
           className="w-full flex items-center gap-2"
-          onClick={() => signIn("google").then(() => onSuccess?.())}
+          onClick={() => signIn("google").then(() => onSuccess())}
         >
           <Mail className="h-5 w-5" />
           Google

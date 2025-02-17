@@ -22,6 +22,7 @@ import {
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { LoginModal } from "./LoginModal";
 
 const NAV_LINKS = [
   { href: "/features", label: "Features" },
@@ -108,14 +109,7 @@ export default function Navbar() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button
-              onClick={() => router.push("/login")}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              <LogIn className="h-4 w-4" />
-              Sign In
-            </Button>
+            <LoginModal />
           )}
         </div>
 
