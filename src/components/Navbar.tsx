@@ -35,16 +35,7 @@ export default function Navbar() {
   const { data: session, status } = useSession();
 
   return (
-    <motion.nav
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{
-        duration: 0.8,
-        type: "spring",
-        stiffness: 80,
-      }}
-      className="fixed top-0 left-0 w-full bg-background border-b border-border shadow-md z-50"
-    >
+    <nav className="fixed top-0 left-0 w-full bg-background border-b border-border shadow-md z-50">
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
         <Link href="/" className="text-xl font-bold text-primary">
@@ -157,6 +148,6 @@ export default function Navbar() {
           </SheetContent>
         </Sheet>
       </div>
-    </motion.nav>
+    </nav>
   );
 }
