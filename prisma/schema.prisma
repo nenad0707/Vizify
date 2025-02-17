@@ -9,6 +9,30 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String  @id @default(uuid())
+  name      String?
+  email     String 
+  provider String
+  providerId String @unique
+  image     String?
+  createdAt DateTime @default(now())
+
+  businessCards BusinessCard[]
+}
+
+model BusinessCard {
+  id     String @id @default(uuid())
+  userId String @unique
+  name   String
+  title  String
+  color  String
+  qrCode String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
