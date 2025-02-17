@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
-import { useSession, signIn, signOut } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { motion } from "framer-motion";
-import { Menu, LogIn, LogOut, User } from "lucide-react";
+import { Menu, LogOut, User, LogIn } from "lucide-react";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -30,6 +30,7 @@ const NAV_LINKS = [
 ];
 
 export default function Navbar() {
+  const router = useRouter();
   const pathname = usePathname();
   const { data: session, status } = useSession();
 
@@ -117,7 +118,7 @@ export default function Navbar() {
             </DropdownMenu>
           ) : (
             <Button
-              onClick={() => signIn()}
+              onClick={() => router.push("/login")}
               variant="outline"
               className="flex items-center gap-2"
             >
