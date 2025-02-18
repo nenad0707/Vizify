@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { motion } from "framer-motion";
@@ -31,12 +30,11 @@ const NAV_LINKS = [
 ];
 
 export default function Navbar() {
-  const router = useRouter();
   const pathname = usePathname();
   const { data: session, status } = useSession();
 
   return (
-    <nav className="fixed top-0 left-0 w-full bg-background border-b border-border shadow-md z-50">
+    <nav className="fixed top-0 left-0 w-full backdrop-blur-[30px] bg-glass/40 border border-glass-border shadow-lg drop-shadow-lg z-50">
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
         <Link href="/" className="text-xl font-bold text-primary">

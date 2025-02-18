@@ -33,6 +33,11 @@ body {
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
+    --neutral: linear-gradient(to bottom, hsl(240, 25%, 98%) 0%, hsl(240, 15%, 85%) 100%);
+    --glass: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.6);
+    --gradient-start: 220 40% 98%;
+    --gradient-end: 220 60% 80%;
   }
 
   .dark {
@@ -60,6 +65,11 @@ body {
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+    --glass: rgba(0, 0, 0, 0.4);
+    --glass-border: rgba(255, 255, 255, 0.15);
+    --neutral: linear-gradient(to bottom, hsl(240, 15%, 15%) 0%, hsl(240, 15%, 5%) 100%);
+    --gradient-start: 222.2 84% 8%;
+    --gradient-end: 222.2 64% 20%;
   }
 }
 
