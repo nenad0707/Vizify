@@ -29,7 +29,6 @@ const features = [
 export default function Features() {
   return (
     <section className="max-w-6xl mx-auto px-6 md:px-12 py-32">
-    
       <motion.h2
         initial={{ opacity: 0, y: -20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -48,7 +47,8 @@ export default function Features() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: index * 0.2 }}
             viewport={{ once: true }}
-            className="p-6 bg-card border border-border rounded-lg shadow-md text-center"
+            className="p-6 border border-border rounded-lg shadow-md text-center group transition-all duration-300 
+                      hover:bg-primary/10 dark:hover:bg-white/10 hover:shadow-lg"
           >
             <div className="flex justify-center mb-4">{feature.icon}</div>
             <h3 className="text-xl font-semibold text-foreground">
