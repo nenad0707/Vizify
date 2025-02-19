@@ -18,7 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
+import { Sheet, SheetTrigger, SheetContent, SheetTitle, SheetDescription } from "@/components/ui/sheet"; // ✅ Dodaj SheetTitle i SheetDescription
 import { Skeleton } from "@/components/ui/skeleton";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LoginModal } from "./LoginModal";
@@ -122,6 +122,12 @@ export default function Navbar() {
             side="left"
             className="w-[300px] bg-background shadow-lg"
           >
+          
+            <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+            <SheetDescription className="sr-only">
+              Mobile navigation menu for Vizify.
+            </SheetDescription>
+
             <div className="flex flex-col gap-4 mt-6">
               {NAV_LINKS.map((link) => (
                 <Link
