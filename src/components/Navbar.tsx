@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { motion } from "framer-motion";
-import { Menu, LogOut, User, LogIn } from "lucide-react";
+import { Menu, LogOut, User} from "lucide-react";
 import {
   NavigationMenu,
   NavigationMenuItem,
