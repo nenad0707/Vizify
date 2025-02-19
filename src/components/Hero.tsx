@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 
-
 const titleVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -20,15 +19,13 @@ const letterVariants = {
 
 export default function Hero() {
   return (
-    <section className="flex flex-col md:flex-row items-center justify-between max-w-7xl mx-auto px-6 md:px-12 pt-32 sm:pt-40">
-      
+    <section className="flex flex-col md:flex-row items-center justify-between max-w-7xl mx-auto px-6 md:px-12 py-24">
       
       <motion.div 
         initial="hidden"
         animate="visible"
         className="max-w-lg text-center md:text-left"
       >
-   
         <motion.h1 
           variants={titleVariants} 
           className="text-4xl md:text-6xl font-bold leading-tight text-foreground"
@@ -48,7 +45,6 @@ export default function Hero() {
           </span>
         </motion.h1>
 
-     
         <motion.p 
           initial={{ opacity: 0, y: 10 }} 
           animate={{ opacity: 1, y: 0 }} 
@@ -58,12 +54,11 @@ export default function Hero() {
           Create, share, and manage your digital business cards effortlessly.
         </motion.p>
 
-       
         <motion.div 
           initial={{ opacity: 0, y: 10 }} 
           animate={{ opacity: 1, y: 0 }} 
           transition={{ duration: 0.8, delay: 1 }}
-          className="mt-8 sm:mt-12 mb-10 sm:mb-16"
+          className="mt-12"
         >
           <Button 
             size="lg" 
@@ -79,7 +74,6 @@ export default function Hero() {
         </motion.div>
       </motion.div>
 
-     
       <motion.div 
           initial={{ opacity: 0, x: 50 }} 
           animate={{ opacity: 1, x: 0 }} 

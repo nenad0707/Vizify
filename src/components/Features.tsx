@@ -28,7 +28,7 @@ const features = [
 
 export default function Features() {
   return (
-    <section className="max-w-6xl mx-auto px-6 md:px-12 py-32">
+    <section className="max-w-6xl mx-auto px-6 md:px-12 py-24">
       <motion.h2
         initial={{ opacity: 0, y: -20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -39,7 +39,7 @@ export default function Features() {
         Key Features
       </motion.h2>
 
-      <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {features.map((feature, index) => (
           <motion.div
             key={index}
