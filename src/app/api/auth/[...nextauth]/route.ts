@@ -1,7 +1,11 @@
-import NextAuth from "next-auth";
-import { authOptions } from "@/lib/auth";
+import NextAuth, { NextAuthOptions } from "next-auth";
+import GoogleProvider from "next-auth/providers/google";
+import GitHubProvider from "next-auth/providers/github";
+import CredentialsProvider from "next-auth/providers/credentials";
+import { DefaultSession } from "next-auth";
+import { prisma } from "@/lib/prisma"; // Adjust the import as needed
 
-<<<<<<< HEAD
+// Extend the NextAuth session interface
 declare module "next-auth" {
   interface Session {
     user: {
@@ -11,7 +15,8 @@ declare module "next-auth" {
   }
 }
 
-const authOptions: NextAuthOptions = {
+// Define your NextAuth options
+export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -51,7 +56,7 @@ const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async signIn({ user, account }: { user: User; account: Account | null }) {
+    async signIn({ user, account }) {
       if (!user.email) return false;
 
       const providerId =
@@ -66,7 +71,7 @@ const authOptions: NextAuthOptions = {
       if (!existingUser) {
         existingUser = await prisma.user.create({
           data: {
-            email: user.email!,
+            email: user.email,
             name: user.name || "New User",
             image: user.image || null,
             provider: account?.provider || "unknown",
@@ -78,7 +83,7 @@ const authOptions: NextAuthOptions = {
       return true;
     },
 
-    async session({ session, token }: { session: Session; token: JWT }) {
+    async session({ session, token }) {
       if (session.user && token.sub) {
         session.user.id = token.sub;
         session.user.provider = token.provider as string;
@@ -86,7 +91,7 @@ const authOptions: NextAuthOptions = {
       return session;
     },
 
-    async jwt({ token, account }: { token: JWT; account: Account | null }) {
+    async jwt({ token, account }) {
       if (account) {
         token.provider = account.provider;
       }
@@ -97,6 +102,3 @@ const authOptions: NextAuthOptions = {
 
 const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };
-=======
-export default NextAuth(authOptions);
->>>>>>> 237854a (Changed React from 19 to 18 version)
