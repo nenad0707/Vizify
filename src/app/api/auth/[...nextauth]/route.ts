@@ -1,12 +1,7 @@
-import NextAuth, { type NextAuthOptions } from "next-auth";
-import type { DefaultSession, Session } from "next-auth";
-import type { JWT } from "next-auth/jwt";
-import GoogleProvider from "next-auth/providers/google";
-import GitHubProvider from "next-auth/providers/github";
-import CredentialsProvider from "next-auth/providers/credentials";
-import { prisma } from "@/lib/prisma";
-import type { Account, User } from "next-auth";
+import NextAuth from "next-auth";
+import { authOptions } from "@/lib/auth";
 
+<<<<<<< HEAD
 declare module "next-auth" {
   interface Session {
     user: {
@@ -102,3 +97,6 @@ const authOptions: NextAuthOptions = {
 
 const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };
+=======
+export default NextAuth(authOptions);
+>>>>>>> 237854a (Changed React from 19 to 18 version)
