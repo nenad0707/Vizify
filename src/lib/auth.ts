@@ -1,24 +1,8 @@
-import NextAuth, { type NextAuthOptions } from "next-auth";
-import type { DefaultSession, Session } from "next-auth";
-import type { JWT } from "next-auth/jwt";
+import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { prisma } from "@/lib/prisma";
-import type { Account, User } from "next-auth";
-
-// 🔹 Proširujemo tip Session objekta da uključuje ID korisnika
-declare module "next-auth" {
-  interface Session {
-    user: {
-      id: string;  // ✅ Dodajemo ID
-    } & DefaultSession["user"];
-  }
-
-  interface JWT {
-    id: string;  // ✅ Dodajemo ID u JWT
-  }
-}
+import { prisma } from "./prisma";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -37,7 +21,6 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email) return null;
-
         const providerId = `credentials-${credentials.email}`;
 
         let user = await prisma.user.findUnique({
@@ -60,23 +43,43 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
-      // ✅ Kada se korisnik prvi put prijavi, dodajemo njegov ID u token
-      if (user) {
-        token.id = user.id;
-      }
-      return token;
-    },
+    async signIn({ user, account }) {
+      if (!user.email) return false;
 
+      const providerId =
+        account?.provider === "credentials"
+          ? `credentials-${user.email}`
+          : `${account?.provider}-${user.email}`;
+
+      let existingUser = await prisma.user.findUnique({
+        where: { providerId },
+      });
+
+      if (!existingUser) {
+        existingUser = await prisma.user.create({
+          data: {
+            email: user.email!,
+            name: user.name || "New User",
+            image: user.image || null,
+            provider: account?.provider || "unknown",
+            providerId,
+          },
+        });
+      }
+      return true;
+    },
     async session({ session, token }) {
-      // ✅ Dodajemo ID iz tokena u session user objekt
-      if (session.user) {
-        session.user.id = token.id as string;
+      if (session.user && token.sub) {
+        session.user.id = token.sub;
+        session.user.provider = token.provider as string;
       }
       return session;
     },
+    async jwt({ token, account }) {
+      if (account) {
+        token.provider = account.provider;
+      }
+      return token;
+    },
   },
 };
-
-const handler = NextAuth(authOptions);
-export { handler as GET, handler as POST };
