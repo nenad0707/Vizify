@@ -1,17 +1,53 @@
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(req: Request) {
+export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
-    const { name, title, color } = await req.json();
+    const cards = await prisma.businessCard.findMany({
+      where: { userId: session.user.id },
+    });
+
+    return NextResponse.json(cards, { status: 200 });
+  } catch (error) {
+    console.error("Error fetching cards:", error);
+    return NextResponse.json(
+      {
+        error: "Failed to fetch cards",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
+    );
+  }
+}
+
+export async function POST(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  try {
+    const body = await req.json();
+    const { name, title, color } = body || {};
+
     if (!name || !title) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+    }
+
+    const existingUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+    });
+
+    if (!existingUser) {
+      return NextResponse.json(
+        { error: "User not found in database." },
+        { status: 404 },
+      );
     }
 
     const existingCard = await prisma.businessCard.findFirst({
@@ -36,10 +72,17 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json(card, { status: 201 });
-  } catch (error) {
-    console.error("Error creating card:", error);
+  } catch (error: any) {
+    console.error(
+      "Error creating card:",
+      error instanceof Error ? error.message : JSON.stringify(error),
+    );
+
     return NextResponse.json(
-      { error: "Failed to create card" },
+      {
+        error: "Failed to create card",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 },
     );
   }

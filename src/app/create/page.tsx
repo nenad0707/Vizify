@@ -12,6 +12,8 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { useSession } from "next-auth/react";
+import { LoginModal } from "@/components/LoginModal";
 
 const LivePreview = dynamic(() => import("@/components/LivePreview"), {
   ssr: false,
@@ -24,6 +26,7 @@ interface FormData {
 }
 
 export default function CreateCardPage() {
+  const { data: session, status } = useSession();
   const [formData, setFormData] = useState<FormData>({
     name: "",
     title: "",
@@ -41,6 +44,7 @@ export default function CreateCardPage() {
       const res = await fetch("/api/cards", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(formData),
       });
 
@@ -51,11 +55,23 @@ export default function CreateCardPage() {
 
       const newCard = await res.json();
       console.log("Card successfully created:", newCard);
-      // Here you can perform a redirect, show a notification, etc.
     } catch (error) {
       console.error("Error submitting request:", error);
     }
   };
+
+  if (status === "loading") {
+    return <p>Loading...</p>;
+  }
+
+  if (!session) {
+    return (
+      <div className="flex flex-col min-h-screen bg-background text-foreground justify-center items-center">
+        <p className="mb-4">You must be signed in to create a card.</p>
+        <LoginModal />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
