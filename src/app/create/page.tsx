@@ -36,6 +36,7 @@ export default function CreateCardPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     try {
       const res = await fetch("/api/cards", {
         method: "POST",
@@ -43,13 +44,16 @@ export default function CreateCardPage() {
         body: JSON.stringify(formData),
       });
 
-      if (res.ok) {
-        console.log("Kartica uspešno kreirana");
-      } else {
+      if (!res.ok) {
         console.error("Greška pri kreiranju kartice");
+        return;
       }
+
+      const newCard = await res.json();
+      console.log("Card successfully created:", newCard);
+      // Here you can perform a redirect, show a notification, etc.
     } catch (error) {
-      console.error("Greška prilikom slanja zahteva:", error);
+      console.error("Error submitting request:", error);
     }
   };
 
