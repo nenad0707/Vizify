@@ -10,7 +10,14 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
+  // Extend recommended Next.js configurations first.
   ...compat.extends("next/core-web-vitals", "next/typescript"),
+  // Add custom rules.
+  {
+    rules: {
+      "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
+    },
+  },
 ];
 
 export default eslintConfig;
