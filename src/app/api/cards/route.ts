@@ -20,7 +20,7 @@ export async function POST(req: Request) {
         name,
         title,
         color,
-        qrCode: `${process.env.NEXT_PUBLIC_URL}/card/${name}`,
+        qrCode: `${process.env.NEXTAUTH_URL}/card/${name}`,
       },
     });
 
