@@ -16,8 +16,12 @@ export async function GET(
       where: { id: params.id },
     });
 
-    if (!card || card.userId !== session.user.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    if (!card) {
+      return NextResponse.json({ error: "Card not found" }, { status: 404 });
+    }
+
+    if (card.userId !== session.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     return NextResponse.json(card);
@@ -37,10 +41,24 @@ export async function PUT(
 
   try {
     const { name, title, color } = await req.json();
+
+    const card = await prisma.businessCard.findUnique({
+      where: { id: params.id },
+    });
+
+    if (!card) {
+      return NextResponse.json({ error: "Card not found" }, { status: 404 });
+    }
+
+    if (card.userId !== session.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const updatedCard = await prisma.businessCard.update({
       where: { id: params.id },
       data: { name, title, color },
     });
+
     return NextResponse.json(updatedCard);
   } catch (error) {
     console.error("Error updating card:", error);
@@ -57,9 +75,22 @@ export async function DELETE(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
+    const card = await prisma.businessCard.findUnique({
+      where: { id: params.id },
+    });
+
+    if (!card) {
+      return NextResponse.json({ error: "Card not found" }, { status: 404 });
+    }
+
+    if (card.userId !== session.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     await prisma.businessCard.delete({
       where: { id: params.id },
     });
+
     return NextResponse.json({ message: "Card deleted successfully" });
   } catch (error) {
     console.error("Error deleting card:", error);

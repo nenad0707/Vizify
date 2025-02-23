@@ -14,38 +14,32 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
 
+    const existingCard = await prisma.businessCard.findFirst({
+      where: { userId: session.user.id, name },
+    });
+
+    if (existingCard) {
+      return NextResponse.json(
+        { error: "A card with this name already exists." },
+        { status: 409 },
+      );
+    }
+
     const card = await prisma.businessCard.create({
       data: {
         userId: session.user.id,
         name,
         title,
-        color,
+        color: color || "#ffffff",
         qrCode: `${process.env.NEXTAUTH_URL}/card/${name}`,
       },
     });
 
     return NextResponse.json(card, { status: 201 });
   } catch (error) {
+    console.error("Error creating card:", error);
     return NextResponse.json(
       { error: "Failed to create card" },
-      { status: 500 },
-    );
-  }
-}
-
-export async function GET() {
-  const session = await getServerSession(authOptions);
-  if (!session)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  try {
-    const cards = await prisma.businessCard.findMany({
-      where: { userId: session.user.id },
-    });
-    return NextResponse.json(cards);
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Error fetching cards" },
       { status: 500 },
     );
   }
