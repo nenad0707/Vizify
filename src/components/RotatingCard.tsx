@@ -1,8 +1,6 @@
 "use client";
 
-import React, { useRef } from "react";
-import * as THREE from "three";
-import { useFrame } from "@react-three/fiber";
+import React from "react";
 import { Text } from "@react-three/drei";
 
 interface FormData {
@@ -11,29 +9,21 @@ interface FormData {
   color: string;
 }
 
-interface RotatingCardProps {
+interface CardProps {
   formData: FormData;
 }
 
-export default function RotatingCard({ formData }: RotatingCardProps) {
-  const groupRef = useRef<THREE.Group>(null);
-
-  useFrame(() => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y += 0.01;
-    }
-  });
-
+export default function CardMesh({ formData }: CardProps) {
   return (
-    <group ref={groupRef}>
+    <group scale={[1.5, 1.5, 1.5]}>
       <mesh>
-        <boxGeometry args={[2, 3, 0.1]} />
+        <boxGeometry args={[3.5, 2, 0.05]} />
         <meshStandardMaterial color={formData.color || "white"} />
       </mesh>
 
       <Text
-        position={[0, 0.5, 0.06]}
-        fontSize={0.3}
+        position={[0, 0.4, 0.03]}
+        fontSize={0.2}
         color="black"
         anchorX="center"
         anchorY="middle"
@@ -42,8 +32,8 @@ export default function RotatingCard({ formData }: RotatingCardProps) {
       </Text>
 
       <Text
-        position={[0, -0.2, 0.06]}
-        fontSize={0.2}
+        position={[0, -0.1, 0.03]}
+        fontSize={0.15}
         color="black"
         anchorX="center"
         anchorY="middle"
