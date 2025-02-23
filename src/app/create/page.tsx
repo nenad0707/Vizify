@@ -45,7 +45,7 @@ export default function CreateCardPage() {
       });
 
       if (!res.ok) {
-        console.error("Greška pri kreiranju kartice");
+        console.error("Error creating card");
         return;
       }
 

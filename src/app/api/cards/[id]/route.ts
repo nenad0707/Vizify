@@ -1,10 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
-  req: Request,
+  req: NextRequest,
   { params }: { params: { id: string } },
 ) {
   const session = await getServerSession(authOptions);
@@ -22,12 +22,13 @@ export async function GET(
 
     return NextResponse.json(card);
   } catch (error) {
+    console.error("Error fetching card:", error);
     return NextResponse.json({ error: "Error fetching card" }, { status: 500 });
   }
 }
 
 export async function PUT(
-  req: Request,
+  req: NextRequest,
   { params }: { params: { id: string } },
 ) {
   const session = await getServerSession(authOptions);
@@ -42,12 +43,13 @@ export async function PUT(
     });
     return NextResponse.json(updatedCard);
   } catch (error) {
+    console.error("Error updating card:", error);
     return NextResponse.json({ error: "Error updating card" }, { status: 500 });
   }
 }
 
 export async function DELETE(
-  req: Request,
+  req: NextRequest,
   { params }: { params: { id: string } },
 ) {
   const session = await getServerSession(authOptions);
@@ -60,6 +62,7 @@ export async function DELETE(
     });
     return NextResponse.json({ message: "Card deleted successfully" });
   } catch (error) {
+    console.error("Error deleting card:", error);
     return NextResponse.json(
       { error: "Failed to delete card" },
       { status: 500 },
