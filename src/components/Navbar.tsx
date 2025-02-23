@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { motion } from "framer-motion";
-import { Menu, LogOut, User} from "lucide-react";
+import { Menu, LogOut, User } from "lucide-react";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -18,7 +18,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Sheet, SheetTrigger, SheetContent, SheetTitle, SheetDescription } from "@/components/ui/sheet"; // ✅ Dodaj SheetTitle i SheetDescription
+import {
+  Sheet,
+  SheetTrigger,
+  SheetContent,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet"; // ✅ Dodaj SheetTitle i SheetDescription
 import { Skeleton } from "@/components/ui/skeleton";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LoginModal } from "./LoginModal";
@@ -26,7 +32,7 @@ import { LoginModal } from "./LoginModal";
 const NAV_LINKS = [
   { href: "/features", label: "Features" },
   { href: "/dashboard", label: "Dashboard" },
-  { href: "/pricing", label: "Pricing" },
+  { href: "/create", label: "Create" },
 ];
 
 export default function Navbar() {
@@ -122,7 +128,6 @@ export default function Navbar() {
             side="left"
             className="w-[300px] bg-background shadow-lg"
           >
-          
             <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
             <SheetDescription className="sr-only">
               Mobile navigation menu for Vizify.
