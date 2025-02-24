@@ -5,15 +5,18 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   const session = await getServerSession(authOptions);
-  if (!session)
+  if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   try {
+    const { id } = context.params; // Dobijanje id-a iz params objekta
+
     const card = await prisma.businessCard.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!card) {
@@ -27,23 +30,28 @@ export async function GET(
     return NextResponse.json(card);
   } catch (error) {
     console.error("Error fetching card:", error);
-    return NextResponse.json({ error: "Error fetching card" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Error fetching card" },
+      { status: 500 }
+    );
   }
 }
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   const session = await getServerSession(authOptions);
-  if (!session)
+  if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   try {
+    const { id } = context.params;
     const { name, title, color } = await req.json();
 
     const card = await prisma.businessCard.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!card) {
@@ -55,28 +63,34 @@ export async function PUT(
     }
 
     const updatedCard = await prisma.businessCard.update({
-      where: { id: params.id },
+      where: { id },
       data: { name, title, color },
     });
 
     return NextResponse.json(updatedCard);
   } catch (error) {
     console.error("Error updating card:", error);
-    return NextResponse.json({ error: "Error updating card" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Error updating card" },
+      { status: 500 }
+    );
   }
 }
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   const session = await getServerSession(authOptions);
-  if (!session)
+  if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   try {
+    const { id } = context.params;
+
     const card = await prisma.businessCard.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!card) {
@@ -88,12 +102,15 @@ export async function DELETE(
     }
 
     await prisma.businessCard.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ message: "Card deleted successfully" });
   } catch (error) {
     console.error("Error deleting card:", error);
-    return NextResponse.json({ error: "Failed to delete card" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to delete card" },
+      { status: 500 }
+    );
   }
 }
