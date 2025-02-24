@@ -5,18 +5,20 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   req: NextRequest,
-  context: { params: { id: string } }
+  context: { params?: { id?: string } }
 ) {
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  try {
-    const { id } = context.params; // Dobijanje id-a iz params objekta
+  if (!context.params || !context.params.id) {
+    return NextResponse.json({ error: "Missing card ID" }, { status: 400 });
+  }
 
+  try {
     const card = await prisma.businessCard.findUnique({
-      where: { id },
+      where: { id: context.params.id },
     });
 
     if (!card) {
@@ -39,19 +41,22 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  context: { params: { id: string } }
+  context: { params?: { id?: string } }
 ) {
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  if (!context.params || !context.params.id) {
+    return NextResponse.json({ error: "Missing card ID" }, { status: 400 });
+  }
+
   try {
-    const { id } = context.params;
     const { name, title, color } = await req.json();
 
     const card = await prisma.businessCard.findUnique({
-      where: { id },
+      where: { id: context.params.id },
     });
 
     if (!card) {
@@ -63,7 +68,7 @@ export async function PUT(
     }
 
     const updatedCard = await prisma.businessCard.update({
-      where: { id },
+      where: { id: context.params.id },
       data: { name, title, color },
     });
 
@@ -79,18 +84,20 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  context: { params: { id: string } }
+  context: { params?: { id?: string } }
 ) {
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  try {
-    const { id } = context.params;
+  if (!context.params || !context.params.id) {
+    return NextResponse.json({ error: "Missing card ID" }, { status: 400 });
+  }
 
+  try {
     const card = await prisma.businessCard.findUnique({
-      where: { id },
+      where: { id: context.params.id },
     });
 
     if (!card) {
@@ -102,7 +109,7 @@ export async function DELETE(
     }
 
     await prisma.businessCard.delete({
-      where: { id },
+      where: { id: context.params.id },
     });
 
     return NextResponse.json({ message: "Card deleted successfully" });
