@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params, searchParams }: { params: { id: string }; searchParams: URLSearchParams }
 ) {
   const session = await getServerSession(authOptions);
   if (!session)
@@ -33,7 +33,7 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params, searchParams }: { params: { id: string }; searchParams: URLSearchParams }
 ) {
   const session = await getServerSession(authOptions);
   if (!session)
@@ -68,7 +68,7 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params, searchParams }: { params: { id: string }; searchParams: URLSearchParams }
 ) {
   const session = await getServerSession(authOptions);
   if (!session)
@@ -94,9 +94,6 @@ export async function DELETE(
     return NextResponse.json({ message: "Card deleted successfully" });
   } catch (error) {
     console.error("Error deleting card:", error);
-    return NextResponse.json(
-      { error: "Failed to delete card" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to delete card" }, { status: 500 });
   }
 }
