@@ -3,19 +3,20 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 
-interface Context {
-  params: { id: string };
-}
-
-export async function GET(req: NextRequest, { params }: Context) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const { id } = await params;
+
   try {
     const card = await prisma.businessCard.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!card) {
@@ -29,21 +30,29 @@ export async function GET(req: NextRequest, { params }: Context) {
     return NextResponse.json(card);
   } catch (error) {
     console.error("Error fetching card:", error);
-    return NextResponse.json({ error: "Error fetching card" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Error fetching card" },
+      { status: 500 }
+    );
   }
 }
 
-export async function PUT(req: NextRequest, { params }: Context) {
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const { id } = await params;
+
   try {
     const { name, title, color } = await req.json();
 
     const card = await prisma.businessCard.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!card) {
@@ -55,26 +64,34 @@ export async function PUT(req: NextRequest, { params }: Context) {
     }
 
     const updatedCard = await prisma.businessCard.update({
-      where: { id: params.id },
+      where: { id },
       data: { name, title, color },
     });
 
     return NextResponse.json(updatedCard);
   } catch (error) {
     console.error("Error updating card:", error);
-    return NextResponse.json({ error: "Error updating card" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Error updating card" },
+      { status: 500 }
+    );
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: Context) {
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const { id } = await params;
+
   try {
     const card = await prisma.businessCard.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!card) {
@@ -86,7 +103,7 @@ export async function DELETE(req: NextRequest, { params }: Context) {
     }
 
     await prisma.businessCard.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ message: "Card deleted successfully" });
