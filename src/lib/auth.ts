@@ -1,4 +1,5 @@
 import { NextAuthOptions } from "next-auth";
+import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -21,13 +22,13 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email) return null;
+       
         const providerId = `credentials-${credentials.email}`;
-
         let user = await prisma.user.findUnique({
           where: { providerId },
         });
-
         if (!user) {
+         
           user = await prisma.user.create({
             data: {
               email: credentials.email,
@@ -37,7 +38,6 @@ export const authOptions: NextAuthOptions = {
             },
           });
         }
-
         return user;
       },
     }),
@@ -45,17 +45,16 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user, account }) {
       if (!user.email) return false;
-
+      
       const providerId =
         account?.provider === "credentials"
           ? `credentials-${user.email}`
           : `${account?.provider}-${user.email}`;
-
       let existingUser = await prisma.user.findUnique({
         where: { providerId },
       });
-
       if (!existingUser) {
+       
         existingUser = await prisma.user.create({
           data: {
             email: user.email!,
@@ -66,20 +65,40 @@ export const authOptions: NextAuthOptions = {
           },
         });
       }
+     
       return true;
+    },
+    async jwt({ token, account, user }) {
+      if (user) {
+        const providerId: string = account
+          ? `${account.provider as string}-${user.email}`
+          : (token.provider as string);
+          
+        const dbUser = await prisma.user.findUnique({
+          where: { providerId },
+        });
+        if (dbUser) {
+          token.sub = dbUser.id;
+        }
+      }
+      if (account) {
+        token.provider = account.provider as string;
+      }
+      return token;
     },
     async session({ session, token }) {
       if (session.user && token.sub) {
+      
         session.user.id = token.sub;
         session.user.provider = token.provider as string;
       }
       return session;
     },
-    async jwt({ token, account }) {
-      if (account) {
-        token.provider = account.provider;
-      }
-      return token;
-    },
   },
+  session: {
+    strategy: "jwt",
+  },
+  secret: process.env.NEXTAUTH_SECRET,
 };
+
+export default NextAuth(authOptions);
