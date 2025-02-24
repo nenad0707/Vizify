@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   req: NextRequest,
-  { params, searchParams }: { params: { id: string }; searchParams: URLSearchParams }
+  { params }: { params: { id: string } }
 ) {
   const session = await getServerSession(authOptions);
   if (!session)
@@ -33,7 +33,7 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params, searchParams }: { params: { id: string }; searchParams: URLSearchParams }
+  { params }: { params: { id: string } }
 ) {
   const session = await getServerSession(authOptions);
   if (!session)
@@ -68,7 +68,7 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params, searchParams }: { params: { id: string }; searchParams: URLSearchParams }
+  { params }: { params: { id: string } }
 ) {
   const session = await getServerSession(authOptions);
   if (!session)
