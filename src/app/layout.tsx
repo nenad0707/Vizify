@@ -23,10 +23,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${inter.variable} antialiased`}>
+      <body className={`${inter.variable} antialiased flex flex-col min-h-screen`}>
         <Providers>
           <Navbar />
-          {children}
+          <main className="flex-1 pt-16">
+            {children}
+          </main>
           <Footer />
         </Providers>
       </body>
