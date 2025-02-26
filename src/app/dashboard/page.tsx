@@ -12,36 +12,33 @@ import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function DashboardPage() {
-  const { data: session } = useSession();
+  // 1. First all useState declarations
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewType, setViewType] = useState<"grid" | "table">("grid");
   const [isMounted, setIsMounted] = useState(false);
 
-  // Move localStorage operations to useEffect to ensure client-side execution
+  // 2. Then useSession hook
+  const { data: session } = useSession();
+
+  // 3. All useEffect hooks
   useEffect(() => {
-    // Initialize view type from localStorage if available
+    setIsMounted(true);
     const savedViewType = localStorage.getItem("vizify-view-type");
     if (savedViewType === "grid" || savedViewType === "table") {
       setViewType(savedViewType);
     }
-    setIsMounted(true);
   }, []);
 
-  // Save view type to localStorage only after component is mounted
   useEffect(() => {
-    if (isMounted) {
-      localStorage.setItem("vizify-view-type", viewType);
-    }
+    if (!isMounted) return;
+    localStorage.setItem("vizify-view-type", viewType);
   }, [viewType, isMounted]);
 
-  // Don't render until client-side hydration is complete
-  if (!isMounted) {
-    return <div className="min-h-screen bg-background" />;
-  }
-
   useEffect(() => {
+    if (!session) return;
+
     async function fetchCards() {
       try {
         setLoading(true);
@@ -64,10 +61,13 @@ export default function DashboardPage() {
       }
     }
 
-    if (session) {
-      fetchCards();
-    }
+    fetchCards();
   }, [session]);
+
+  // 4. Early returns
+  if (!isMounted) {
+    return <div className="min-h-screen bg-background" />;
+  }
 
   if (!session) {
     return (
@@ -86,6 +86,7 @@ export default function DashboardPage() {
     );
   }
 
+  // 5. Main render
   return (
     <div className="container mx-auto pt-6 px-4 pb-24 min-h-screen">
       <motion.div
