@@ -1,6 +1,8 @@
 "use client";
 
 import React from "react";
+import { Canvas, ThreeElements } from "@react-three/fiber";
+import { Group, Mesh } from "three";
 import * as THREE from "three";
 
 interface FormData {
@@ -24,17 +26,27 @@ export default function RotatingCard({ formData }: CardProps) {
         <meshBasicMaterial color={formData.color} />
       </mesh>
 
-      {/* Name text - using HTML instead of Three.js */}
+      {/* Name text position */}
       <mesh position={[0, 0.5, 0.051]}>
         <planeGeometry args={[3.4, 0.5]} />
         <meshBasicMaterial transparent opacity={0} />
       </mesh>
 
-      {/* Title text - using HTML instead of Three.js */}
+      {/* Title text position */}
       <mesh position={[0, -0.2, 0.051]}>
         <planeGeometry args={[3.4, 0.3]} />
         <meshBasicMaterial transparent opacity={0} />
       </mesh>
     </group>
   );
+}
+
+// Add these type declarations to fix the TypeScript errors
+declare module "@react-three/fiber" {
+  interface ThreeElements {
+    group: ThreeElements["mesh"];
+    boxGeometry: any;
+    meshBasicMaterial: any;
+    planeGeometry: any;
+  }
 }
