@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
@@ -17,21 +17,26 @@ export default function NotFound() {
           transition={{ duration: 0.5 }}
           className="mb-8"
         >
-          <div className="relative h-24 w-24 mx-auto mb-6">
+        
+          <div className="relative w-full max-w-xs mx-auto mb-6">
             <Image
-              src="/logo.svg"
-              alt="Vizify Logo"
-              fill
-              className="dark:invert"
+              src="/images/404.jpg"  
+              alt="404 Illustration"
+              width={400}
+              height={300}
+              priority
+              className="mx-auto"
             />
           </div>
-          
+
+         
           <div className="space-y-2">
             <h1 className="text-7xl font-bold bg-gradient-to-r from-chart-1 to-chart-2 text-transparent bg-clip-text">404</h1>
             <h2 className="text-2xl font-semibold text-foreground">Page not found</h2>
           </div>
         </motion.div>
 
+      
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -42,7 +47,7 @@ export default function NotFound() {
             The page you're looking for doesn't exist or has been moved.
             Let's get you back to building your digital presence.
           </p>
-          
+
           <div className="p-6 rounded-lg bg-glass border border-glass-border backdrop-blur-sm">
             <p className="text-sm font-medium mb-4">What would you like to do?</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -53,7 +58,7 @@ export default function NotFound() {
               >
                 Go Back
               </Button>
-              
+
               <Button
                 onClick={() => router.push('/')}
                 className="w-full sm:w-auto bg-gradient-to-r from-chart-1 to-chart-2 hover:opacity-90 transition-opacity"
