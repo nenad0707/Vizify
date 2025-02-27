@@ -24,7 +24,7 @@ import {
   SheetContent,
   SheetTitle,
   SheetDescription,
-} from "@/components/ui/sheet"; // ✅ Dodaj SheetTitle i SheetDescription
+} from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LoginModal } from "./LoginModal";
@@ -40,11 +40,11 @@ export default function Navbar() {
   const { data: session, status } = useSession();
 
   return (
-    <nav className="fixed top-0 left-0 w-full backdrop-blur-[30px] bg-glass/40 border border-glass-border shadow-lg drop-shadow-lg z-50">
+    <nav className="fixed top-0 left-0 w-full backdrop-blur-[12px] bg-glass/60 border-b border-glass-border shadow-sm z-50">
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="text-xl font-bold text-primary">
-          Vizify
+        <Link href="/" className="flex items-center gap-2">
+          <span className="text-xl font-bold bg-gradient-to-r from-chart-1 to-chart-2 text-transparent bg-clip-text">Vizify</span>
         </Link>
 
         {/* Desktop Navigation */}
@@ -52,21 +52,23 @@ export default function Navbar() {
           <NavigationMenuList className="gap-6">
             {NAV_LINKS.map((link) => (
               <NavigationMenuItem key={link.href}>
-                <motion.div
-                  whileHover={{ scale: 1.1 }}
-                  transition={{ type: "spring", stiffness: 150 }}
+                <Link
+                  href={link.href}
+                  className={`text-sm font-medium relative transition-colors duration-200 ${
+                    pathname === link.href
+                      ? "text-primary"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
                 >
-                  <Link
-                    href={link.href}
-                    className={`text-sm font-medium ${
-                      pathname === link.href
-                        ? "text-primary"
-                        : "text-foreground hover:text-primary"
-                    }`}
-                  >
-                    {link.label}
-                  </Link>
-                </motion.div>
+                  {link.label}
+                  {pathname === link.href && (
+                    <motion.div 
+                      layoutId="navbar-indicator"
+                      className="absolute -bottom-1 left-0 right-0 h-[2px] bg-gradient-to-r from-chart-1 to-chart-2" 
+                      transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                    />
+                  )}
+                </Link>
               </NavigationMenuItem>
             ))}
           </NavigationMenuList>
@@ -82,18 +84,18 @@ export default function Navbar() {
             <Skeleton className="h-8 w-8 rounded-full" />
           ) : session ? (
             <DropdownMenu>
-              <DropdownMenuTrigger>
-                <Avatar className="h-8 w-8">
+              <DropdownMenuTrigger asChild>
+                <Avatar className="h-8 w-8 cursor-pointer ring-offset-background transition-all hover:ring-2 hover:ring-primary hover:ring-offset-2">
                   <AvatarImage
                     src={session.user?.image || ""}
                     className="object-cover"
                   />
-                  <AvatarFallback className="bg-primary text-white">
+                  <AvatarFallback className="bg-gradient-to-br from-chart-1 to-chart-2 text-white">
                     {session.user?.name?.[0]?.toUpperCase() || "U"}
                   </AvatarFallback>
                 </Avatar>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="w-56 backdrop-blur-md bg-glass/80 border-glass-border">
                 <DropdownMenuItem>
                   <Link
                     href="/dashboard"
@@ -105,7 +107,7 @@ export default function Navbar() {
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => signOut()}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 text-destructive focus:text-destructive"
                 >
                   <LogOut className="h-4 w-4" />
                   Logout
@@ -126,7 +128,7 @@ export default function Navbar() {
           </SheetTrigger>
           <SheetContent
             side="left"
-            className="w-[300px] bg-background shadow-lg"
+            className="w-[300px] bg-glass backdrop-blur-md border-glass-border"
           >
             <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
             <SheetDescription className="sr-only">
@@ -138,13 +140,19 @@ export default function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`text-lg ${
+                  className={`text-lg relative p-2 ${
                     pathname === link.href
-                      ? "text-primary font-semibold"
+                      ? "text-primary font-medium"
                       : "text-foreground hover:text-primary"
                   }`}
                 >
                   {link.label}
+                  {pathname === link.href && (
+                    <motion.div 
+                      layoutId="sidebar-indicator"
+                      className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-chart-1 to-chart-2 rounded-r" 
+                    />
+                  )}
                 </Link>
               ))}
             </div>
