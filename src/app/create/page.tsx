@@ -18,6 +18,7 @@ import { LoginModal } from "@/components/LoginModal";
 import { ArrowLeft, Loader2, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import ColorPicker from "@/components/ColorPicker";
 
 const LivePreview = dynamic(() => import("@/components/LivePreview"), {
   ssr: false,
@@ -214,70 +215,45 @@ export default function CreateCardPage() {
                   </div>
 
                   <div>
-                    <h3 className="text-lg font-medium mb-4">Appearance</h3>
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="color">Card Color</Label>
-                        <div className="flex items-center gap-3 mt-1.5">
-                          <Input
-                            type="color"
-                            id="color"
-                            name="color"
-                            value={formData.color}
-                            onChange={handleChange}
-                            className="h-10 w-20 p-1 cursor-pointer rounded-md"
-                          />
-                          <div className="text-sm font-mono text-muted-foreground">
-                            {formData.color.toUpperCase()}
-                          </div>
-                        </div>
-                      </div>
+  <h3 className="text-lg font-medium mb-4">Appearance</h3>
+  <div className="space-y-4">
+    {/* Color Picker */}
+    <div>
+      <Label htmlFor="color">Card Color</Label>
+      <ColorPicker 
+        selectedColor={formData.color} 
+        setSelectedColor={(color) => setFormData({ ...formData, color })} 
+      />
+    </div>
 
-                      <div className="pt-2">
-                        <Label className="mb-2 block">Card Template</Label>
-                        <div className="grid grid-cols-3 gap-3">
-                          {["modern", "classic", "minimalist"].map(
-                            (template) => (
-                              <div
-                                key={template}
-                                onClick={() =>
-                                  handleTemplateChange(template as any)
-                                }
-                                className={`
-                                relative cursor-pointer rounded-lg border p-2 text-center text-xs sm:text-sm capitalize transition-all
-                                ${
-                                  formData.template === template
-                                    ? "border-primary bg-primary/10 text-primary shadow-sm"
-                                    : "border-border/40 bg-muted/40 hover:bg-muted/80 text-muted-foreground"
-                                }
-                              `}
-                              >
-                                {template}
-                                {template === "modern" && (
-                                  <p className="text-[10px] opacity-70 mt-1">
-                                    Elegant
-                                  </p>
-                                )}
-                                {template === "classic" && (
-                                  <p className="text-[10px] opacity-70 mt-1">
-                                    Traditional
-                                  </p>
-                                )}
-                                {template === "minimalist" && (
-                                  <p className="text-[10px] opacity-70 mt-1">
-                                    Simple
-                                  </p>
-                                )}
-                              </div>
-                            ),
-                          )}
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-2">
-                          Choose a card style that best matches your brand
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+    {/* Template Selection */}
+    <div className="pt-2">
+      <Label className="mb-2 block">Card Template</Label>
+      <div className="grid grid-cols-3 gap-3">
+        {["modern", "classic", "minimalist"].map((template) => (
+          <div
+            key={template}
+            onClick={() => handleTemplateChange(template as "modern" | "classic" | "minimalist")}
+            className={`relative cursor-pointer rounded-lg border p-2 text-center text-xs sm:text-sm capitalize transition-all
+              ${formData.template === template
+                ? "border-primary bg-primary/10 text-primary shadow-sm"
+                : "border-border/40 bg-muted/40 hover:bg-muted/80 text-muted-foreground"
+              }`}
+          >
+            {template}
+            {template === "modern" && <p className="text-[10px] opacity-70 mt-1">Elegant</p>}
+            {template === "classic" && <p className="text-[10px] opacity-70 mt-1">Traditional</p>}
+            {template === "minimalist" && <p className="text-[10px] opacity-70 mt-1">Simple</p>}
+          </div>
+        ))}
+      </div>
+      <p className="text-xs text-muted-foreground mt-2">
+        Choose a card style that best matches your brand
+      </p>
+    </div>
+  </div>
+</div>
+
                 </div>
               </CardContent>
 
