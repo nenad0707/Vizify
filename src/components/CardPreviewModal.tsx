@@ -26,6 +26,8 @@ export function CardPreviewModal({
   onOpenChange,
   card,
 }: CardPreviewModalProps) {
+  const cardUrl = `${process.env.NEXT_PUBLIC_APP_URL}/card/${card.id}`;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm w-full p-6 bg-background dark:bg-darkGlassBg backdrop-blur-xl border border-border dark:border-darkBorder rounded-lg shadow-lg">
@@ -51,11 +53,11 @@ export function CardPreviewModal({
           <p>{card.title}</p>
         </div>
         <div className="flex justify-center items-center mb-4">
-          <QRCodeComponent
-            url={`${process.env.NEXT_PUBLIC_APP_URL}/card/${card.id}`}
-            size={128}
-          />
+          <QRCodeComponent url={cardUrl} size={128} />
         </div>
+        <p className="text-xs text-center text-muted-foreground mb-4">
+          Scan with your phone camera to view card
+        </p>
         <div className="flex justify-end gap-2">
           <Button onClick={() => onOpenChange(false)}>Close</Button>
           <Button onClick={() => (window.location.href = `/card/${card.id}`)}>

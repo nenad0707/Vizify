@@ -57,11 +57,14 @@ export async function POST(request: NextRequest) {
         qrCode: "",
       },
     });
-    const qrCodeUrl = `${process.env.NEXTAUTH_URL}/card/${card.id}`;
+
+    const qrCodeUrl = `${process.env.NEXT_PUBLIC_APP_URL}/card/${card.id}`;
+
     const updatedCard = await prisma.businessCard.update({
       where: { id: card.id },
       data: { qrCode: qrCodeUrl },
     });
+
     return NextResponse.json(updatedCard, { status: 201 });
   } catch (error) {
     console.error("Error creating card:", error);

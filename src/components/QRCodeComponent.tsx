@@ -9,7 +9,9 @@ interface QRCodeComponentProps {
 
 export default function QRCodeComponent({
   url,
-  size = 128,
+  size = 256,
 }: QRCodeComponentProps) {
-  return <QRCodeCanvas value={url} size={size} />;
+  return (
+    <QRCodeCanvas value={url} size={size} level="H" includeMargin={true} />
+  );
 }

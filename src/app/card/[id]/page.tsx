@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import QRCodeComponent from "@/components/QRCodeComponent";
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default async function CardPage({ params }: PageProps) {
@@ -13,8 +13,9 @@ export default async function CardPage({ params }: PageProps) {
   if (!session) {
     redirect("/login");
   }
+  const { id } = await params;
   const card = await prisma.businessCard.findUnique({
-    where: { id: params.id },
+    where: { id },
   });
   if (!card) {
     return <div>Card not found.</div>;
@@ -22,7 +23,7 @@ export default async function CardPage({ params }: PageProps) {
   if (card.userId !== session.user.id) {
     return <div>Access Denied.</div>;
   }
-  const cardUrl = `${process.env.NEXTAUTH_URL}/card/${card.id}`;
+  const cardUrl = `${process.env.NEXT_PUBLIC_APP_URL}/card/${card.id}`;
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold">{card.name}</h1>
