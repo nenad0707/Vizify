@@ -5,8 +5,10 @@ import { authOptions } from "@/lib/auth";
 
 export async function GET(
   request: NextRequest,
-  context: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
+
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -14,7 +16,7 @@ export async function GET(
 
   try {
     const card = await prisma.businessCard.findUnique({
-      where: { id: context.params.id },
+      where: { id },
     });
 
     if (!card) {
@@ -34,13 +36,14 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  context: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const { id } = context.params;
+
   try {
     const { name, title, color } = await request.json();
     const card = await prisma.businessCard.findUnique({ where: { id } });
@@ -63,13 +66,14 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  context: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const { id } = context.params;
+
   try {
     const card = await prisma.businessCard.findUnique({ where: { id } });
     if (!card) {
