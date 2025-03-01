@@ -5,21 +5,26 @@ import { authOptions } from "@/lib/auth";
 
 export async function GET(
   request: NextRequest,
-  context: { params: { id: string } },
+  { params }: { params: { id: string } },
 ) {
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const { id } = context.params;
+
   try {
-    const card = await prisma.businessCard.findUnique({ where: { id } });
+    const card = await prisma.businessCard.findUnique({
+      where: { id: params.id },
+    });
+
     if (!card) {
       return NextResponse.json({ error: "Card not found" }, { status: 404 });
     }
+
     if (card.userId !== session.user.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
+
     return NextResponse.json(card);
   } catch (error) {
     console.error("Error fetching card:", error);
@@ -28,7 +33,7 @@ export async function GET(
 }
 
 export async function PUT(
-  req: NextRequest,
+  request: NextRequest,
   { params }: { params: { id: string } },
 ) {
   const session = await getServerSession(authOptions);
@@ -37,7 +42,7 @@ export async function PUT(
   }
   const { id } = params;
   try {
-    const { name, title, color } = await req.json();
+    const { name, title, color } = await request.json();
     const card = await prisma.businessCard.findUnique({ where: { id } });
     if (!card) {
       return NextResponse.json({ error: "Card not found" }, { status: 404 });
@@ -57,7 +62,7 @@ export async function PUT(
 }
 
 export async function DELETE(
-  req: NextRequest,
+  request: NextRequest,
   { params }: { params: { id: string } },
 ) {
   const session = await getServerSession(authOptions);
