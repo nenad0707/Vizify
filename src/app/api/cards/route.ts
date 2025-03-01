@@ -43,7 +43,10 @@ export async function POST(request: NextRequest) {
     });
     if (existingCard) {
       return NextResponse.json(
-        { error: "A card with this name already exists." },
+        {
+          error: `A card with the name "${name}" already exists. Please choose a different name.`,
+          cardId: existingCard.id,
+        },
         { status: 409 },
       );
     }

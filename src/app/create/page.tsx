@@ -1,27 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import { useSession } from "next-auth/react";
 import { LoginModal } from "@/components/LoginModal";
-import { ArrowLeft, Loader2, Sparkles } from "lucide-react";
-import { motion } from "framer-motion";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import ColorPicker from "@/components/ColorPicker";
 import QRCodeComponent from "@/components/QRCodeComponent";
 import { CardPreviewModal } from "@/components/CardPreviewModal";
+import {
+  CardCreatorProvider,
+  useCardCreator,
+} from "@/components/CardCreator/CardCreatorContext";
+import { StepNavigator } from "@/components/CardCreator/StepNavigator";
+import { UserDetailsSection } from "@/components/CardCreator/UserDetailsSection";
+import { AppearanceSection } from "@/components/CardCreator/AppearanceSection";
+import { ReviewSection } from "@/components/CardCreator/ReviewSection";
 
+// Dynamic import of LivePreview to avoid server-side rendering issues
 const LivePreview = dynamic(() => import("@/components/LivePreview"), {
   ssr: false,
   loading: () => (
@@ -31,71 +28,213 @@ const LivePreview = dynamic(() => import("@/components/LivePreview"), {
   ),
 });
 
-interface FormData {
-  name: string;
-  title: string;
-  color: string;
-  template: "modern" | "classic" | "minimalist";
-}
-
-export default function CreateCardPage() {
-  const { data: session, status } = useSession();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [statusMessage, setStatusMessage] = useState<{
-    type: "success" | "error";
-    message: string;
-  } | null>(null);
-  const [formData, setFormData] = useState<FormData>({
-    name: "",
-    title: "",
-    color: "#6366f1",
-    template: "modern",
-  });
+// Component for the main content when user is logged in
+function CardCreatorContent() {
+  const { formData, currentStep, createdCard } = useCardCreator();
   const [modalOpen, setModalOpen] = useState(false);
-  const [newCard, setNewCard] = useState<any>(null);
+  const [showPreview, setShowPreview] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleTemplateChange = (
-    template: "modern" | "classic" | "minimalist",
-  ) => {
-    setFormData({ ...formData, template });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setStatusMessage(null);
-    try {
-      const res = await fetch("/api/cards", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(formData),
-      });
-      if (!res.ok) {
-        throw new Error("Failed to create card");
-      }
-      const card = await res.json();
-      setNewCard(card);
-      setStatusMessage({
-        type: "success",
-        message: "Your business card has been created successfully.",
-      });
+  // Open modal when card is created
+  useEffect(() => {
+    if (createdCard) {
       setModalOpen(true);
-    } catch (error) {
-      console.error("Error submitting request:", error);
-      setStatusMessage({
-        type: "error",
-        message: "Your card could not be created. Please try again.",
-      });
-    } finally {
-      setIsSubmitting(false);
+    }
+  }, [createdCard]);
+
+  // Get current step component
+  const getCurrentStep = () => {
+    switch (currentStep) {
+      case 0:
+        return <UserDetailsSection />;
+      case 1:
+        return <AppearanceSection />;
+      case 2:
+        return <ReviewSection />;
+      default:
+        return <UserDetailsSection />;
     }
   };
 
+  return (
+    <>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="container mx-auto py-8 px-4"
+      >
+        {/* Header with premium styling */}
+        <div className="mb-8 flex flex-col space-y-4">
+          <Link
+            href="/dashboard"
+            className="flex items-center text-muted-foreground hover:text-foreground transition-colors group w-fit"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+            Back to Dashboard
+          </Link>
+
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-card/40 backdrop-blur-sm border border-border/30 p-6 rounded-xl shadow-md"
+          >
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent mb-2">
+              Create Your Business Card
+            </h1>
+            <p className="text-muted-foreground max-w-2xl">
+              Follow the steps below to design your professional digital
+              business card.
+            </p>
+          </motion.div>
+        </div>
+
+        {/* Controls for mobile view */}
+        <div className="lg:hidden flex mb-4 border border-border/30 rounded-lg overflow-hidden">
+          <button
+            className={`flex-1 py-2 text-sm font-medium ${
+              !showPreview
+                ? "bg-primary/10 text-primary"
+                : "bg-transparent text-muted-foreground"
+            }`}
+            onClick={() => setShowPreview(false)}
+          >
+            Form Steps
+          </button>
+          <button
+            className={`flex-1 py-2 text-sm font-medium ${
+              showPreview
+                ? "bg-primary/10 text-primary"
+                : "bg-transparent text-muted-foreground"
+            }`}
+            onClick={() => setShowPreview(true)}
+          >
+            Preview
+          </button>
+        </div>
+
+        {/* Main content - two column layout with enhanced premium look */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Left column - Form steps */}
+          <div
+            className={`lg:col-span-7 order-2 lg:order-1 flex flex-col relative z-10 ${
+              showPreview ? "hidden lg:flex" : "flex"
+            }`}
+          >
+            <StepNavigator />
+
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentStep}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.4 }}
+                className="min-h-[500px]"
+              >
+                {getCurrentStep()}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Right column - Preview with premium styling */}
+          <div
+            className={`lg:col-span-5 order-1 lg:order-2 flex flex-col space-y-8 lg:sticky top-8 self-start lg:max-h-[calc(100vh-120px)] lg:overflow-auto ${
+              !showPreview ? "hidden lg:flex" : "flex"
+            }`}
+          >
+            {/* Live preview card */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="bg-card/70 backdrop-blur-sm border border-border/50 shadow-lg rounded-lg overflow-hidden relative z-0"
+              whileHover={{
+                translateY: -5,
+                boxShadow: "0 15px 30px rgba(0,0,0,0.1)",
+              }}
+            >
+              <div className="p-4 border-b border-border/10 bg-gradient-to-br from-background to-muted/20">
+                <h2 className="font-medium bg-gradient-to-r from-primary/90 to-primary/70 bg-clip-text text-transparent">
+                  Live Preview
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Interactive 3D preview of your card
+                </p>
+              </div>
+              <div className="h-[350px] relative">
+                <LivePreview
+                  formData={{
+                    ...formData,
+                    name: formData.name || "Your Name",
+                    title: formData.title || "Your Title",
+                  }}
+                />
+              </div>
+            </motion.div>
+
+            {/* QR code preview with glassmorphism */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="bg-card/60 backdrop-blur-sm border border-border/50 shadow-lg rounded-lg overflow-hidden relative z-0"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <div className="p-4 border-b border-border/10 bg-gradient-to-br from-background to-muted/20">
+                <h2 className="font-medium bg-gradient-to-r from-primary/90 to-primary/70 bg-clip-text text-transparent">
+                  QR Code Preview
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Scan to view your digital card
+                </p>
+              </div>
+              <div className="p-6 flex flex-col items-center justify-center">
+                <motion.div
+                  className="bg-white p-4 rounded-lg shadow-md"
+                  whileHover={{ rotate: [0, -1, 1, -1, 0] }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <QRCodeComponent
+                    url={
+                      createdCard?.id
+                        ? `${window.location.origin}/card/${createdCard.id}`
+                        : `${window.location.origin}/preview`
+                    }
+                    size={150}
+                  />
+                </motion.div>
+                <p className="text-xs text-muted-foreground text-center mt-4 px-4">
+                  {currentStep < 2
+                    ? "Complete all steps to generate your QR code"
+                    : createdCard
+                    ? "Scan this QR code to view your card"
+                    : "Click Create Card to generate your final QR code"}
+                </p>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Card Preview Modal */}
+      {modalOpen && createdCard && (
+        <CardPreviewModal
+          open={modalOpen}
+          onOpenChange={setModalOpen}
+          card={createdCard}
+        />
+      )}
+    </>
+  );
+}
+
+// Main page component
+export default function CreateCardPage() {
+  const { data: session, status } = useSession();
+
+  // Show loading state while checking session
   if (status === "loading") {
     return (
       <div className="flex items-center justify-center min-h-[70vh]">
@@ -104,6 +243,7 @@ export default function CreateCardPage() {
     );
   }
 
+  // Show login prompt if user is not authenticated
   if (!session) {
     return (
       <div className="flex flex-col min-h-screen justify-center items-center">
@@ -125,222 +265,10 @@ export default function CreateCardPage() {
     );
   }
 
+  // Render main content with CardCreatorProvider
   return (
-    <>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="container mx-auto py-8 px-4"
-      >
-        <Link
-          href="/dashboard"
-          className="flex items-center text-muted-foreground hover:text-foreground mb-6 transition-colors group"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
-          Back to Dashboard
-        </Link>
-        <div className="flex flex-col gap-4">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent mb-2">
-              Create Your Business Card
-            </h1>
-            <p className="text-muted-foreground max-w-2xl">
-              Design your professional digital business card. Customize details
-              and preview in real-time with our 3D card viewer.
-            </p>
-          </motion.div>
-          {statusMessage && (
-            <div
-              className={`p-4 mb-4 rounded-lg border ${
-                statusMessage.type === "success"
-                  ? "bg-green-50 border-green-200 text-green-700"
-                  : "bg-red-50 border-red-200 text-red-700"
-              }`}
-            >
-              {statusMessage.message}
-            </div>
-          )}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-4">
-            <motion.div
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
-              className="order-2 lg:order-1"
-            >
-              <Card className="bg-card/70 backdrop-blur-sm border border-border/50 shadow-lg overflow-hidden">
-                <CardHeader>
-                  <CardTitle className="text-xl flex items-center">
-                    <Sparkles className="h-5 w-5 mr-2 text-primary" />
-                    Card Designer
-                  </CardTitle>
-                  <CardDescription>
-                    Customize your card details and appearance
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-6">
-                    <div>
-                      <h3 className="text-lg font-medium mb-4">Details</h3>
-                      <div className="space-y-4">
-                        <div className="space-y-1">
-                          <Label htmlFor="name">Full Name</Label>
-                          <Input
-                            id="name"
-                            name="name"
-                            value={formData.name}
-                            onChange={handleChange}
-                            placeholder="John Smith"
-                            className="transition-all border-border/60 focus:border-primary"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <Label htmlFor="title">Job Title</Label>
-                          <Input
-                            id="title"
-                            name="title"
-                            value={formData.title}
-                            onChange={handleChange}
-                            placeholder="Product Manager"
-                            className="transition-all border-border/60 focus:border-primary"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-medium mb-4">Appearance</h3>
-                      <div className="space-y-4">
-                        <div>
-                          <Label htmlFor="color">Card Color</Label>
-                          <ColorPicker
-                            selectedColor={formData.color}
-                            setSelectedColor={(color) =>
-                              setFormData({ ...formData, color })
-                            }
-                          />
-                        </div>
-                        <div className="pt-2">
-                          <Label className="mb-2 block">Card Template</Label>
-                          <div className="grid grid-cols-3 gap-3">
-                            {["modern", "classic", "minimalist"].map(
-                              (template) => (
-                                <div
-                                  key={template}
-                                  onClick={() =>
-                                    handleTemplateChange(
-                                      template as
-                                        | "modern"
-                                        | "classic"
-                                        | "minimalist",
-                                    )
-                                  }
-                                  className={`relative cursor-pointer rounded-lg border p-2 text-center text-xs sm:text-sm capitalize transition-all ${
-                                    formData.template === template
-                                      ? "border-primary bg-primary/10 text-primary shadow-sm"
-                                      : "border-border/40 bg-muted/40 hover:bg-muted/80 text-muted-foreground"
-                                  }`}
-                                >
-                                  {template}
-                                  {template === "modern" && (
-                                    <p className="text-[10px] opacity-70 mt-1">
-                                      Elegant
-                                    </p>
-                                  )}
-                                  {template === "classic" && (
-                                    <p className="text-[10px] opacity-70 mt-1">
-                                      Traditional
-                                    </p>
-                                  )}
-                                  {template === "minimalist" && (
-                                    <p className="text-[10px] opacity-70 mt-1">
-                                      Simple
-                                    </p>
-                                  )}
-                                </div>
-                              ),
-                            )}
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-2">
-                            Choose a card style that best matches your brand
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button
-                    type="submit"
-                    onClick={handleSubmit}
-                    disabled={isSubmitting || !formData.name || !formData.title}
-                    className="w-full bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 transition-all"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Creating...
-                      </>
-                    ) : (
-                      "Create Business Card"
-                    )}
-                  </Button>
-                </CardFooter>
-              </Card>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 }}
-              className="order-1 lg:order-2 flex flex-col gap-4"
-            >
-              <Card className="bg-card/70 backdrop-blur-sm border border-border/50 shadow-lg h-[500px] overflow-hidden">
-                <CardHeader className="pb-0">
-                  <CardTitle className="text-xl">Live Preview</CardTitle>
-                  <CardDescription>
-                    Interactive 3D preview of your card
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="h-[410px] relative">
-                  <LivePreview
-                    formData={{
-                      ...formData,
-                      name: formData.name || "Your Name",
-                      title: formData.title || "Your Title",
-                    }}
-                  />
-                </CardContent>
-              </Card>
-              <Card className="bg-card/70 backdrop-blur-sm border border-border/50 shadow-lg p-4">
-                <CardHeader>
-                  <CardTitle className="text-xl">QR Code Preview</CardTitle>
-                </CardHeader>
-                <CardContent className="flex justify-center items-center">
-                  <QRCodeComponent
-                    url="https://yourdomain.com/card/preview"
-                    size={128}
-                  />
-                </CardContent>
-                <CardFooter>
-                  <p className="text-xs text-muted-foreground text-center">
-                    Your QR code will be generated after you create the card.
-                  </p>
-                </CardFooter>
-              </Card>
-            </motion.div>
-          </div>
-        </div>
-      </motion.div>
-      {modalOpen && newCard && (
-        <CardPreviewModal
-          open={modalOpen}
-          onOpenChange={setModalOpen}
-          card={newCard}
-        />
-      )}
-    </>
+    <CardCreatorProvider>
+      <CardCreatorContent />
+    </CardCreatorProvider>
   );
 }
