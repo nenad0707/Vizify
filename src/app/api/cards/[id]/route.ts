@@ -5,7 +5,7 @@ import { authOptions } from "@/lib/auth";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  context: { params: { id: string } },
 ) {
   const session = await getServerSession(authOptions);
   if (!session) {
@@ -14,7 +14,7 @@ export async function GET(
 
   try {
     const card = await prisma.businessCard.findUnique({
-      where: { id: params.id },
+      where: { id: context.params.id },
     });
 
     if (!card) {
@@ -34,13 +34,13 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  context: { params: { id: string } },
 ) {
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const { id } = params;
+  const { id } = context.params;
   try {
     const { name, title, color } = await request.json();
     const card = await prisma.businessCard.findUnique({ where: { id } });
@@ -63,13 +63,13 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  context: { params: { id: string } },
 ) {
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const { id } = params;
+  const { id } = context.params;
   try {
     const card = await prisma.businessCard.findUnique({ where: { id } });
     if (!card) {
