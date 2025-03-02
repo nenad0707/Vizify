@@ -9,27 +9,32 @@ import {
 import { Button } from "@/components/ui/button";
 import QRCodeComponent from "@/components/QRCodeComponent";
 import React from "react";
+import { useRouter } from "next/navigation";
 
 interface CardPreviewModalProps {
   open: boolean;
-  onOpenChange: (open: boolean) => void;
-  card: {
-    id: string;
-    name: string;
-    title: string;
-    color: string;
-  };
+  onOpenChange: (redirected?: boolean) => void;
+  card: any;
+  allowRedirect?: boolean;
 }
 
 export function CardPreviewModal({
   open,
   onOpenChange,
   card,
+  allowRedirect = false,
 }: CardPreviewModalProps) {
+  const router = useRouter();
+
+  const handleViewCardClick = () => {
+    onOpenChange(true);
+    router.push(`/card/${card.id}`);
+  };
+
   const cardUrl = `${process.env.NEXT_PUBLIC_APP_URL}/card/${card.id}`;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={() => onOpenChange(false)}>
       <DialogContent className="max-w-sm w-full p-6 bg-background dark:bg-darkGlassBg backdrop-blur-xl border border-border dark:border-darkBorder rounded-lg shadow-lg">
         <DialogTitle className="sr-only">Your Business Card</DialogTitle>
         <DialogDescription className="sr-only">
@@ -60,9 +65,11 @@ export function CardPreviewModal({
         </p>
         <div className="flex justify-end gap-2">
           <Button onClick={() => onOpenChange(false)}>Close</Button>
-          <Button onClick={() => (window.location.href = `/card/${card.id}`)}>
-            View Card
-          </Button>
+          {allowRedirect && (
+            <Button onClick={handleViewCardClick} className="gap-1.5">
+              View Card
+            </Button>
+          )}
         </div>
       </DialogContent>
     </Dialog>

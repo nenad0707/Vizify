@@ -75,12 +75,6 @@ export function ReviewSection() {
     }
   };
 
-  useEffect(() => {
-    if (createdCard) {
-      setIsRedirecting(true);
-    }
-  }, [createdCard]);
-
   return (
     <FormSectionWrapper
       title="Review Your Card"

@@ -184,15 +184,13 @@ export const CardCreatorProvider = ({ children }: { children: ReactNode }) => {
       setCreatedCard(data);
 
       toast.success("Card Created Successfully!", {
-        description: "Redirecting to your new business card...",
-        duration: 3000,
+        description: "Your card is ready to share!",
       });
 
-      setTimeout(() => {
-        if (data && data.id) {
-          router.push(`/card/${data.id}`);
-        }
-      }, 1000);
+      setStatusMessage({
+        type: "success",
+        message: "Your card has been successfully created!",
+      });
     } catch (error) {
       console.error("Network error while creating card:", error);
 
