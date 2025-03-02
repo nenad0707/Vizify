@@ -8,17 +8,23 @@ import {
   Loader2,
   ArrowLeft,
   Share2,
-  Download,
   Edit,
   QrCode,
   ExternalLink,
   User,
+  Trash2,
+  UserRound,
+  Briefcase,
+  Palette,
+  Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import QRCodeComponent from "@/components/QRCodeComponent";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { DeleteDialog } from "@/components/DeleteDialog";
+import { EditCardModal } from "@/components/EditCardModal";
 
 interface CardPageProps {
   params: Promise<{ id: string }>;
@@ -44,6 +50,9 @@ export default function CardPage({ params }: CardPageProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isOwner, setIsOwner] = useState(false);
+
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
@@ -105,6 +114,26 @@ export default function CardPage({ params }: CardPageProps) {
     const cardUrl = `${window.location.origin}/card/${id}`;
     navigator.clipboard.writeText(cardUrl);
     toast.success("Card URL copied to clipboard!");
+  };
+
+  const refreshCard = async () => {
+    try {
+      const res = await fetch(`/api/cards/${id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setCard(data);
+      } else if (res.status === 404) {
+        toast.info("Card has been deleted");
+        router.push("/dashboard");
+      }
+    } catch (error) {
+      console.error("Error refreshing card:", error);
+    }
+  };
+
+  const handleDeleteComplete = () => {
+    toast.success("Card deleted successfully");
+    router.push("/dashboard");
   };
 
   if (loading) {
@@ -289,13 +318,14 @@ export default function CardPage({ params }: CardPageProps) {
                 </div>
               </div>
 
-              <div className="flex flex-wrap justify-center gap-3">
+              <div className="flex flex-wrap justify-center gap-3 mt-8">
                 {isOwner && (
-                  <Button variant="outline" asChild>
-                    <Link href={`/edit/${id}`}>
-                      <Edit className="mr-2 h-4 w-4" />
-                      Edit Card
-                    </Link>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsEditModalOpen(true)}
+                  >
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit Card
                   </Button>
                 )}
 
@@ -304,41 +334,17 @@ export default function CardPage({ params }: CardPageProps) {
                   Share Card
                 </Button>
 
-                <Button variant="outline">
-                  <Download className="mr-2 h-4 w-4" />
-                  Download vCard
-                </Button>
+                {isOwner && (
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsDeleteDialogOpen(true)}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete
+                  </Button>
+                )}
               </div>
             </motion.div>
-
-            {isOwner && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="p-5 bg-card/60 backdrop-blur-sm rounded-xl border border-border/40 shadow-md space-y-4"
-              >
-                <h2 className="text-lg font-medium flex items-center">
-                  <span className="inline-block w-2 h-6 bg-primary/90 rounded-sm mr-2"></span>
-                  Card Usage
-                </h2>
-
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                  <div className="p-3 bg-background/40 rounded-lg space-y-1">
-                    <p className="text-xs text-muted-foreground">Impressions</p>
-                    <p className="text-xl font-bold">128</p>
-                  </div>
-                  <div className="p-3 bg-background/40 rounded-lg space-y-1">
-                    <p className="text-xs text-muted-foreground">Scans</p>
-                    <p className="text-xl font-bold">32</p>
-                  </div>
-                  <div className="p-3 bg-background/40 rounded-lg space-y-1">
-                    <p className="text-xs text-muted-foreground">Shares</p>
-                    <p className="text-xl font-bold">8</p>
-                  </div>
-                </div>
-              </motion.div>
-            )}
           </div>
 
           <div className="lg:col-span-5 space-y-6">
@@ -390,48 +396,96 @@ export default function CardPage({ params }: CardPageProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="p-6 bg-card/80 backdrop-blur-sm rounded-xl border border-border/50 shadow-lg"
+              className="bg-card/80 backdrop-blur-sm rounded-xl border border-border/50 shadow-lg overflow-hidden"
             >
-              <h2 className="text-lg font-medium mb-4">Card Details</h2>
+              <div className="p-4 border-b border-border/10 bg-gradient-to-r from-background/80 to-muted/5">
+                <h2 className="text-lg font-medium flex items-center">
+                  <span className="inline-block w-1 h-5 bg-primary/90 rounded-sm mr-2"></span>
+                  Card Details
+                </h2>
+              </div>
 
-              <div className="space-y-4">
-                <div className="p-3 bg-background/40 rounded-lg flex flex-col">
-                  <span className="text-xs text-muted-foreground">Name</span>
-                  <span className="font-medium">{card.name}</span>
-                </div>
-                <div className="p-3 bg-background/40 rounded-lg flex flex-col">
-                  <span className="text-xs text-muted-foreground">Title</span>
-                  <span className="font-medium">{card.title}</span>
-                </div>
-                <div className="p-3 bg-background/40 rounded-lg flex flex-col">
-                  <span className="text-xs text-muted-foreground">Color</span>
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="w-5 h-5 rounded-full"
-                      style={{ backgroundColor: card.color }}
-                    />
-                    <code className="text-xs">{card.color}</code>
+              <div className="p-6 space-y-3">
+                <div className="flex items-center p-3 bg-background/40 rounded-lg hover:bg-background/60 transition-colors">
+                  <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/10 text-primary mr-3">
+                    <UserRound className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <span className="text-xs text-muted-foreground block">
+                      Name
+                    </span>
+                    <span className="font-medium">{card.name}</span>
                   </div>
                 </div>
-                <div className="p-3 bg-background/40 rounded-lg flex flex-col">
-                  <span className="text-xs text-muted-foreground">Created</span>
-                  <span className="font-medium">
-                    {new Date(card.createdAt).toLocaleDateString()}
-                  </span>
+
+                <div className="flex items-center p-3 bg-background/40 rounded-lg hover:bg-background/60 transition-colors">
+                  <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/10 text-primary mr-3">
+                    <Briefcase className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <span className="text-xs text-muted-foreground block">
+                      Title
+                    </span>
+                    <span className="font-medium">{card.title}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center p-3 bg-background/40 rounded-lg hover:bg-background/60 transition-colors">
+                  <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/10 text-primary mr-3">
+                    <Palette className="h-4 w-4" />
+                  </div>
+                  <div className="flex-1">
+                    <span className="text-xs text-muted-foreground block">
+                      Color
+                    </span>
+                    <div className="flex items-center gap-3 mt-1">
+                      <div
+                        className="w-6 h-6 rounded-full border border-border/50 shadow-sm"
+                        style={{ backgroundColor: card.color }}
+                      />
+                      <code className="text-xs py-0.5 px-2 bg-background/70 rounded">
+                        {card.color}
+                      </code>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center p-3 bg-background/40 rounded-lg hover:bg-background/60 transition-colors">
+                  <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/10 text-primary mr-3">
+                    <Calendar className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <span className="text-xs text-muted-foreground block">
+                      Created
+                    </span>
+                    <span className="font-medium">
+                      {new Date(card.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
                 </div>
               </div>
 
               {isOwner && (
-                <div className="mt-6 pt-6 border-t border-border/30">
-                  <h3 className="text-sm font-medium mb-3 text-muted-foreground">
+                <div className="p-4 bg-background/30 border-t border-border/10">
+                  <p className="text-xs text-muted-foreground mb-1">
                     Owner Actions
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    <Button variant="destructive" size="sm">
-                      Delete Card
+                  </p>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setIsEditModalOpen(true)}
+                      className="h-8 text-xs"
+                    >
+                      <Edit className="h-3 w-3 mr-1" /> Edit
                     </Button>
-                    <Button variant="outline" size="sm">
-                      View Analytics
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setIsDeleteDialogOpen(true)}
+                      className="h-8 text-xs border-destructive/30 hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive"
+                    >
+                      <Trash2 className="h-3 w-3 mr-1" /> Delete
                     </Button>
                   </div>
                 </div>
@@ -440,6 +494,25 @@ export default function CardPage({ params }: CardPageProps) {
           </div>
         </div>
       </div>
+
+      {card && (
+        <>
+          <DeleteDialog
+            open={isDeleteDialogOpen}
+            onOpenChange={setIsDeleteDialogOpen}
+            cardName={card.name}
+            cardId={id}
+            onDelete={handleDeleteComplete}
+          />
+
+          <EditCardModal
+            open={isEditModalOpen}
+            onOpenChange={setIsEditModalOpen}
+            card={card}
+            onUpdate={refreshCard}
+          />
+        </>
+      )}
     </div>
   );
 }
