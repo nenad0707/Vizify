@@ -6,10 +6,15 @@ import { authOptions } from "@/lib/auth";
 type Params = { params: { id: string } };
 
 export async function GET(
-  request: NextRequest,
-  context: { params: Promise<{ id: string }> },
+  request: Request,
+  context: { params: { id: string } },
 ) {
-  const { id } = await context.params;
+  const { id } = context.params;
+
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   try {
     const card = await prisma.businessCard.findUnique({
@@ -20,22 +25,22 @@ export async function GET(
       return NextResponse.json({ error: "Card not found" }, { status: 404 });
     }
 
-    return NextResponse.json({
-      id: card.id,
-      name: card.name,
-      title: card.title,
-      color: card.color,
-      createdAt: card.createdAt,
-      qrCode: card.qrCode,
-    });
+    if (card.userId !== session.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    return NextResponse.json(card);
   } catch (error) {
-    console.error("Error fetching public card:", error);
+    console.error("Error fetching card:", error);
     return NextResponse.json({ error: "Error fetching card" }, { status: 500 });
   }
 }
 
-export async function PUT(request: Request, context: Params) {
-  const id = context.params.id;
+export async function PUT(
+  request: Request,
+  context: { params: { id: string } },
+) {
+  const { id } = context.params;
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -89,8 +94,11 @@ export async function PUT(request: Request, context: Params) {
   }
 }
 
-export async function DELETE(request: Request, context: Params) {
-  const id = context.params.id;
+export async function DELETE(
+  request: Request,
+  context: { params: { id: string } },
+) {
+  const { id } = context.params;
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
