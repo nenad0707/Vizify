@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface CardPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }> | { id: string };
 }
 
 interface CardData {
@@ -37,6 +37,9 @@ interface CardData {
 }
 
 export default function CardPage({ params }: CardPageProps) {
+  const resolvedParams = "then" in params ? use(params) : params;
+  const id = resolvedParams.id;
+
   const router = useRouter();
   const [card, setCard] = useState<CardData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -49,32 +52,38 @@ export default function CardPage({ params }: CardPageProps) {
     const fetchCard = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`/api/cards/${params.id}`);
+
+        const res = await fetch(`/api/cards/${id}`);
 
         if (res.status === 404) {
           setError("Card not found");
           return;
         }
 
-        if (res.status === 401) {
-          const publicRes = await fetch(`/api/public-cards/${params.id}`);
+        if (res.status === 401 || res.status === 403) {
+          const publicRes = await fetch(`/api/public-cards/${id}`);
           if (publicRes.ok) {
             const data = await publicRes.json();
             setCard(data);
             setIsOwner(false);
             return;
+          } else {
+            if (res.status === 401) {
+              router.push("/login");
+            } else {
+              setError("You don't have permission to view this card");
+            }
+            return;
           }
-          router.push("/login");
-          return;
         }
 
-        if (!res.ok) {
+        if (res.ok) {
+          const data = await res.json();
+          setCard(data);
+          setIsOwner(true);
+        } else {
           throw new Error("Failed to fetch card");
         }
-
-        const data = await res.json();
-        setCard(data);
-        setIsOwner(true);
       } catch (error) {
         console.error("Error fetching card:", error);
         setError("There was a problem loading the card.");
@@ -84,7 +93,7 @@ export default function CardPage({ params }: CardPageProps) {
     };
 
     fetchCard();
-  }, [params.id, router]);
+  }, [id, router]);
 
   const handleMouseMove = (e: React.MouseEvent) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -94,7 +103,7 @@ export default function CardPage({ params }: CardPageProps) {
   };
 
   const handleShare = () => {
-    const cardUrl = `${window.location.origin}/card/${params.id}`;
+    const cardUrl = `${window.location.origin}/card/${id}`;
     navigator.clipboard.writeText(cardUrl);
     toast.success("Card URL copied to clipboard!");
   };
@@ -158,7 +167,7 @@ export default function CardPage({ params }: CardPageProps) {
     return null;
   }
 
-  const cardUrl = `${window.location.origin}/card/${params.id}`;
+  const cardUrl = `${window.location.origin}/card/${id}`;
 
   return (
     <div className="min-h-screen px-4 py-12">
@@ -284,7 +293,7 @@ export default function CardPage({ params }: CardPageProps) {
               <div className="flex flex-wrap justify-center gap-3">
                 {isOwner && (
                   <Button variant="outline" asChild>
-                    <Link href={`/edit/${params.id}`}>
+                    <Link href={`/edit/${id}`}>
                       <Edit className="mr-2 h-4 w-4" />
                       Edit Card
                     </Link>

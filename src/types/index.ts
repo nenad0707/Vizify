@@ -3,10 +3,11 @@ export interface BusinessCard {
   name: string;
   title: string;
   color: string;
-  createdAt?: string;
-  isFavorite?: boolean;
   email?: string;
   phone?: string;
   company?: string;
+  createdAt?: string;
+  qrCode?: string;
+  isFavorite?: boolean;
   tags?: string[];
 }

@@ -31,25 +31,15 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { BusinessCard } from "@/types";
 
-interface BusinessCard {
-  id: string;
-  name: string;
-  title: string;
-  color: string;
-  createdAt?: string;
-  isFavorite?: boolean;
-}
-
-export function TableView({
-  cards,
-  onEdit,
-  onDelete,
-}: {
+interface TableViewProps {
   cards: BusinessCard[];
   onEdit?: (card: BusinessCard) => void;
   onDelete?: (card: BusinessCard) => void;
-}) {
+}
+
+export function TableView({ cards, onEdit, onDelete }: TableViewProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
