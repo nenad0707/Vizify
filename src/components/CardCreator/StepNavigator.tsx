@@ -6,7 +6,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useCardCreator } from "./CardCreatorContext";
 
-// Dodali smo compact prop
 export const StepNavigator = ({ compact = false }) => {
   const { currentStep, validateStep, goToPrevStep, goToNextStep } =
     useCardCreator();
@@ -39,28 +38,24 @@ export const StepNavigator = ({ compact = false }) => {
   // Calculate if step is completed, active, or disabled
   const getStepStatus = (stepIndex: number) => {
     if (stepIndex < safeCurrentStep) {
-      return "completed"; // Steps before current are completed
+      return "completed";
     } else if (stepIndex === safeCurrentStep) {
-      return "active"; // Current step is active
+      return "active";
     } else {
-      return "disabled"; // Steps after current are disabled
+      return "disabled";
     }
   };
 
-  // Improved function for step navigation
   const handleStepClick = (stepIndex: number) => {
     const currentStepIsValid = validateStep();
 
     if (stepIndex < safeCurrentStep) {
-      // Navigation backward is always allowed
       for (let i = safeCurrentStep; i > stepIndex; i--) {
         goToPrevStep();
       }
     } else if (stepIndex === safeCurrentStep + 1 && currentStepIsValid) {
-      // Allow proceeding to next step only if current is valid
       goToNextStep();
     }
-    // Otherwise do nothing - prevent skipping steps
   };
 
   return (
@@ -69,7 +64,7 @@ export const StepNavigator = ({ compact = false }) => {
       animate={{ opacity: 1, y: 0 }}
       className={cn(
         "w-full bg-card/50 backdrop-blur-sm border border-border/30 rounded-lg shadow-sm",
-        compact ? "mb-4 p-3" : "mb-8 p-4", // Smanjeni paddinzi i margine za compact mod
+        compact ? "mb-2 p-2" : "mb-8 p-4",
       )}
     >
       {/* Mobile view - Step indicator */}
@@ -99,13 +94,10 @@ export const StepNavigator = ({ compact = false }) => {
         />
       </div>
 
-      {/* Desktop view - Step navigator */}
       <div className="hidden md:block">
         <nav aria-label="Progress">
-          <ol
-            role="list"
-            className={cn("flex items-center", compact && "gap-1")}
-          >
+          <ol role="list" className="flex items-center justify-between">
+            {" "}
             {steps.map((step, index) => {
               const status = getStepStatus(index);
               const isClickable = index <= safeCurrentStep;
@@ -116,12 +108,9 @@ export const StepNavigator = ({ compact = false }) => {
                   key={step.name}
                   className={cn(
                     "relative flex items-center",
-                    index !== steps.length - 1
-                      ? "w-full"
-                      : "w-10" /* Make all steps except the last take full width */,
+                    index !== steps.length - 1 ? "flex-1" : "w-auto",
                   )}
                 >
-                  {/* Step indicator */}
                   <div
                     onClick={() => isClickable && handleStepClick(index)}
                     className={cn(
@@ -134,7 +123,6 @@ export const StepNavigator = ({ compact = false }) => {
                       className="absolute top-0 left-0 w-full h-0.5 -translate-y-1/2"
                       aria-hidden="true"
                     >
-                      {/* Step connection line before current step */}
                       {index > 0 && (
                         <motion.span
                           className={cn("absolute inset-0 h-full bg-muted", {
@@ -150,13 +138,10 @@ export const StepNavigator = ({ compact = false }) => {
                       )}
                     </span>
 
-                    {/* Step circle with improved contrast */}
                     <motion.span
                       className={cn(
                         "flex items-center justify-center rounded-full transition-all",
-                        compact
-                          ? "h-8 w-8" // Manji krug za compact mod
-                          : "h-10 w-10",
+                        compact ? "h-7 w-7" : "h-10 w-10",
                         {
                           "border-2 border-primary bg-primary/20 backdrop-blur-sm text-primary font-medium shadow-[0_0_10px_rgba(99,102,241,0.3)]":
                             status === "active",
@@ -204,32 +189,30 @@ export const StepNavigator = ({ compact = false }) => {
                     </motion.span>
                   </div>
 
-                  {/* Step content (displayed next to the circle) */}
                   {index !== steps.length - 1 && (
-                    <div
-                      className={cn("ml-3 w-full", compact ? "ml-2" : "ml-4")}
-                    >
+                    <div className={cn("ml-2 max-w-[110px]")}>
+                      {" "}
                       <motion.div
                         className={cn("flex flex-col items-start", {
                           "text-primary font-medium": status === "active",
                           "text-foreground/80": status === "completed",
                           "text-muted-foreground/90": status === "disabled",
                         })}
-                        whileHover={{ x: isClickable ? 2 : 0 }}
+                        whileHover={{ x: isClickable ? 1 : 0 }}
                       >
                         <span
                           className={cn(
-                            "font-medium",
-                            compact ? "text-xs" : "text-sm", // Manji tekst u compact modu
+                            "font-medium truncate w-full",
+                            compact ? "text-xs" : "text-sm",
                             status === "active" &&
                               "bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent",
                           )}
                         >
                           {step.name}
                         </span>
-                        {!compact && ( // Sakrij opis u compact modu
+                        {!compact && (
                           <span
-                            className={cn("text-xs", {
+                            className={cn("text-xs truncate w-full", {
                               "text-muted-foreground": status === "active",
                               "text-muted": status !== "active",
                             })}
@@ -241,7 +224,6 @@ export const StepNavigator = ({ compact = false }) => {
                     </div>
                   )}
 
-                  {/* Last step content with premium styling */}
                   {index === steps.length - 1 && (
                     <div className={cn("ml-3", compact ? "ml-2" : "ml-4")}>
                       <motion.div

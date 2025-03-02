@@ -85,7 +85,7 @@ export default function LivePreview({ formData }: LivePreviewProps) {
     <div className="w-full h-full flex justify-center items-center">
       <motion.div
         ref={cardRef}
-        className="w-full h-[200px] max-w-[320px] rounded-lg relative cursor-pointer"
+        className="w-full h-[180px] max-w-[300px] rounded-lg relative cursor-pointer"
         animate={{
           rotateX,
           rotateY,
@@ -105,16 +105,16 @@ export default function LivePreview({ formData }: LivePreviewProps) {
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
-        <div className="absolute inset-0 p-4 flex flex-col justify-between">
+        <div className="absolute inset-0 p-3 flex flex-col justify-between">
           <div style={{ transform: "translateZ(5px)" }}>
             <h3
-              className="text-lg font-bold mb-0.5"
+              className="text-base font-bold mb-0.5"
               style={{ color: textColors.primary }}
             >
               {formData.name}
             </h3>
             <p
-              className="text-sm opacity-90"
+              className="text-xs opacity-90"
               style={{ color: textColors.secondary }}
             >
               {formData.title}
@@ -124,11 +124,11 @@ export default function LivePreview({ formData }: LivePreviewProps) {
           {/* Contact Info */}
           {formData.email && (
             <div
-              className="flex items-center gap-1.5 opacity-90"
+              className="flex items-center gap-1 opacity-90"
               style={{ color: textColors.secondary }}
             >
-              <Mail className="h-3 w-3" />
-              <span className="text-xs">{formData.email}</span>
+              <Mail className="h-2.5 w-2.5" />
+              <span className="text-[10px]">{formData.email}</span>
             </div>
           )}
 

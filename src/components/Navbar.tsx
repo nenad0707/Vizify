@@ -44,7 +44,9 @@ export default function Navbar() {
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <span className="text-xl font-bold bg-gradient-to-r from-chart-1 to-chart-2 text-transparent bg-clip-text">Vizify</span>
+          <span className="text-xl font-bold bg-gradient-to-r from-chart-1 to-chart-2 text-transparent bg-clip-text">
+            Vizify
+          </span>
         </Link>
 
         {/* Desktop Navigation */}
@@ -62,10 +64,14 @@ export default function Navbar() {
                 >
                   {link.label}
                   {pathname === link.href && (
-                    <motion.div 
+                    <motion.div
                       layoutId="navbar-indicator"
-                      className="absolute -bottom-1 left-0 right-0 h-[2px] bg-gradient-to-r from-chart-1 to-chart-2" 
-                      transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                      className="absolute -bottom-1 left-0 right-0 h-[2px] bg-gradient-to-r from-chart-1 to-chart-2"
+                      transition={{
+                        type: "spring",
+                        stiffness: 350,
+                        damping: 30,
+                      }}
                     />
                   )}
                 </Link>
@@ -95,7 +101,10 @@ export default function Navbar() {
                   </AvatarFallback>
                 </Avatar>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 backdrop-blur-md bg-glass/80 border-glass-border">
+              <DropdownMenuContent
+                align="end"
+                className="w-56 backdrop-blur-md bg-glass/80 border-glass-border"
+              >
                 <DropdownMenuItem>
                   <Link
                     href="/dashboard"
@@ -148,9 +157,9 @@ export default function Navbar() {
                 >
                   {link.label}
                   {pathname === link.href && (
-                    <motion.div 
+                    <motion.div
                       layoutId="sidebar-indicator"
-                      className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-chart-1 to-chart-2 rounded-r" 
+                      className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-chart-1 to-chart-2 rounded-r"
                     />
                   )}
                 </Link>

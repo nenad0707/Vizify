@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import { useCardCreator } from "./CardCreatorContext";
 import { FormSectionWrapper } from "./shared/FormSectionWrapper";
 import { Input } from "@/components/ui/input";
@@ -11,7 +10,6 @@ import { User, AlertCircle, Check } from "lucide-react";
 export function UserDetailsSection() {
   const { formData, updateFormData, validateStep } = useCardCreator();
 
-  // Real-time validation states
   const nameValid = formData.name.trim().length > 0;
   const titleValid = formData.title.trim().length > 0;
   const emailValid =
@@ -33,7 +31,6 @@ export function UserDetailsSection() {
       nextDisabled={nextDisabled}
     >
       <div className="space-y-6">
-        {/* Name field with animation and validation */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -98,7 +95,6 @@ export function UserDetailsSection() {
           </AnimatePresence>
         </motion.div>
 
-        {/* Job Title field with animation and validation */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

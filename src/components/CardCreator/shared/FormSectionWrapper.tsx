@@ -22,7 +22,7 @@ interface FormSectionWrapperProps {
   children: ReactNode;
   nextDisabled?: boolean;
   isLastStep?: boolean;
-  onNextClick?: () => void; // Add this new prop
+  onNextClick?: () => void;
 }
 
 export function FormSectionWrapper({
@@ -32,14 +32,12 @@ export function FormSectionWrapper({
   children,
   nextDisabled = false,
   isLastStep = false,
-  onNextClick, // Use this new prop
+  onNextClick,
 }: FormSectionWrapperProps) {
   const { goToNextStep, goToPrevStep, currentStep, isSubmitting, submitForm } =
     useCardCreator();
 
-  // Handle next button click with explicit validation
   const handleNextClick = () => {
-    // If custom handler is provided, use it, otherwise use default
     if (onNextClick) {
       onNextClick();
     } else if (isLastStep) {
@@ -56,17 +54,13 @@ export function FormSectionWrapper({
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.4 }}
       className="w-full max-w-2xl mx-auto"
-      style={{ zIndex: 100 }} // Eksplicitno visok z-index
+      style={{ zIndex: 100 }}
     >
       <Card className="bg-white dark:bg-black border border-border/70 shadow-md overflow-hidden">
-        {" "}
-        {/* Poboljšan kontrast sa belom pozadinom */}
-        <CardHeader className="pb-3 pt-4 px-5 bg-gradient-to-r from-background to-muted/5">
-          {" "}
-          {/* Još manji paddinzi */}
-          <div className="flex items-center gap-3 mb-2">
+        <CardHeader className="pb-2 pt-3 px-4 bg-gradient-to-r from-background to-muted/5">
+          <div className="flex items-center gap-2 mb-1.5">
             <motion.div
-              className="p-2 rounded-full bg-primary/10 backdrop-blur-sm text-primary border border-primary/20 shadow-inner"
+              className="p-1.5 rounded-full bg-primary/10 backdrop-blur-sm text-primary border border-primary/20 shadow-inner"
               whileHover={{ rotate: 5, scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               transition={{ type: "spring", stiffness: 300, damping: 10 }}
@@ -74,16 +68,16 @@ export function FormSectionWrapper({
               {icon}
             </motion.div>
             <div>
-              <CardTitle className="text-lg bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+              <CardTitle className="text-base bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                 {title}
               </CardTitle>
-              <CardDescription className="text-xs text-muted-foreground mt-0.5">
+              <CardDescription className="text-xs text-muted-foreground">
                 {description}
               </CardDescription>
             </div>
           </div>
-          {/* Progress indicator */}
-          <div className="w-full h-1 bg-muted/50 rounded-full overflow-hidden mt-2 shadow-inner">
+
+          <div className="w-full h-1 bg-muted/50 rounded-full overflow-hidden mt-1 shadow-inner">
             <motion.div
               className="h-full bg-gradient-to-r from-primary to-primary/70"
               initial={{ width: `${(currentStep / 3) * 100}%` }}
@@ -92,14 +86,14 @@ export function FormSectionWrapper({
             />
           </div>
         </CardHeader>
-        <CardContent className="px-5 pt-4 pb-3">
-          {" "}
-          {/* Još manji paddinzi */}
-          <div className="space-y-4">{children}</div> {/* Manji spacing */}
+
+        <CardContent className="px-4 pt-3 pb-2">
+          <div className="space-y-3">{children}</div>
         </CardContent>
+
         <CardFooter
           className={cn(
-            "flex justify-between border-t border-border/10 bg-muted/5 pt-2 pb-3 px-5", // Još manji paddinzi
+            "flex justify-between border-t border-border/10 bg-muted/5 pt-2 pb-2 px-4",
             currentStep === 0 ? "justify-end" : "justify-between",
           )}
         >

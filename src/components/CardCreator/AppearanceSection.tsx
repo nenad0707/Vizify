@@ -53,7 +53,6 @@ export function AppearanceSection() {
 
   // Handle the continue button click explicitly
   const handleContinue = () => {
-    // Make sure to call goToNextStep which is now explicitly imported
     goToNextStep();
   };
 
@@ -63,10 +62,9 @@ export function AppearanceSection() {
       description="Customize how your card looks"
       icon={<Palette className="h-5 w-5" />}
       nextDisabled={false}
-      onNextClick={handleContinue} // Pass our handler to handle the next button click
+      onNextClick={handleContinue}
     >
       <div className="space-y-8">
-        {/* Color selection */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -118,7 +116,7 @@ export function AppearanceSection() {
                 key={template.id}
                 whileHover={{ y: -3, scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => updateFormData("template", template.id as any)}
+                onClick={() => updateFormData("template", template.id)}
                 className={cn(
                   "relative cursor-pointer transition-all duration-200 border group",
                   formData.template === template.id

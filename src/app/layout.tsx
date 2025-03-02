@@ -4,7 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import { Providers } from "@/components/Providers";
 import Footer from "@/components/Footer";
-import { Toaster } from "sonner"; // Import from sonner
+import { Toaster } from "sonner";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -28,11 +28,14 @@ export default function RootLayout({
         className={`${inter.variable} antialiased flex flex-col min-h-screen`}
       >
         <Providers>
-          <Navbar />
-          <main className="flex-1 pt-16">{children}</main>
-          <Footer />
+          <div className="relative flex flex-col min-h-screen">
+            {" "}
+            <Navbar />
+            <main className="flex-1 pt-16 relative z-10">{children}</main>{" "}
+            <Footer />
+          </div>
         </Providers>
-        <Toaster richColors position="top-right" /> {/* Use Sonner's Toaster */}
+        <Toaster richColors position="top-right" />
       </body>
     </html>
   );

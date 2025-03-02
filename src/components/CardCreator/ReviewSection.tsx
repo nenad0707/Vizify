@@ -18,6 +18,10 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 
+function isAlreadyExistsError(message: string): boolean {
+  return message.includes("already exists");
+}
+
 export function ReviewSection() {
   const { formData, statusMessage, submitForm, isSubmitting, createdCard } =
     useCardCreator();
@@ -71,7 +75,6 @@ export function ReviewSection() {
     }
   };
 
-  // Set redirecting state when card is created
   useEffect(() => {
     if (createdCard) {
       setIsRedirecting(true);
@@ -83,19 +86,17 @@ export function ReviewSection() {
       title="Review Your Card"
       description="Confirm your details and create your card"
       icon={<CheckCircle2 className="h-5 w-5" />}
-      nextDisabled={isSubmitting || isRedirecting} // Disable button when submitting or redirecting
+      nextDisabled={isSubmitting || isRedirecting}
       isLastStep={true}
-      onNextClick={handleCreateCard} // Use our custom handler
+      onNextClick={handleCreateCard}
     >
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        // Dodajemo explicit z-index da se osiguramo da je iznad svega ostalog
         style={{ zIndex: 1000 }}
-        className="relative bg-white dark:bg-black rounded-lg p-0.5" // Dodatna izolacija sa pozadinom
+        className="relative bg-white dark:bg-black rounded-lg p-0.5"
       >
         <div className="space-y-6">
-          {/* Status message - only show error messages, not success */}
           <AnimatePresence>
             {statusMessage && statusMessage.type === "error" && (
               <motion.div
@@ -108,7 +109,7 @@ export function ReviewSection() {
                   <AlertTitle>Error</AlertTitle>
                   <AlertDescription>
                     {statusMessage.message}
-                    {statusMessage.message.includes("already exists") && (
+                    {isAlreadyExistsError(statusMessage.message) && (
                       <div className="mt-2 text-sm">
                         <strong>Try the following:</strong>
                         <ul className="list-disc pl-5 mt-1">
@@ -258,7 +259,6 @@ export function ReviewSection() {
             </motion.div>
           </div>
 
-          {/* Final submit instruction with improved messaging - no success message UI */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

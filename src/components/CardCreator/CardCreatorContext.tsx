@@ -2,9 +2,8 @@
 
 import React, { createContext, useState, useContext, ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner"; // Use sonner instead of custom toast
+import { toast } from "sonner";
 
-// Define interface for form data
 export interface CardFormData {
   name: string;
   title: string;
@@ -76,15 +75,14 @@ export const CardCreatorProvider = ({ children }: { children: ReactNode }) => {
     }));
   };
 
-  // Validate current step - FIX THE VALIDATION FOR STEP 1
   const validateStep = (step = currentStep): boolean => {
     switch (step) {
-      case 0: // Personal details step
+      case 0:
         return !!formData.name && !!formData.title;
-      case 1: // Appearance step - was incorrectly checking email
-        return true; // Appearance should always be valid since we have defaults
-      case 2: // Review step
-        return true; // Review is always valid
+      case 1:
+        return true;
+      case 2:
+        return true;
       default:
         return true;
     }
@@ -131,9 +129,7 @@ export const CardCreatorProvider = ({ children }: { children: ReactNode }) => {
     setCreatedCard(null);
   };
 
-  // Submit form data with Sonner toast only (no duplicate message)
   const submitForm = async () => {
-    // Final validation
     if (!validateStep(0) || !validateStep(1) || !validateStep(2)) {
       setStatusMessage({
         type: "error",
@@ -155,7 +151,6 @@ export const CardCreatorProvider = ({ children }: { children: ReactNode }) => {
       });
 
       if (response.status === 409) {
-        // Handle conflict (card with same name exists)
         const errorData = await response.json();
         throw new Error(
           errorData.error || "A card with this name already exists.",
@@ -169,25 +164,19 @@ export const CardCreatorProvider = ({ children }: { children: ReactNode }) => {
       const data = await response.json();
       setCreatedCard(data);
 
-      // Show only toast notification, not UI message
       toast.success("Card Created Successfully!", {
         description: "Redirecting to your new business card...",
         duration: 3000,
       });
 
-      // Don't set success message in the UI to avoid duplication
-      // We're redirecting anyway, so no need to show UI success message
-
-      // Redirect after a brief delay
       setTimeout(() => {
         if (data && data.id) {
           router.push(`/card/${data.id}`);
         }
-      }, 1000); // Reduced from 2000ms to 1000ms
+      }, 1000);
     } catch (error) {
       console.error("Error creating card:", error);
 
-      // Show error toast using Sonner
       toast.error("Error Creating Card", {
         description:
           error instanceof Error
