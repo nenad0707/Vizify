@@ -141,7 +141,7 @@ function CardCreatorContent() {
             </div>
           </div>
           <div
-            className={`lg:col-span-5 order-1 lg:order-2 flex flex-col space-y-4 lg:pl-4 ${
+            className={`lg:col-span-5 order-1 lg:order-2 flex flex-col space-y-4 lg:pl-2 ${
               !showPreview ? "hidden lg:flex" : "flex"
             }`}
           >
@@ -154,7 +154,7 @@ function CardCreatorContent() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="bg-card border border-border/40 shadow-md rounded-lg overflow-hidden w-full lg:max-w-[90%]"
+                className="bg-card border border-border/40 shadow-md rounded-lg overflow-hidden w-full lg:max-w-[95%]"
               >
                 <div className="p-2 border-b border-border/10 bg-gradient-to-r from-background/80 to-muted/5">
                   {" "}
@@ -164,7 +164,7 @@ function CardCreatorContent() {
                     Preview
                   </h2>
                 </div>
-                <div className="h-[230px] relative p-2 bg-background/30">
+                <div className="h-[260px] relative p-3 bg-background/30">
                   {" "}
                   <LivePreview
                     formData={{
@@ -181,7 +181,7 @@ function CardCreatorContent() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
-                className="bg-card border border-border/40 shadow-md rounded-lg overflow-hidden w-full lg:max-w-[90%]"
+                className="bg-card border border-border/40 shadow-md rounded-lg overflow-hidden w-full lg:max-w-[95%]"
               >
                 <div className="p-2 border-b border-border/10 bg-gradient-to-r from-background/80 to-muted/5">
                   <h2 className="text-sm font-medium bg-gradient-to-r from-primary/90 to-primary/70 bg-clip-text text-transparent flex items-center gap-1">
@@ -189,9 +189,9 @@ function CardCreatorContent() {
                     QR Code
                   </h2>
                 </div>
-                <div className="py-3 px-2 flex flex-col items-center justify-center bg-background/30">
+                <div className="py-4 px-3 flex flex-col items-center justify-center bg-background/30">
                   <motion.div
-                    className="bg-white p-1 rounded-md shadow-sm"
+                    className="bg-white p-1.5 rounded-md shadow-sm"
                     whileHover={{ rotate: [0, -1, 1, -1, 0] }}
                     transition={{ duration: 0.5 }}
                   >
@@ -201,10 +201,10 @@ function CardCreatorContent() {
                           ? `${window.location.origin}/card/${createdCard.id}`
                           : `${window.location.origin}/preview`
                       }
-                      size={100}
+                      size={110}
                     />
                   </motion.div>
-                  <p className="text-xs text-muted-foreground text-center mt-2 px-2 max-w-[180px]">
+                  <p className="text-xs text-muted-foreground text-center mt-3 px-2 max-w-[200px]">
                     {createdCard
                       ? "Scan to view your card"
                       : currentStep < 2
