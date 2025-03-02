@@ -15,7 +15,6 @@ export default function LivePreview({ formData }: LivePreviewProps) {
   const [rotateY, setRotateY] = useState(0);
   const [cardShadow, setCardShadow] = useState("0px 5px 15px rgba(0,0,0,0.1)");
 
-  // Handle mouse movement for 3D effect
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!cardRef.current) return;
 
@@ -24,18 +23,19 @@ export default function LivePreview({ formData }: LivePreviewProps) {
     const cardCenterX = rect.left + rect.width / 2;
     const cardCenterY = rect.top + rect.height / 2;
 
-    // Calculate rotation based on mouse position relative to card center
-    const rotateYVal = ((e.clientX - cardCenterX) / (rect.width / 2)) * 8;
-    const rotateXVal = ((e.clientY - cardCenterY) / (rect.height / 2)) * -8;
+    const rotateYVal = ((e.clientX - cardCenterX) / (rect.width / 2)) * 10;
+    const rotateXVal = ((e.clientY - cardCenterY) / (rect.height / 2)) * -10;
 
-    // Update rotation and shadow based on mouse position
     setRotateX(rotateXVal);
     setRotateY(rotateYVal);
-    setCardShadow(
-      `${rotateYVal * 0.2}px ${
-        Math.abs(rotateXVal) * 0.5
-      }px 20px rgba(0,0,0,0.1)`,
-    );
+    setCardShadow(`
+      ${rotateYVal * 0.3}px ${
+      Math.abs(rotateXVal) * 0.6
+    }px 25px rgba(0,0,0,0.12),
+      ${rotateYVal * 0.1}px ${
+      Math.abs(rotateXVal) * 0.3
+    }px 10px rgba(0,0,0,0.08)
+    `);
   };
 
   // Reset card rotation when mouse leaves
@@ -93,7 +93,11 @@ export default function LivePreview({ formData }: LivePreviewProps) {
           rotateX,
           rotateY,
         }}
-        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+        transition={{
+          type: "spring",
+          stiffness: 280,
+          damping: 15,
+        }}
         style={{
           backgroundColor: formData.color,
           borderRadius:
@@ -146,21 +150,42 @@ export default function LivePreview({ formData }: LivePreviewProps) {
               {formData.title}
             </p>
           </div>
-          {/* Contact Info */}
           {formData.email && (
             <div
-              className="flex items-center gap-2.5 opacity-90 backdrop-blur-sm rounded-full pr-2.5 py-1"
+              className="flex items-center backdrop-blur-sm rounded-full py-1 overflow-hidden"
               style={{
                 color: textColors.secondary,
                 backgroundColor:
                   formData.template === "modern"
-                    ? "rgba(255,255,255,0.1)"
-                    : "transparent",
+                    ? "rgba(255,255,255,0.15)"
+                    : "rgba(0,0,0,0.04)",
                 width: "fit-content",
+                paddingLeft: "0.5rem",
+                paddingRight: "0.75rem",
+                backdropFilter: "blur(8px)",
+                border:
+                  formData.template === "modern"
+                    ? "1px solid rgba(255,255,255,0.12)"
+                    : "1px solid rgba(0,0,0,0.02)",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.03)",
+                margin: "0",
               }}
             >
-              <Mail className="h-4 w-4" />
-              <span className="text-sm font-medium">{formData.email}</span>{" "}
+              <Mail
+                className="h-4 w-4 mr-1.5"
+                style={{
+                  opacity: formData.template === "modern" ? 0.85 : 0.75,
+                }}
+              />
+              <span
+                className="text-sm font-medium"
+                style={{
+                  opacity: formData.template === "modern" ? 0.9 : 0.85,
+                  letterSpacing: "-0.01em",
+                }}
+              >
+                {formData.email}
+              </span>
             </div>
           )}
           <div
