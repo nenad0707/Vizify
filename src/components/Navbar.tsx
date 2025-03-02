@@ -30,7 +30,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { LoginModal } from "./LoginModal";
 
 const NAV_LINKS = [
-  { href: "/features", label: "Features" },
+  { href: "/", label: "Home" },
   { href: "/dashboard", label: "Dashboard" },
   { href: "/create", label: "Create" },
 ];
