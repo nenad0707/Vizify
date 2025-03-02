@@ -1,17 +1,15 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
 type Params = { params: { id: string } };
 
-export async function GET(request: Request, context: Params) {
-  const id = context.params.id;
-
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export async function GET(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> },
+) {
+  const { id } = await context.params;
 
   try {
     const card = await prisma.businessCard.findUnique({
@@ -22,13 +20,16 @@ export async function GET(request: Request, context: Params) {
       return NextResponse.json({ error: "Card not found" }, { status: 404 });
     }
 
-    if (card.userId !== session.user.id) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    return NextResponse.json(card);
+    return NextResponse.json({
+      id: card.id,
+      name: card.name,
+      title: card.title,
+      color: card.color,
+      createdAt: card.createdAt,
+      qrCode: card.qrCode,
+    });
   } catch (error) {
-    console.error("Error fetching card:", error);
+    console.error("Error fetching public card:", error);
     return NextResponse.json({ error: "Error fetching card" }, { status: 500 });
   }
 }
