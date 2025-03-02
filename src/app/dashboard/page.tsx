@@ -10,35 +10,30 @@ import { EmptyState } from "@/components/EmptyState";
 import { AnimatePresence, motion } from "framer-motion";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useRouter } from "next/navigation";
+import { BusinessCard } from "@/types";
+import { DeleteDialog } from "@/components/DeleteDialog";
+import { EditCardModal } from "@/components/EditCardModal";
 
 export default function DashboardPage() {
-  // 1. First all useState declarations
+  const { data: session } = useSession();
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [viewType, setViewType] = useState<"grid" | "table">("grid");
-  const [isMounted, setIsMounted] = useState(false);
-
-  // 2. Then useSession hook
-  const { data: session } = useSession();
-
-  // 3. All useEffect hooks
-  useEffect(() => {
-    setIsMounted(true);
-    const savedViewType = localStorage.getItem("vizify-view-type");
-    if (savedViewType === "grid" || savedViewType === "table") {
-      setViewType(savedViewType);
-    }
-  }, []);
+  const [viewMode, setViewMode] = useState<"grid" | "table">(
+    () => (localStorage.getItem("viewMode") as "grid" | "table") || "grid",
+  );
+  const router = useRouter();
+  const [selectedCard, setSelectedCard] = useState<BusinessCard | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [deletingCardId, setDeletingCardId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isMounted) return;
-    localStorage.setItem("vizify-view-type", viewType);
-  }, [viewType, isMounted]);
+    localStorage.setItem("viewMode", viewMode);
+  }, [viewMode]);
 
   useEffect(() => {
-    if (!session) return;
-
     async function fetchCards() {
       try {
         setLoading(true);
@@ -61,13 +56,51 @@ export default function DashboardPage() {
       }
     }
 
-    fetchCards();
+    if (session) {
+      fetchCards();
+    }
   }, [session]);
 
-  // 4. Early returns
-  if (!isMounted) {
-    return <div className="min-h-screen bg-background" />;
-  }
+  const refreshCards = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/cards");
+      if (!res.ok) {
+        throw new Error("Failed to fetch cards");
+      }
+      const data = await res.json();
+      setCards(data);
+    } catch (error) {
+      console.error("Error fetching cards:", error);
+      setError(
+        "There was a problem loading your cards. Please try again later.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCardClick = (card: BusinessCard) => {
+    router.push(`/card/${card.id}`);
+  };
+
+  const handleEdit = (card: BusinessCard) => {
+    setSelectedCard(card);
+    setIsEditModalOpen(true);
+  };
+
+  const handleDelete = (card: BusinessCard) => {
+    setSelectedCard(card);
+    setDeletingCardId(card.id);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteComplete = () => {
+    refreshCards();
+    setTimeout(() => {
+      setDeletingCardId(null);
+    }, 300);
+  };
 
   if (!session) {
     return (
@@ -86,16 +119,15 @@ export default function DashboardPage() {
     );
   }
 
-  // 5. Main render
   return (
-    <div className="container mx-auto pt-6 px-4 pb-24 min-h-screen">
+    <main className="container mx-auto pt-6 px-4 pb-24 min-h-screen">
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
         className="bg-gradient-to-b from-background to-muted/20 rounded-xl p-6 shadow-lg border border-border/50"
       >
-        <DashboardHeader viewMode={viewType} setViewMode={setViewType} />
+        <DashboardHeader viewMode={viewMode} setViewMode={setViewMode} />
 
         {error && (
           <Alert variant="destructive" className="mb-6">
@@ -118,21 +150,47 @@ export default function DashboardPage() {
         ) : (
           <AnimatePresence mode="wait">
             <motion.div
-              key={viewType}
+              key={viewMode}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
             >
-              {viewType === "grid" ? (
-                <GridView cards={cards} />
+              {viewMode === "grid" ? (
+                <GridView
+                  cards={cards}
+                  onCardClick={handleCardClick}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                />
               ) : (
-                <TableView cards={cards} />
+                <TableView
+                  cards={cards}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                />
               )}
             </motion.div>
           </AnimatePresence>
         )}
       </motion.div>
-    </div>
+      {selectedCard && (
+        <>
+          <EditCardModal
+            open={isEditModalOpen}
+            onOpenChange={setIsEditModalOpen}
+            card={selectedCard}
+            onUpdate={refreshCards}
+          />
+          <DeleteDialog
+            open={isDeleteDialogOpen}
+            onOpenChange={setIsDeleteDialogOpen}
+            cardName={selectedCard.name}
+            cardId={selectedCard.id}
+            onDelete={handleDeleteComplete}
+          />
+        </>
+      )}
+    </main>
   );
 }

@@ -41,7 +41,15 @@ interface BusinessCard {
   isFavorite?: boolean;
 }
 
-export function TableView({ cards }: { cards: BusinessCard[] }) {
+export function TableView({
+  cards,
+  onEdit,
+  onDelete,
+}: {
+  cards: BusinessCard[];
+  onEdit?: (card: BusinessCard) => void;
+  onDelete?: (card: BusinessCard) => void;
+}) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -62,7 +70,7 @@ export function TableView({ cards }: { cards: BusinessCard[] }) {
       ),
       cell: ({ row }) => (
         <div className="flex items-center gap-2 font-medium">
-          <div 
+          <div
             className="h-6 w-6 rounded-full flex items-center justify-center text-xs text-white"
             style={{ backgroundColor: row.original.color }}
           >
@@ -88,9 +96,7 @@ export function TableView({ cards }: { cards: BusinessCard[] }) {
         </Button>
       ),
       cell: ({ row }) => (
-        <span className="text-muted-foreground">
-          {row.getValue("title")}
-        </span>
+        <span className="text-muted-foreground">{row.getValue("title")}</span>
       ),
     },
     {
@@ -134,7 +140,9 @@ export function TableView({ cards }: { cards: BusinessCard[] }) {
     {
       id: "actions",
       header: "",
-      cell: ({ row }) => <QuickActions card={row.original} />,
+      cell: ({ row }) => (
+        <QuickActions card={row.original} onEdit={onEdit} onDelete={onDelete} />
+      ),
       enableHiding: false,
     },
   ];
@@ -192,9 +200,12 @@ export function TableView({ cards }: { cards: BusinessCard[] }) {
                         column.toggleVisibility(!!value)
                       }
                     >
-                      {column.id === "createdAt" ? "Created" : column.id.charAt(0).toUpperCase() + column.id.slice(1)}
+                      {column.id === "createdAt"
+                        ? "Created"
+                        : column.id.charAt(0).toUpperCase() +
+                          column.id.slice(1)}
                     </DropdownMenuCheckboxItem>
-                  )
+                  );
                 })}
             </DropdownMenuContent>
           </DropdownMenu>
@@ -206,14 +217,20 @@ export function TableView({ cards }: { cards: BusinessCard[] }) {
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id} className="border-b border-border/40 hover:bg-muted/20">
+                <TableRow
+                  key={headerGroup.id}
+                  className="border-b border-border/40 hover:bg-muted/20"
+                >
                   {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id} className="py-3 text-muted-foreground font-medium">
+                    <TableHead
+                      key={header.id}
+                      className="py-3 text-muted-foreground font-medium"
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
                   ))}
@@ -230,14 +247,20 @@ export function TableView({ cards }: { cards: BusinessCard[] }) {
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id} className="py-3">
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
                       </TableCell>
                     ))}
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={columns.length} className="h-24 text-center">
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
                     No cards found.
                   </TableCell>
                 </TableRow>
@@ -249,13 +272,19 @@ export function TableView({ cards }: { cards: BusinessCard[] }) {
 
       <div className="flex items-center justify-between space-x-2 py-4">
         <div className="text-sm text-muted-foreground">
-          Showing {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}-
+          Showing{" "}
+          {table.getState().pagination.pageIndex *
+            table.getState().pagination.pageSize +
+            1}
+          -
           {Math.min(
-            (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
-            table.getFilteredRowModel().rows.length
-          )} of {table.getFilteredRowModel().rows.length} cards
+            (table.getState().pagination.pageIndex + 1) *
+              table.getState().pagination.pageSize,
+            table.getFilteredRowModel().rows.length,
+          )}{" "}
+          of {table.getFilteredRowModel().rows.length} cards
         </div>
-        
+
         <div className="flex items-center space-x-2">
           <Button
             variant="outline"
