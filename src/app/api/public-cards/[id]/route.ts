@@ -3,9 +3,9 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> | { id: string } },
+  { params }: { params: { id: string } },
 ) {
-  const id = params instanceof Promise ? (await params).id : params.id;
+  const id = params.id;
 
   try {
     const card = await prisma.businessCard.findUnique({
