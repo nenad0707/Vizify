@@ -20,9 +20,7 @@ export default function DashboardPage() {
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<"grid" | "table">(
-    () => (localStorage.getItem("viewMode") as "grid" | "table") || "grid",
-  );
+  const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const router = useRouter();
   const [selectedCard, setSelectedCard] = useState<BusinessCard | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -30,7 +28,20 @@ export default function DashboardPage() {
   const [deletingCardId, setDeletingCardId] = useState<string | null>(null);
 
   useEffect(() => {
-    localStorage.setItem("viewMode", viewMode);
+    const savedViewMode =
+      typeof window !== "undefined"
+        ? (localStorage.getItem("viewMode") as "grid" | "table")
+        : null;
+
+    if (savedViewMode) {
+      setViewMode(savedViewMode);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("viewMode", viewMode);
+    }
   }, [viewMode]);
 
   useEffect(() => {
