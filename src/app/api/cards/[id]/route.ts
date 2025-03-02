@@ -1,13 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
 export async function GET(
-  request: NextRequest,
-  context: { params: { id: string } },
-) {
-  const id = context.params.id;
+  request: Request,
+  { params }: { params: { id: string } },
+): Promise<Response> {
+  const id = params.id;
 
   const session = await getServerSession(authOptions);
   if (!session) {
@@ -34,11 +34,12 @@ export async function GET(
   }
 }
 
+// Slično promenimo i za ostale metode
 export async function PUT(
-  request: NextRequest,
-  context: { params: { id: string } },
-) {
-  const id = context.params.id;
+  request: Request,
+  { params }: { params: { id: string } },
+): Promise<Response> {
+  const id = params.id;
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -93,10 +94,10 @@ export async function PUT(
 }
 
 export async function DELETE(
-  request: NextRequest,
-  context: { params: { id: string } },
-) {
-  const id = context.params.id;
+  request: Request,
+  { params }: { params: { id: string } },
+): Promise<Response> {
+  const id = params.id;
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
