@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface CardPageProps {
-  params: Promise<{ id: string }> | { id: string };
+  params: Promise<{ id: string }>;
 }
 
 interface CardData {
@@ -37,8 +37,7 @@ interface CardData {
 }
 
 export default function CardPage({ params }: CardPageProps) {
-  const resolvedParams = "then" in params ? use(params) : params;
-  const id = resolvedParams.id;
+  const { id } = use(params);
 
   const router = useRouter();
   const [card, setCard] = useState<CardData | null>(null);
