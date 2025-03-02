@@ -13,7 +13,6 @@ import {
   ExternalLink,
   User,
   Trash2,
-  UserRound,
   Briefcase,
   Palette,
   Calendar,
@@ -401,95 +400,53 @@ export default function CardPage({ params }: CardPageProps) {
               <div className="p-4 border-b border-border/10 bg-gradient-to-r from-background/80 to-muted/5">
                 <h2 className="text-lg font-medium flex items-center">
                   <span className="inline-block w-1 h-5 bg-primary/90 rounded-sm mr-2"></span>
-                  Card Details
+                  Card Information
                 </h2>
               </div>
 
-              <div className="p-6 space-y-3">
-                <div className="flex items-center p-3 bg-background/40 rounded-lg hover:bg-background/60 transition-colors">
-                  <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/10 text-primary mr-3">
-                    <UserRound className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <span className="text-xs text-muted-foreground block">
-                      Name
-                    </span>
-                    <span className="font-medium">{card.name}</span>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-5">
+                <div className="bg-background/40 rounded-lg p-4">
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
+                    Name
+                  </span>
+                  <p className="text-base font-medium mt-1">{card.name}</p>
+                </div>
+
+                <div className="bg-background/40 rounded-lg p-4">
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
+                    Job Title
+                  </span>
+                  <p className="text-base font-medium mt-1">{card.title}</p>
+                </div>
+
+                <div className="bg-background/40 rounded-lg p-4 md:col-span-2">
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
+                    Brand Color
+                  </span>
+                  <div className="flex items-center gap-3 mt-2">
+                    <div
+                      className="w-8 h-8 rounded-md border border-border/50 shadow-sm"
+                      style={{ backgroundColor: card.color }}
+                    />
+                    <code className="text-sm py-1 px-2 bg-background/70 rounded">
+                      {card.color}
+                    </code>
                   </div>
                 </div>
 
-                <div className="flex items-center p-3 bg-background/40 rounded-lg hover:bg-background/60 transition-colors">
-                  <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/10 text-primary mr-3">
-                    <Briefcase className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <span className="text-xs text-muted-foreground block">
-                      Title
-                    </span>
-                    <span className="font-medium">{card.title}</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center p-3 bg-background/40 rounded-lg hover:bg-background/60 transition-colors">
-                  <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/10 text-primary mr-3">
-                    <Palette className="h-4 w-4" />
-                  </div>
-                  <div className="flex-1">
-                    <span className="text-xs text-muted-foreground block">
-                      Color
-                    </span>
-                    <div className="flex items-center gap-3 mt-1">
-                      <div
-                        className="w-6 h-6 rounded-full border border-border/50 shadow-sm"
-                        style={{ backgroundColor: card.color }}
-                      />
-                      <code className="text-xs py-0.5 px-2 bg-background/70 rounded">
-                        {card.color}
-                      </code>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center p-3 bg-background/40 rounded-lg hover:bg-background/60 transition-colors">
-                  <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/10 text-primary mr-3">
-                    <Calendar className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <span className="text-xs text-muted-foreground block">
-                      Created
-                    </span>
-                    <span className="font-medium">
-                      {new Date(card.createdAt).toLocaleDateString()}
-                    </span>
-                  </div>
+                <div className="bg-background/40 rounded-lg p-4 md:col-span-2">
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
+                    Created On
+                  </span>
+                  <p className="text-base font-medium mt-1">
+                    {new Date(card.createdAt).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </p>
                 </div>
               </div>
-
-              {isOwner && (
-                <div className="p-4 bg-background/30 border-t border-border/10">
-                  <p className="text-xs text-muted-foreground mb-1">
-                    Owner Actions
-                  </p>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setIsEditModalOpen(true)}
-                      className="h-8 text-xs"
-                    >
-                      <Edit className="h-3 w-3 mr-1" /> Edit
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setIsDeleteDialogOpen(true)}
-                      className="h-8 text-xs border-destructive/30 hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive"
-                    >
-                      <Trash2 className="h-3 w-3 mr-1" /> Delete
-                    </Button>
-                  </div>
-                </div>
-              )}
             </motion.div>
           </div>
         </div>

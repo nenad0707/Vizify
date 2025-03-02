@@ -26,9 +26,9 @@ interface EditCardModalProps {
 }
 
 export function EditCardModal({
+  card,
   open,
   onOpenChange,
-  card,
   onUpdate,
 }: EditCardModalProps) {
   const [formData, setFormData] = useState({
@@ -113,15 +113,15 @@ export function EditCardModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md bg-card/95 backdrop-blur-sm border-border/50">
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>Edit Card</DialogTitle>
-            <DialogDescription>
-              Update your business card details.
-            </DialogDescription>
-          </DialogHeader>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Edit Business Card</DialogTitle>
+          <DialogDescription>
+            Make changes to your business card below.
+          </DialogDescription>
+        </DialogHeader>
 
+        <form onSubmit={handleSubmit} className="space-y-6 py-4">
           {error && (
             <Alert variant="destructive" className="mt-2">
               <AlertCircle className="h-4 w-4" />
@@ -161,7 +161,7 @@ export function EditCardModal({
 
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="title" className="text-right">
-                Title
+                Job Title
               </Label>
               <Input
                 id="title"
@@ -175,7 +175,7 @@ export function EditCardModal({
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right">Color</Label>
+              <Label className="text-right">Card Color</Label>
               <div className="col-span-3">
                 <ColorPicker
                   selectedColor={formData.color}
