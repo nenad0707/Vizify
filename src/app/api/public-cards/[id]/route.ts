@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-type RouteContext = {
-  params: { id: string };
-};
-
-export async function GET(request: NextRequest, context: RouteContext) {
-  const { id } = context.params;
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } },
+) {
+  const { id } = params;
 
   try {
     const card = await prisma.businessCard.findUnique({
