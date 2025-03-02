@@ -56,12 +56,17 @@ export function FormSectionWrapper({
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.4 }}
       className="w-full max-w-2xl mx-auto"
+      style={{ zIndex: 100 }} // Eksplicitno visok z-index
     >
-      <Card className="bg-card/80 backdrop-blur-md border border-border/50 shadow-lg overflow-hidden">
-        <CardHeader className="pb-5 bg-gradient-to-br from-background/90 to-muted/30">
-          <div className="flex items-center gap-3 mb-3">
+      <Card className="bg-white dark:bg-black border border-border/70 shadow-md overflow-hidden">
+        {" "}
+        {/* Poboljšan kontrast sa belom pozadinom */}
+        <CardHeader className="pb-3 pt-4 px-5 bg-gradient-to-r from-background to-muted/5">
+          {" "}
+          {/* Još manji paddinzi */}
+          <div className="flex items-center gap-3 mb-2">
             <motion.div
-              className="p-2.5 rounded-full bg-primary/10 backdrop-blur-sm text-primary border border-primary/20 shadow-inner"
+              className="p-2 rounded-full bg-primary/10 backdrop-blur-sm text-primary border border-primary/20 shadow-inner"
               whileHover={{ rotate: 5, scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               transition={{ type: "spring", stiffness: 300, damping: 10 }}
@@ -69,17 +74,16 @@ export function FormSectionWrapper({
               {icon}
             </motion.div>
             <div>
-              <CardTitle className="text-xl bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+              <CardTitle className="text-lg bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                 {title}
               </CardTitle>
-              <CardDescription className="text-sm text-muted-foreground mt-0.5">
+              <CardDescription className="text-xs text-muted-foreground mt-0.5">
                 {description}
               </CardDescription>
             </div>
           </div>
-
           {/* Progress indicator */}
-          <div className="w-full h-1 bg-muted/70 rounded-full overflow-hidden mt-3 shadow-inner">
+          <div className="w-full h-1 bg-muted/50 rounded-full overflow-hidden mt-2 shadow-inner">
             <motion.div
               className="h-full bg-gradient-to-r from-primary to-primary/70"
               initial={{ width: `${(currentStep / 3) * 100}%` }}
@@ -88,25 +92,26 @@ export function FormSectionWrapper({
             />
           </div>
         </CardHeader>
-
-        <CardContent className="px-6 pt-6 pb-6">
-          <div className="space-y-6">{children}</div>
+        <CardContent className="px-5 pt-4 pb-3">
+          {" "}
+          {/* Još manji paddinzi */}
+          <div className="space-y-4">{children}</div> {/* Manji spacing */}
         </CardContent>
-
         <CardFooter
           className={cn(
-            "flex justify-between pt-4 pb-6 px-6 border-t border-border/20 bg-card/30",
+            "flex justify-between border-t border-border/10 bg-muted/5 pt-2 pb-3 px-5", // Još manji paddinzi
             currentStep === 0 ? "justify-end" : "justify-between",
           )}
         >
           {currentStep > 0 && (
             <Button
               variant="outline"
+              size="sm"
               onClick={goToPrevStep}
-              className="flex items-center gap-1.5 group hover:bg-background hover:text-foreground transition-all duration-300 backdrop-blur-sm"
+              className="flex items-center gap-1.5 group hover:bg-background hover:text-foreground transition-all"
               disabled={isSubmitting}
             >
-              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+              <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
               <span>Back</span>
             </Button>
           )}
@@ -117,7 +122,8 @@ export function FormSectionWrapper({
             transition={{ type: "spring", stiffness: 400, damping: 17 }}
           >
             <Button
-              onClick={handleNextClick} // Use our new handler
+              size="sm"
+              onClick={handleNextClick}
               disabled={nextDisabled || isSubmitting}
               className={cn(
                 "flex items-center gap-1.5 shadow-md transition-all",

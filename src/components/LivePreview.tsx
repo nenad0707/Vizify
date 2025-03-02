@@ -1,217 +1,152 @@
 "use client";
 
-import React, { useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
-
-interface FormData {
-  name: string;
-  title: string;
-  color: string;
-  template?: "modern" | "classic" | "minimalist";
-}
+import { Mail } from "lucide-react";
+import { CardFormData } from "@/components/CardCreator/CardCreatorContext";
 
 interface LivePreviewProps {
-  formData: FormData;
+  formData: CardFormData;
 }
 
 export default function LivePreview({ formData }: LivePreviewProps) {
-  const [rotate, setRotate] = useState({ x: 0, y: 0 });
-
-  // Get card style based on template
-  const getCardStyle = () => {
-    switch (formData.template) {
-      case "classic":
-        return {
-          border: "1px solid rgba(0,0,0,0.2)",
-          borderRadius: "0.25rem",
-          boxShadow: "0 4px 6px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.08)",
-          fontFamily: "'Inter', sans-serif",
-          nameColor: "black",
-          titleColor: "rgba(0,0,0,0.7)",
-          pattern:
-            "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.1) 100%)",
-          padding: "1.5rem",
-          logoStyle: {
-            shape: "square",
-            border: "1px solid rgba(0,0,0,0.1)",
-            backgroundColor: "transparent",
-          },
-        };
-      case "minimalist":
-        return {
-          border: "none",
-          borderRadius: "0.5rem",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-          fontFamily: "'Inter', sans-serif",
-          nameColor: "black",
-          titleColor: "rgba(0,0,0,0.6)",
-          pattern: "none",
-          padding: "1.5rem",
-          logoStyle: {
-            shape: "circle",
-            border: "none",
-            backgroundColor: "rgba(0,0,0,0.03)",
-          },
-        };
-      case "modern":
-      default:
-        return {
-          border: "1px solid rgba(255,255,255,0.2)",
-          borderRadius: "0.75rem",
-          boxShadow:
-            "0 10px 30px -5px rgba(0,0,0,0.3), 0 4px 6px -2px rgba(0,0,0,0.05)",
-          fontFamily: "'Inter', sans-serif",
-          nameColor: "white",
-          titleColor: "rgba(255,255,255,0.9)",
-          pattern:
-            "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 100%)",
-          padding: "2rem",
-          logoStyle: {
-            shape: "circle",
-            border: "1px solid rgba(255,255,255,0.3)",
-            backgroundColor: "rgba(255,255,255,0.1)",
-          },
-        };
-    }
-  };
-
-  const style = getCardStyle();
-
-  // Calculate text color based on background color
-  const getTextColor = (baseColor: string) => {
-    // Convert hex to RGB
-    const hex = baseColor.replace("#", "");
-    const r = parseInt(hex.substring(0, 2), 16);
-    const g = parseInt(hex.substring(2, 4), 16);
-    const b = parseInt(hex.substring(4, 6), 16);
-
-    // Calculate luminance (perceived brightness)
-    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-
-    // Return white for dark backgrounds, black for light backgrounds
-    if (luminance < 0.6) {
-      return {
-        nameColor: "#ffffff",
-        titleColor: "rgba(255, 255, 255, 0.85)",
-      };
-    } else {
-      return {
-        nameColor: "#000000",
-        titleColor: "rgba(0, 0, 0, 0.75)",
-      };
-    }
-  };
-
-  // Use smart text color detection instead of template-defined color
-  const textColors = getTextColor(formData.color);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [rotateX, setRotateX] = useState(0);
+  const [rotateY, setRotateY] = useState(0);
+  const [cardShadow, setCardShadow] = useState("0px 5px 15px rgba(0,0,0,0.1)");
 
   // Handle mouse movement for 3D effect
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const card = e.currentTarget;
+    if (!cardRef.current) return;
+
+    const card = cardRef.current;
     const rect = card.getBoundingClientRect();
+    const cardCenterX = rect.left + rect.width / 2;
+    const cardCenterY = rect.top + rect.height / 2;
 
-    // Calculate rotation based on mouse position
-    const x = (e.clientY - rect.top - rect.height / 2) / 10;
-    const y = (rect.left + rect.width / 2 - e.clientX) / 10;
+    // Calculate rotation based on mouse position relative to card center
+    const rotateYVal = ((e.clientX - cardCenterX) / (rect.width / 2)) * 8;
+    const rotateXVal = ((e.clientY - cardCenterY) / (rect.height / 2)) * -8;
 
-    setRotate({ x, y });
+    // Update rotation and shadow based on mouse position
+    setRotateX(rotateXVal);
+    setRotateY(rotateYVal);
+    setCardShadow(
+      `${rotateYVal * 0.2}px ${
+        Math.abs(rotateXVal) * 0.5
+      }px 20px rgba(0,0,0,0.1)`,
+    );
   };
 
-  // Reset rotation when mouse leaves
+  // Reset card rotation when mouse leaves
   const handleMouseLeave = () => {
-    setRotate({ x: 0, y: 0 });
+    setRotateX(0);
+    setRotateY(0);
+    setCardShadow("0px 5px 15px rgba(0,0,0,0.1)");
   };
+
+  // Return to flat position smoothly when component unmounts
+  useEffect(() => {
+    return () => {
+      setRotateX(0);
+      setRotateY(0);
+      setCardShadow("0px 5px 15px rgba(0,0,0,0.1)");
+    };
+  }, []);
+
+  // Get the best text color based on background color
+  const getTextColor = (bgColor: string, template: string) => {
+    // Modern template uses white text regardless
+    if (template === "modern") {
+      return { primary: "#ffffff", secondary: "rgba(255,255,255,0.85)" };
+    }
+
+    // For other templates, check if background is dark
+    const isLight = isLightColor(bgColor);
+    return isLight
+      ? { primary: "#111111", secondary: "rgba(0,0,0,0.7)" }
+      : { primary: "#ffffff", secondary: "rgba(255,255,255,0.85)" };
+  };
+
+  // Helper to determine if a color is light or dark
+  const isLightColor = (color: string) => {
+    const hex = color.replace("#", "");
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    return brightness > 155;
+  };
+
+  // Get text colors based on background and template
+  const textColors = getTextColor(formData.color, formData.template);
 
   return (
-    <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-gray-50/20 to-gray-100/20 dark:from-gray-900/20 dark:to-gray-800/20">
+    <div className="w-full h-full flex justify-center items-center">
       <motion.div
-        className="relative cursor-grab active:cursor-grabbing"
+        ref={cardRef}
+        className="w-full h-[200px] max-w-[320px] rounded-lg relative cursor-pointer"
+        animate={{
+          rotateX,
+          rotateY,
+        }}
+        transition={{ type: "spring", stiffness: 300, damping: 20 }}
         style={{
-          width: "320px",
-          height: "200px",
-          perspective: "1000px",
+          backgroundColor: formData.color,
+          borderRadius:
+            formData.template === "modern"
+              ? "0.75rem"
+              : formData.template === "minimalist"
+              ? "0.5rem"
+              : "0.25rem",
+          boxShadow: cardShadow,
+          transformStyle: "preserve-3d",
         }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
-        <motion.div
-          className="w-full h-full"
-          style={{
-            backgroundColor: formData.color,
-            borderRadius: style.borderRadius,
-            border: style.border,
-            boxShadow: style.boxShadow,
-            padding: style.padding,
-            backgroundImage: style.pattern,
-            transformStyle: "preserve-3d",
-            transform: `rotateX(${rotate.x}deg) rotateY(${rotate.y}deg)`,
-            transition: "transform 0.1s ease-out",
-          }}
-        >
-          <div className="flex flex-col h-full justify-between">
-            {/* Logo/Icon */}
-            <div
-              style={{
-                width: "40px",
-                height: "40px",
-                borderRadius:
-                  style.logoStyle.shape === "circle" ? "50%" : "4px",
-                border: style.logoStyle.border,
-                backgroundColor: style.logoStyle.backgroundColor,
-                transform: "translateZ(30px)",
-                opacity: 0.9,
-                position: "absolute",
-                top: "10px",
-                right: "10px",
-              }}
-            />
-
-            {/* Name */}
-            <div
-              className="text-2xl font-bold"
-              style={{
-                color: textColors.nameColor,
-                transform: "translateZ(20px)",
-                textShadow: "0 1px 2px rgba(0,0,0,0.2)",
-              }}
+        <div className="absolute inset-0 p-4 flex flex-col justify-between">
+          <div style={{ transform: "translateZ(5px)" }}>
+            <h3
+              className="text-lg font-bold mb-0.5"
+              style={{ color: textColors.primary }}
             >
-              {formData.name || "Your Name"}
-            </div>
-
-            {/* Title */}
-            <div
-              className="text-lg"
-              style={{
-                color: textColors.titleColor,
-                transform: "translateZ(10px)",
-              }}
+              {formData.name}
+            </h3>
+            <p
+              className="text-sm opacity-90"
+              style={{ color: textColors.secondary }}
             >
-              {formData.title || "Your Title"}
-            </div>
-
-            {/* Contact details (only visual, not functional) */}
-            <div
-              className="flex items-center gap-2 mt-auto"
-              style={{
-                color: textColors.titleColor,
-                opacity: 0.7,
-                fontSize: "0.7rem",
-                transform: "translateZ(5px)",
-              }}
-            >
-              <div
-                className="w-3 h-3 rounded-full"
-                style={{ backgroundColor: textColors.titleColor }}
-              ></div>
-              <span>example@company.com</span>
-            </div>
+              {formData.title}
+            </p>
           </div>
-        </motion.div>
-      </motion.div>
 
-      <div className="absolute bottom-4 left-0 right-0 text-center text-xs text-muted-foreground">
-        Move your mouse over the card to rotate
-      </div>
+          {/* Contact Info */}
+          {formData.email && (
+            <div
+              className="flex items-center gap-1.5 opacity-90"
+              style={{ color: textColors.secondary }}
+            >
+              <Mail className="h-3 w-3" />
+              <span className="text-xs">{formData.email}</span>
+            </div>
+          )}
+
+          {/* Light reflections */}
+          <div
+            className="absolute inset-0 rounded-lg opacity-15"
+            style={{
+              background: `linear-gradient(
+                ${315 + rotateY / 2}deg, 
+                transparent 40%, 
+                rgba(255, 255, 255, 0.25) 50%, 
+                transparent 60%
+              )`,
+              pointerEvents: "none",
+            }}
+          />
+        </div>
+      </motion.div>
     </div>
   );
 }

@@ -83,8 +83,6 @@ body {
   }
 }
 
-
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -92,4 +90,16 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.transform-style-3d {
+  transform-style: preserve-3d;
+}
+
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.translate-z-10 {
+  transform: translateZ(10px);
 }

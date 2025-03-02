@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
 import { LoginModal } from "@/components/LoginModal";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Palette, QrCode } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import QRCodeComponent from "@/components/QRCodeComponent";
@@ -61,7 +61,7 @@ function CardCreatorContent() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="container mx-auto py-8 px-4"
+        className="container mx-auto py-5 px-4"
       >
         {/* Header with premium styling */}
         <div className="mb-8 flex flex-col space-y-4">
@@ -113,107 +113,117 @@ function CardCreatorContent() {
           </button>
         </div>
 
-        {/* Main content - two column layout with enhanced premium look */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Left column - Form steps */}
+        {/* Main content - completely redesigned layout for better UX */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Left column - Form steps with much higher z-index */}
           <div
-            className={`lg:col-span-7 order-2 lg:order-1 flex flex-col relative z-10 ${
+            className={`lg:col-span-7 order-2 lg:order-1 flex flex-col relative ${
               showPreview ? "hidden lg:flex" : "flex"
             }`}
+            style={{ zIndex: 100 }} // Eksplicitno visoki z-index
           >
-            <StepNavigator />
+            <StepNavigator compact={true} />
 
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentStep}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.4 }}
-                className="min-h-[500px]"
-              >
-                {getCurrentStep()}
-              </motion.div>
-            </AnimatePresence>
+            {/* Dodat wrapper div sa belom pozadinom za dodatnu izolaciju */}
+            <div className="relative bg-transparent rounded-xl mt-3">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentStep}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.4 }}
+                  className="relative"
+                  style={{ zIndex: 100 }} // Eksplicitno visoki z-index
+                >
+                  {getCurrentStep()}
+                </motion.div>
+              </AnimatePresence>
+            </div>
           </div>
 
-          {/* Right column - Preview with premium styling */}
+          {/* Right column - Fixed positioning for preview cards */}
           <div
-            className={`lg:col-span-5 order-1 lg:order-2 flex flex-col space-y-8 lg:sticky top-8 self-start lg:max-h-[calc(100vh-120px)] lg:overflow-auto ${
+            className={`lg:col-span-5 order-1 lg:order-2 flex flex-col space-y-5 ${
               !showPreview ? "hidden lg:flex" : "flex"
             }`}
           >
-            {/* Live preview card */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="bg-card/70 backdrop-blur-sm border border-border/50 shadow-lg rounded-lg overflow-hidden relative z-0"
-              whileHover={{
-                translateY: -5,
-                boxShadow: "0 15px 30px rgba(0,0,0,0.1)",
-              }}
+            <div
+              className="lg:sticky lg:top-20 space-y-5"
+              style={{ zIndex: 10 }}
             >
-              <div className="p-4 border-b border-border/10 bg-gradient-to-br from-background to-muted/20">
-                <h2 className="font-medium bg-gradient-to-r from-primary/90 to-primary/70 bg-clip-text text-transparent">
-                  Live Preview
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  Interactive 3D preview of your card
-                </p>
-              </div>
-              <div className="h-[350px] relative">
-                <LivePreview
-                  formData={{
-                    ...formData,
-                    name: formData.name || "Your Name",
-                    title: formData.title || "Your Title",
-                  }}
-                />
-              </div>
-            </motion.div>
-
-            {/* QR code preview with glassmorphism */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="bg-card/60 backdrop-blur-sm border border-border/50 shadow-lg rounded-lg overflow-hidden relative z-0"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <div className="p-4 border-b border-border/10 bg-gradient-to-br from-background to-muted/20">
-                <h2 className="font-medium bg-gradient-to-r from-primary/90 to-primary/70 bg-clip-text text-transparent">
-                  QR Code Preview
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  Scan to view your digital card
-                </p>
-              </div>
-              <div className="p-6 flex flex-col items-center justify-center">
-                <motion.div
-                  className="bg-white p-4 rounded-lg shadow-md"
-                  whileHover={{ rotate: [0, -1, 1, -1, 0] }}
-                  transition={{ duration: 0.5 }}
-                >
-                  <QRCodeComponent
-                    url={
-                      createdCard?.id
-                        ? `${window.location.origin}/card/${createdCard.id}`
-                        : `${window.location.origin}/preview`
-                    }
-                    size={150}
+              {/* Enhanced Live preview card */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="bg-card/80 border border-border/40 shadow-md rounded-lg overflow-hidden"
+              >
+                <div className="p-3 border-b border-border/10 bg-gradient-to-r from-background to-muted/5">
+                  <h2 className="font-medium bg-gradient-to-r from-primary/90 to-primary/70 bg-clip-text text-transparent flex items-center gap-2">
+                    <Palette className="h-4 w-4 text-primary/70" />
+                    Live Preview
+                  </h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Interactive 3D preview of your business card
+                  </p>
+                </div>
+                <div className="h-[240px] relative p-3 bg-background/50">
+                  {" "}
+                  {/* Još manja visina */}
+                  <LivePreview
+                    formData={{
+                      ...formData,
+                      name: formData.name || "Your Name",
+                      title: formData.title || "Your Title",
+                    }}
                   />
-                </motion.div>
-                <p className="text-xs text-muted-foreground text-center mt-4 px-4">
-                  {currentStep < 2
-                    ? "Complete all steps to generate your QR code"
-                    : createdCard
-                    ? "Scan this QR code to view your card"
-                    : "Click Create Card to generate your final QR code"}
-                </p>
-              </div>
-            </motion.div>
+                </div>
+              </motion.div>
+
+              {/* QR code preview with matching styles */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="bg-card/80 border border-border/40 shadow-md rounded-lg overflow-hidden"
+              >
+                <div className="p-2.5 border-b border-border/10 bg-gradient-to-r from-background to-muted/5">
+                  {" "}
+                  {/* Još manji padding */}
+                  <h2 className="font-medium text-sm bg-gradient-to-r from-primary/90 to-primary/70 bg-clip-text text-transparent flex items-center gap-1.5">
+                    <QrCode className="h-3.5 w-3.5 text-primary/70" />
+                    QR Code
+                  </h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Scan to view your card
+                  </p>
+                </div>
+                <div className="py-4 px-3 flex flex-col items-center justify-center bg-background/50">
+                  <motion.div
+                    className="bg-white p-1.5 rounded-md shadow-sm"
+                    whileHover={{ rotate: [0, -1, 1, -1, 0] }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <QRCodeComponent
+                      url={
+                        createdCard?.id
+                          ? `${window.location.origin}/card/${createdCard.id}`
+                          : `${window.location.origin}/preview`
+                      }
+                      size={110} // Još manja veličina
+                    />
+                  </motion.div>
+                  <p className="text-xs text-muted-foreground text-center mt-2 px-2 max-w-[200px]">
+                    {createdCard
+                      ? "Scan to view your card"
+                      : currentStep < 2
+                      ? "Complete all steps"
+                      : "Create your card"}
+                  </p>
+                </div>
+              </motion.div>
+            </div>
           </div>
         </div>
       </motion.div>
