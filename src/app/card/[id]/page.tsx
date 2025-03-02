@@ -16,6 +16,7 @@ import {
   Briefcase,
   Palette,
   Calendar,
+  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import QRCodeComponent from "@/components/QRCodeComponent";
@@ -197,42 +198,56 @@ export default function CardPage({ params }: CardPageProps) {
   const cardUrl = `${window.location.origin}/card/${id}`;
 
   return (
-    <div className="min-h-screen px-4 py-12">
-      <div className="container mx-auto max-w-5xl">
-        {isOwner && (
-          <div className="mb-8">
+    <div className="min-h-screen">
+      <div className="bg-background/80 backdrop-blur-sm border-b border-border/10 sticky top-0 z-30">
+        <div className="container mx-auto px-4 py-3 flex items-center">
+          {isOwner && (
             <Link
               href="/dashboard"
               className="text-muted-foreground hover:text-foreground transition-colors inline-flex items-center group"
             >
               <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
-              Back to Dashboard
+              <span className="font-medium">Dashboard</span>
             </Link>
-          </div>
-        )}
+          )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <div className="lg:col-span-7 space-y-6">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="p-6 bg-card/80 backdrop-blur-sm rounded-xl border border-border/50 shadow-lg"
-            >
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                {isOwner ? "Your Business Card" : card.name}
-              </h1>
-              <p className="text-muted-foreground mb-6">
-                {isOwner
-                  ? "This is how your card appears to others"
-                  : card.title}
-              </p>
-
-              <div className="relative mb-8" onMouseMove={handleMouseMove}>
-                <div
-                  className="perspective-1000 mx-auto"
-                  style={{ maxWidth: "350px" }}
+          <div className="ml-auto flex gap-2">
+            {isOwner && (
+              <>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setIsEditModalOpen(true)}
                 >
+                  <Edit className="mr-2 h-3.5 w-3.5" />
+                  Edit
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setIsDeleteDialogOpen(true)}
+                  className="border-destructive/30 hover:border-destructive/60 hover:bg-destructive/5"
+                >
+                  <Trash2 className="mr-2 h-3.5 w-3.5" />
+                  Delete
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-8 max-w-5xl">
+        <div className="mb-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="bg-gradient-to-br from-card to-card/60 backdrop-blur-sm rounded-xl border border-border/50 shadow-lg overflow-hidden"
+          >
+            <div className="p-5 sm:p-8 flex flex-col md:flex-row md:items-center gap-8">
+              <div className="relative flex-1" onMouseMove={handleMouseMove}>
+                <div className="perspective-1000 max-w-[350px] mx-auto md:mx-0">
                   <motion.div
                     className="business-card premium-3d-card w-full aspect-[1.7/1] rounded-xl overflow-hidden relative"
                     whileHover={{
@@ -317,64 +332,110 @@ export default function CardPage({ params }: CardPageProps) {
                 </div>
               </div>
 
-              <div className="flex flex-wrap justify-center gap-3 mt-8">
-                {isOwner && (
+              {/* Card Info */}
+              <div className="flex-1 max-w-md">
+                <h1 className="text-3xl font-bold text-foreground mb-2">
+                  {card.name}
+                </h1>
+                <p className="text-xl text-muted-foreground mb-6">
+                  {card.title}
+                </p>
+
+                <div className="space-y-4 mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-md flex items-center justify-center bg-primary/10">
+                      <Palette className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <span className="text-xs text-muted-foreground block">
+                        Brand Color
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="h-4 w-4 rounded-full"
+                          style={{ backgroundColor: card.color }}
+                        />
+                        <code className="text-sm">{card.color}</code>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-md flex items-center justify-center bg-primary/10">
+                      <Calendar className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <span className="text-xs text-muted-foreground block">
+                        Created On
+                      </span>
+                      <span>
+                        {new Date(card.createdAt).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 mt-2">
+                  <Button onClick={handleShare} className="flex-1">
+                    <Share2 className="mr-2 h-4 w-4" />
+                    Share Card
+                  </Button>
+
                   <Button
                     variant="outline"
-                    onClick={() => setIsEditModalOpen(true)}
+                    onClick={() =>
+                      document
+                        .getElementById("qr-section")
+                        ?.scrollIntoView({ behavior: "smooth" })
+                    }
+                    className="flex-1"
                   >
-                    <Edit className="mr-2 h-4 w-4" />
-                    Edit Card
+                    <QrCode className="mr-2 h-4 w-4" />
+                    View QR Code
                   </Button>
-                )}
-
-                <Button onClick={handleShare}>
-                  <Share2 className="mr-2 h-4 w-4" />
-                  Share Card
-                </Button>
-
-                {isOwner && (
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsDeleteDialogOpen(true)}
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete
-                  </Button>
-                )}
+                </div>
               </div>
-            </motion.div>
-          </div>
+            </div>
+          </motion.div>
+        </div>
 
-          <div className="lg:col-span-5 space-y-6">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="p-6 bg-card/80 backdrop-blur-sm rounded-xl border border-border/50 shadow-lg"
-            >
-              <div className="flex items-center mb-4">
-                <QrCode className="h-5 w-5 text-primary mr-2" />
-                <h2 className="text-lg font-medium">QR Code</h2>
-              </div>
+        <div
+          id="qr-section"
+          className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8"
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="bg-card/80 backdrop-blur-sm rounded-xl border border-border/50 shadow-lg overflow-hidden h-full"
+          >
+            <div className="p-4 border-b border-border/10 bg-gradient-to-r from-background/80 to-muted/5">
+              <h2 className="text-lg font-medium flex items-center">
+                <QrCode className="h-5 w-5 text-primary/70 mr-2" />
+                Scan & Share
+              </h2>
+            </div>
 
-              <p className="text-sm text-muted-foreground mb-5">
-                Scan this code to access this business card on any device, or
-                share it with your network.
-              </p>
-
+            <div className="p-6 flex flex-col items-center h-full justify-center">
               <motion.div
-                className="bg-white p-4 rounded-lg shadow-sm mx-auto w-fit"
+                className="bg-white p-4 rounded-lg shadow-sm"
                 whileHover={{ scale: 1.02, rotate: 0.5 }}
                 transition={{ type: "spring", stiffness: 300, damping: 10 }}
               >
                 <QRCodeComponent url={cardUrl} size={180} />
               </motion.div>
 
-              <div className="mt-4 w-full bg-background/40 rounded-lg p-3">
-                <p className="text-xs text-muted-foreground mb-1">
-                  Direct URL:
-                </p>
+              <p className="text-sm text-muted-foreground text-center mt-6 mb-4">
+                Scan with your phone camera to instantly access this business
+                card on any device
+              </p>
+
+              <div className="w-full bg-background/40 rounded-lg p-3">
+                <p className="text-xs text-muted-foreground mb-1">Card URL:</p>
                 <div className="flex items-center">
                   <code className="text-xs bg-background/80 flex-1 p-2 rounded truncate mr-1">
                     {cardUrl}
@@ -389,66 +450,57 @@ export default function CardPage({ params }: CardPageProps) {
                   </Button>
                 </div>
               </div>
-            </motion.div>
+            </div>
+          </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="bg-card/80 backdrop-blur-sm rounded-xl border border-border/50 shadow-lg overflow-hidden"
-            >
-              <div className="p-4 border-b border-border/10 bg-gradient-to-r from-background/80 to-muted/5">
-                <h2 className="text-lg font-medium flex items-center">
-                  <span className="inline-block w-1 h-5 bg-primary/90 rounded-sm mr-2"></span>
-                  Card Information
-                </h2>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="bg-card/80 backdrop-blur-sm rounded-xl border border-border/50 shadow-lg overflow-hidden h-full"
+          >
+            <div className="p-4 border-b border-border/10 bg-gradient-to-r from-background/80 to-muted/5">
+              <h2 className="text-lg font-medium flex items-center">
+                <span className="inline-block w-1 h-5 bg-primary/90 rounded-sm mr-2"></span>
+                Get the Most out of Your Card
+              </h2>
+            </div>
+
+            <div className="p-5 space-y-4">
+              <div className="p-3 rounded-lg bg-background/40 hover:bg-background/60 transition-colors border border-transparent hover:border-border/20">
+                <h3 className="font-medium mb-1 flex items-center">
+                  <Share2 className="h-4 w-4 mr-2 text-primary/70" />
+                  Share across platforms
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Send your digital card via email, SMS, or social media with a
+                  simple link
+                </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-5">
-                <div className="bg-background/40 rounded-lg p-4">
-                  <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
-                    Name
-                  </span>
-                  <p className="text-base font-medium mt-1">{card.name}</p>
-                </div>
-
-                <div className="bg-background/40 rounded-lg p-4">
-                  <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
-                    Job Title
-                  </span>
-                  <p className="text-base font-medium mt-1">{card.title}</p>
-                </div>
-
-                <div className="bg-background/40 rounded-lg p-4 md:col-span-2">
-                  <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
-                    Brand Color
-                  </span>
-                  <div className="flex items-center gap-3 mt-2">
-                    <div
-                      className="w-8 h-8 rounded-md border border-border/50 shadow-sm"
-                      style={{ backgroundColor: card.color }}
-                    />
-                    <code className="text-sm py-1 px-2 bg-background/70 rounded">
-                      {card.color}
-                    </code>
-                  </div>
-                </div>
-
-                <div className="bg-background/40 rounded-lg p-4 md:col-span-2">
-                  <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
-                    Created On
-                  </span>
-                  <p className="text-base font-medium mt-1">
-                    {new Date(card.createdAt).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </p>
-                </div>
+              <div className="p-3 rounded-lg bg-background/40 hover:bg-background/60 transition-colors border border-transparent hover:border-border/20">
+                <h3 className="font-medium mb-1 flex items-center">
+                  <QrCode className="h-4 w-4 mr-2 text-primary/70" />
+                  Print QR for events
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Add your QR code to physical materials for networking at
+                  events
+                </p>
               </div>
-            </motion.div>
-          </div>
+
+              <div className="p-3 rounded-lg bg-background/40 hover:bg-background/60 transition-colors border border-transparent hover:border-border/20">
+                <h3 className="font-medium mb-1 flex items-center">
+                  <Edit className="h-4 w-4 mr-2 text-primary/70" />
+                  Keep information current
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Update your card anytime and changes are instantly available
+                  everywhere
+                </p>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </div>
 
@@ -465,7 +517,17 @@ export default function CardPage({ params }: CardPageProps) {
           <EditCardModal
             open={isEditModalOpen}
             onOpenChange={setIsEditModalOpen}
-            card={card}
+            card={{
+              id: card.id,
+              name: card.name,
+              title: card.title,
+              color: card.color,
+              email: card.email || "",
+              phone: card.phone || "",
+              company: card.company || "",
+              createdAt: card.createdAt,
+              qrCode: card.qrCode || "",
+            }}
             onUpdate={refreshCard}
           />
         </>
