@@ -32,6 +32,22 @@ function CardCreatorContent() {
   const { formData, currentStep, createdCard } = useCardCreator();
   const [modalOpen, setModalOpen] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(
+    typeof window !== "undefined" ? window.innerWidth : 1024,
+  );
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const isMobile = windowWidth < 768;
 
   // Open modal when card is created
   useEffect(() => {
@@ -165,13 +181,18 @@ function CardCreatorContent() {
                     Interactive 3D business card preview
                   </p>
                 </div>
-                <div className="h-[280px] relative p-4 bg-background/20">
+                <div
+                  className={`relative p-4 bg-background/20 ${
+                    isMobile ? "h-[240px]" : "h-[280px]"
+                  }`}
+                >
                   <LivePreview
                     formData={{
                       ...formData,
                       name: formData.name || "Your Name",
                       title: formData.title || "Your Title",
                     }}
+                    isMobile={isMobile}
                   />
                 </div>
               </motion.div>

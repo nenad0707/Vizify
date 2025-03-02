@@ -7,9 +7,13 @@ import { CardFormData } from "@/components/CardCreator/CardCreatorContext";
 
 interface LivePreviewProps {
   formData: CardFormData;
+  isMobile?: boolean;
 }
 
-export default function LivePreview({ formData }: LivePreviewProps) {
+export default function LivePreview({
+  formData,
+  isMobile: propIsMobile,
+}: LivePreviewProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [rotateX, setRotateX] = useState(0);
   const [rotateY, setRotateY] = useState(0);
@@ -84,11 +88,33 @@ export default function LivePreview({ formData }: LivePreviewProps) {
   const fontFamily =
     "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
 
+  const [windowWidth, setWindowWidth] = useState(
+    typeof window !== "undefined" ? window.innerWidth : 1024,
+  );
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const isMobile =
+    propIsMobile !== undefined ? propIsMobile : windowWidth < 768;
+
+  const dimensions = isMobile
+    ? { height: "180px", width: "280px", fontSize: "0.9em" }
+    : { height: "210px", width: "350px", fontSize: "1em" };
+
   return (
     <div className="w-full h-full flex justify-center items-center">
       <motion.div
         ref={cardRef}
-        className="w-full h-[210px] max-w-[350px] rounded-lg relative cursor-pointer overflow-hidden"
+        className="w-full rounded-lg relative cursor-pointer overflow-hidden"
         animate={{
           rotateX,
           rotateY,
@@ -99,6 +125,8 @@ export default function LivePreview({ formData }: LivePreviewProps) {
           damping: 15,
         }}
         style={{
+          height: dimensions.height,
+          maxWidth: dimensions.width,
           backgroundColor: formData.color,
           borderRadius:
             formData.template === "modern"
@@ -130,7 +158,9 @@ export default function LivePreview({ formData }: LivePreviewProps) {
           {" "}
           <div style={{ transform: "translateZ(5px)" }}>
             <h3
-              className="text-xl font-bold mb-1.5 tracking-tight"
+              className={`font-bold mb-1.5 tracking-tight ${
+                isMobile ? "text-lg" : "text-xl"
+              }`}
               style={{
                 color: textColors.primary,
                 letterSpacing:
@@ -144,7 +174,9 @@ export default function LivePreview({ formData }: LivePreviewProps) {
               {formData.name}
             </h3>
             <p
-              className="text-base opacity-90 font-medium"
+              className={`opacity-90 font-medium ${
+                isMobile ? "text-sm" : "text-base"
+              }`}
               style={{ color: textColors.secondary }}
             >
               {formData.title}
@@ -160,8 +192,8 @@ export default function LivePreview({ formData }: LivePreviewProps) {
                     ? "rgba(255,255,255,0.15)"
                     : "rgba(0,0,0,0.04)",
                 width: "fit-content",
-                paddingLeft: "0.5rem",
-                paddingRight: "0.75rem",
+                paddingLeft: isMobile ? "0.4rem" : "0.5rem",
+                paddingRight: isMobile ? "0.6rem" : "0.75rem",
                 backdropFilter: "blur(8px)",
                 border:
                   formData.template === "modern"
@@ -172,13 +204,15 @@ export default function LivePreview({ formData }: LivePreviewProps) {
               }}
             >
               <Mail
-                className="h-4 w-4 mr-1.5"
+                className={`${
+                  isMobile ? "h-3.5 w-3.5 mr-1" : "h-4 w-4 mr-1.5"
+                }`}
                 style={{
                   opacity: formData.template === "modern" ? 0.85 : 0.75,
                 }}
               />
               <span
-                className="text-sm font-medium"
+                className={`font-medium ${isMobile ? "text-xs" : "text-sm"}`}
                 style={{
                   opacity: formData.template === "modern" ? 0.9 : 0.85,
                   letterSpacing: "-0.01em",

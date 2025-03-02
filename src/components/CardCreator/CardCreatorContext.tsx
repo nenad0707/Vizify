@@ -152,13 +152,32 @@ export const CardCreatorProvider = ({ children }: { children: ReactNode }) => {
 
       if (response.status === 409) {
         const errorData = await response.json();
-        throw new Error(
-          errorData.error || "A card with this name already exists.",
-        );
+
+        setStatusMessage({
+          type: "error",
+          message: errorData.error || "A card with this name already exists.",
+        });
+
+        toast.error("Card Name Already Exists", {
+          description: "Please choose a different name for your card.",
+          duration: 5000,
+        });
+
+        return;
       } else if (!response.ok) {
-        throw new Error(
-          `Failed to create card: ${response.status} ${response.statusText}`,
-        );
+        const errorData = await response.json();
+        setStatusMessage({
+          type: "error",
+          message:
+            errorData.error || `Failed to create card: ${response.status}`,
+        });
+
+        toast.error("Failed to Create Card", {
+          description: `Please try again later. (${response.status})`,
+          duration: 5000,
+        });
+
+        return;
       }
 
       const data = await response.json();
@@ -175,21 +194,18 @@ export const CardCreatorProvider = ({ children }: { children: ReactNode }) => {
         }
       }, 1000);
     } catch (error) {
-      console.error("Error creating card:", error);
-
-      toast.error("Error Creating Card", {
-        description:
-          error instanceof Error
-            ? error.message
-            : "An error occurred. Please try again.",
-      });
+      console.error("Network error while creating card:", error);
 
       setStatusMessage({
         type: "error",
         message:
-          error instanceof Error
-            ? error.message
-            : "An error occurred while creating your card. Please try again.",
+          "Network error occurred. Please check your connection and try again.",
+      });
+
+      toast.error("Connection Error", {
+        description:
+          "Failed to communicate with server. Please check your network.",
+        duration: 5000,
       });
     } finally {
       setIsSubmitting(false);
