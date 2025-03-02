@@ -81,11 +81,14 @@ export default function LivePreview({ formData }: LivePreviewProps) {
   // Get text colors based on background and template
   const textColors = getTextColor(formData.color, formData.template);
 
+  const fontFamily =
+    "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+
   return (
     <div className="w-full h-full flex justify-center items-center">
       <motion.div
         ref={cardRef}
-        className="w-full h-[210px] max-w-[350px] rounded-lg relative cursor-pointer"
+        className="w-full h-[210px] max-w-[350px] rounded-lg relative cursor-pointer overflow-hidden"
         animate={{
           rotateX,
           rotateY,
@@ -101,50 +104,93 @@ export default function LivePreview({ formData }: LivePreviewProps) {
               : "0.25rem",
           boxShadow: cardShadow,
           transformStyle: "preserve-3d",
+          fontFamily,
         }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
-        <div className="absolute inset-0 p-4 flex flex-col justify-between">
+        {formData.template === "modern" && (
+          <div
+            className="absolute w-32 h-32 rounded-full opacity-10"
+            style={{
+              background:
+                "radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 70%)",
+              top: "-10px",
+              right: "-10px",
+              transform: "translateZ(2px)",
+            }}
+          />
+        )}
+
+        <div className="absolute inset-0 p-5 flex flex-col justify-between">
+          {" "}
           <div style={{ transform: "translateZ(5px)" }}>
             <h3
-              className="text-lg font-bold mb-1"
-              style={{ color: textColors.primary }}
+              className="text-xl font-bold mb-1.5 tracking-tight"
+              style={{
+                color: textColors.primary,
+                letterSpacing:
+                  formData.template === "modern" ? "-0.02em" : "normal",
+                textShadow:
+                  formData.template === "modern"
+                    ? "0 1px 2px rgba(0,0,0,0.1)"
+                    : "none",
+              }}
             >
               {formData.name}
             </h3>
             <p
-              className="text-sm opacity-90"
+              className="text-base opacity-90 font-medium"
               style={{ color: textColors.secondary }}
             >
               {formData.title}
             </p>
           </div>
-
           {/* Contact Info */}
           {formData.email && (
             <div
-              className="flex items-center gap-2 opacity-90"
-              style={{ color: textColors.secondary }}
+              className="flex items-center gap-2.5 opacity-90 backdrop-blur-sm rounded-full pr-2.5 py-1"
+              style={{
+                color: textColors.secondary,
+                backgroundColor:
+                  formData.template === "modern"
+                    ? "rgba(255,255,255,0.1)"
+                    : "transparent",
+                width: "fit-content",
+              }}
             >
-              <Mail className="h-3.5 w-3.5" />
-              <span className="text-xs">{formData.email}</span>
+              <Mail className="h-4 w-4" />
+              <span className="text-sm font-medium">{formData.email}</span>{" "}
             </div>
           )}
-
-          {/* Light reflections */}
           <div
             className="absolute inset-0 rounded-lg opacity-15"
             style={{
               background: `linear-gradient(
                 ${315 + rotateY / 2}deg, 
-                transparent 40%, 
-                rgba(255, 255, 255, 0.25) 50%, 
-                transparent 60%
+                transparent 35%, 
+                rgba(255, 255, 255, 0.3) 50%, 
+                transparent 65%
               )`,
               pointerEvents: "none",
             }}
           />
+          <div
+            className="absolute bottom-0 right-0 w-20 h-20 opacity-10"
+            style={{
+              background: `radial-gradient(circle, rgba(255,255,255,0.6) 0%, transparent 70%)`,
+              pointerEvents: "none",
+              transform: "translateZ(1px)",
+            }}
+          />
+          {formData.template === "modern" && (
+            <div
+              className="absolute bottom-3 right-3 text-[8px] opacity-30 font-medium uppercase tracking-widest"
+              style={{ color: textColors.primary }}
+            >
+              Vizify
+            </div>
+          )}
         </div>
       </motion.div>
     </div>

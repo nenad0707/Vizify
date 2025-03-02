@@ -149,23 +149,23 @@ function CardCreatorContent() {
               className="lg:sticky lg:top-20 space-y-4 flex flex-col items-center lg:items-end"
               style={{ zIndex: 10 }}
             >
-              {/* Enhanced Live preview card */}
+              {/* Enhanced Live preview with premium look */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="bg-card border border-border/40 shadow-md rounded-lg overflow-hidden w-full lg:max-w-[95%]"
+                className="bg-gradient-to-br from-card to-card/70 border border-border/40 shadow-lg rounded-lg overflow-hidden w-full lg:max-w-[95%]" // Added gradient for premium look
               >
-                <div className="p-2 border-b border-border/10 bg-gradient-to-r from-background/80 to-muted/5">
-                  {" "}
-                  <h2 className="text-sm font-medium bg-gradient-to-r from-primary/90 to-primary/70 bg-clip-text text-transparent flex items-center gap-1">
-                    {" "}
-                    <Palette className="h-3.5 w-3.5 text-primary/70" /> Live
-                    Preview
+                <div className="p-3 border-b border-border/10 bg-gradient-to-r from-background/80 to-muted/5">
+                  <h2 className="text-sm font-medium bg-gradient-to-r from-primary/90 to-primary/70 bg-clip-text text-transparent flex items-center gap-1.5">
+                    <Palette className="h-3.5 w-3.5 text-primary/70" />
+                    Live Preview
                   </h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Interactive 3D business card preview
+                  </p>
                 </div>
-                <div className="h-[260px] relative p-3 bg-background/30">
-                  {" "}
+                <div className="h-[280px] relative p-4 bg-background/20">
                   <LivePreview
                     formData={{
                       ...formData,

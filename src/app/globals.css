@@ -105,6 +105,33 @@ body {
   transform: translateZ(10px);
 }
 
+/* Premium card styles */
+.premium-card-shadow {
+  box-shadow:
+    0 10px 25px -5px rgba(0, 0, 0, 0.1),
+    0 8px 10px -6px rgba(0, 0, 0, 0.05),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+.premium-text {
+  font-feature-settings: 'kern', 'liga', 'calt';
+  letter-spacing: -0.01em;
+  font-smoothing: antialiased;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+.premium-3d-card {
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition: all 0.2s ease;
+}
+
+.premium-card-content {
+  transform: translateZ(10px);
+  backface-visibility: hidden;
+}
 
 @layer utilities {
   .sticky-navbar {
