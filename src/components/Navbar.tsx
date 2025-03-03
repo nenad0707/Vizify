@@ -28,6 +28,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LoginModal } from "./LoginModal";
+import { Logo } from "@/components/Logo";
 
 const NAV_LINKS = [
   { href: "/", label: "Home" },
@@ -43,11 +44,7 @@ export default function Navbar() {
     <nav className="fixed top-0 left-0 w-full backdrop-blur-[12px] bg-glass/60 border-b border-glass-border shadow-sm z-50">
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
-          <span className="text-xl font-bold bg-gradient-to-r from-chart-1 to-chart-2 text-transparent bg-clip-text">
-            Vizify
-          </span>
-        </Link>
+        <Logo />
 
         {/* Desktop Navigation */}
         <NavigationMenu className="hidden md:flex">

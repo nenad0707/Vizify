@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Github, Mail, Linkedin } from "lucide-react";
+import { Logo } from "@/components/Logo";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -11,10 +12,11 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           {/* Logo and Tagline */}
-          <div className="text-center md:text-left">
-            <h3 className="text-2xl font-bold bg-gradient-to-r from-chart-1 to-chart-2 text-transparent bg-clip-text inline-block">
+          <div className="text-center md:text-left flex flex-col items-center md:items-start">
+            <Logo />
+            <span className="md:hidden text-xl font-bold bg-gradient-to-r from-chart-1 to-chart-2 text-transparent bg-clip-text transition-transform duration-200 hover:scale-105">
               Vizify
-            </h3>
+            </span>
             <p className="text-muted-foreground text-sm mt-2 max-w-xs">
               Create and share digital business cards effortlessly.
             </p>
