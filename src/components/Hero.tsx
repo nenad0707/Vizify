@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import Link from "next/link";
 
 const titleVariants = {
   hidden: { opacity: 0 },
@@ -60,7 +61,8 @@ export default function Hero() {
           transition={{ duration: 0.8, delay: 1 }}
           className="mt-12"
         >
-          <Button 
+        <Link href="/create">
+        <Button 
             size="lg" 
             className="relative px-8 py-4 text-lg font-semibold 
                       bg-gradient-to-r from-primary to-sky-500 text-white 
@@ -71,6 +73,7 @@ export default function Hero() {
           >
             Get Started
           </Button>
+        </Link>
         </motion.div>
       </motion.div>
 
