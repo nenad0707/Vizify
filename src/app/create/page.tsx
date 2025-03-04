@@ -17,6 +17,7 @@ import { StepNavigator } from "@/components/CardCreator/StepNavigator";
 import { UserDetailsSection } from "@/components/CardCreator/UserDetailsSection";
 import { AppearanceSection } from "@/components/CardCreator/AppearanceSection";
 import { ReviewSection } from "@/components/CardCreator/ReviewSection";
+import { AuthRequired } from "@/components/AuthRequired";
 
 // Dynamic import of LivePreview to avoid server-side rendering issues
 const LivePreview = dynamic(() => import("@/components/LivePreview"), {
@@ -272,22 +273,10 @@ export default function CreateCardPage() {
   // Show login prompt if user is not authenticated
   if (!session) {
     return (
-      <div className="flex flex-col min-h-screen justify-center items-center">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="bg-gradient-to-b from-gradient-start to-gradient-end rounded-xl p-8 shadow-lg border border-glass-border backdrop-blur-sm max-w-md w-full text-center"
-        >
-          <h2 className="text-2xl font-bold mb-3">
-            Create Your Digital Business Card
-          </h2>
-          <p className="text-muted-foreground mb-6">
-            You need to be signed in to create and manage your business cards.
-          </p>
-          <LoginModal />
-        </motion.div>
-      </div>
+      <AuthRequired 
+        title="Create Your Digital Business Card" 
+        message="You need to be signed in to create and manage your business cards."
+      />
     );
   }
 

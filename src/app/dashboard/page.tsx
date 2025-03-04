@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation";
 import { BusinessCard } from "@/types";
 import { DeleteDialog } from "@/components/DeleteDialog";
 import { EditCardModal } from "@/components/EditCardModal";
+import { AuthRequired } from "@/components/AuthRequired";
 
 export default function DashboardPage() {
   const { data: session } = useSession();
@@ -115,18 +116,10 @@ export default function DashboardPage() {
 
   if (!session) {
     return (
-      <div className="flex items-center justify-center min-h-[70vh]">
-        <div className="text-center max-w-md p-8 rounded-xl bg-gradient-to-b from-gradient-start to-gradient-end shadow-lg border border-glass-border">
-          <h2 className="text-2xl font-bold mb-3">Welcome to Dashboard</h2>
-          <p className="text-muted-foreground mb-6">
-            Please sign in to view your business cards and manage your digital
-            presence.
-          </p>
-          <button className="btn bg-primary text-primary-foreground hover:bg-primary/90 px-6 py-2 rounded-lg font-medium transition-all">
-            Sign In
-          </button>
-        </div>
-      </div>
+      <AuthRequired 
+        title="Welcome to Dashboard" 
+        message="Please sign in to view your business cards and manage your digital presence."
+      />
     );
   }
 
