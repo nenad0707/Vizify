@@ -1,15 +1,13 @@
-import { NextResponse, NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-type Params = { params: { id: string } };
-
 export async function GET(
   request: Request,
-  context: { params: { id: string } },
+  context: { params: Promise<{ id: string }> },
 ): Promise<Response> {
-  const { id } = context.params;
+  const { id } = await context.params;
 
   const session = await getServerSession(authOptions);
   if (!session) {
@@ -54,9 +52,10 @@ export async function GET(
 export async function PUT(
   request: Request,
   context: { params: Promise<{ id: string }> },
-) {
+): Promise<Response> {
   const { id } = await context.params;
   const session = await getServerSession(authOptions);
+
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -136,8 +135,9 @@ export async function PUT(
 export async function DELETE(
   request: Request,
   context: { params: Promise<{ id: string }> },
-) {
+): Promise<Response> {
   const { id } = await context.params;
+
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -148,9 +148,11 @@ export async function DELETE(
     if (!card) {
       return NextResponse.json({ error: "Card not found" }, { status: 404 });
     }
+
     if (card.userId !== session.user.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
+
     await prisma.businessCard.delete({ where: { id } });
     return NextResponse.json({ message: "Card deleted successfully" });
   } catch (error) {

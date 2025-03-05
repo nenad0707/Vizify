@@ -194,7 +194,18 @@ function CardCreatorContent() {
                     isMobile ? "h-[240px]" : "h-[280px]"
                   }`}
                 >
-                  <LivePreview data={formData} interactive={!isMobile} />
+                  <LivePreview
+                    data={{
+                      name: formData.name,
+                      title: formData.title,
+                      email: formData.email,
+                      color: formData.color,
+                      template: formData.template,
+                      company: formData.company,
+                      phone: formData.phone,
+                    }}
+                    interactive={!isMobile}
+                  />
                 </div>
               </motion.div>
 

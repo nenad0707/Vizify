@@ -4,12 +4,15 @@ import React, { createContext, useState, useContext, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
+// Make sure your CardFormData interface aligns with BusinessCardData
 export interface CardFormData {
   name: string;
   title: string;
   email: string;
+  phone: string;
+  company: string;
   color: string;
-  template: "modern" | "classic" | "minimalist";
+  template: string;
 }
 
 // Define interface for status message
@@ -39,16 +42,21 @@ const CardCreatorContext = createContext<CardCreatorContextValue | undefined>(
   undefined,
 );
 
+// Ensure you have default values for all fields
+const defaultFormData: CardFormData = {
+  name: "",
+  title: "",
+  email: "",
+  phone: "",
+  company: "",
+  color: "#6366F1", // Default color
+  template: "modern", // Default template
+};
+
 // Provider component
 export const CardCreatorProvider = ({ children }: { children: ReactNode }) => {
   // Initialize form state
-  const [formData, setFormData] = useState<CardFormData>({
-    name: "",
-    title: "",
-    email: "",
-    color: "#6366f1",
-    template: "modern",
-  });
+  const [formData, setFormData] = useState<CardFormData>(defaultFormData);
 
   // Initialize other state
   const [currentStep, setCurrentStep] = useState(0);
@@ -117,13 +125,7 @@ export const CardCreatorProvider = ({ children }: { children: ReactNode }) => {
 
   // Reset form to initial state
   const resetForm = () => {
-    setFormData({
-      name: "",
-      title: "",
-      email: "",
-      color: "#6366f1",
-      template: "modern",
-    });
+    setFormData(defaultFormData);
     setCurrentStep(0);
     setStatusMessage(null);
     setCreatedCard(null);
