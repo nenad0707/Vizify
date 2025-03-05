@@ -121,30 +121,88 @@ export default function CardPage({ params }: CardPageProps) {
     toast.success("Card URL copied to clipboard!");
   };
 
-  // Function to download the business card as PNG with correct color
+  // Improved function to download the business card with proper rounded corners
   const handleDownloadCard = async () => {
     if (!businessCardRef.current || !card) return;
     
     toast.info("Preparing image for download...");
     
     try {
-      // Create a simple version of the card with accurate color capture
+      // Set options with filter to ensure the rounded corners get captured
       const options = {
         pixelRatio: 3,
         backgroundColor: card.color,
-        skipAutoScale: true,
-        cacheBust: true
+        style: {
+          borderRadius: "12px", // Match the border-radius of the card
+          overflow: "hidden"    // Ensure content is clipped to the border-radius
+        },
+        filter: (node: HTMLElement) => {
+          // Make sure we capture everything inside the card (including pseudo-elements that may create rounded corners)
+          return true;
+        },
+        onCloneNode: (node: HTMLElement) => {
+          // Preserve border radius on cloned nodes
+          if (node instanceof HTMLElement && 
+              node.classList?.contains('rounded-xl')) {
+            node.style.borderRadius = '12px';
+          }
+          return node;
+        }
       };
       
+      // Use toPng for better quality
       const dataUrl = await toPng(businessCardRef.current, options);
       
-      // Create a link element and trigger download
-      const link = document.createElement('a');
-      link.download = `${card.name.replace(/\s+/g, '-')}-business-card.png`;
-      link.href = dataUrl;
-      link.click();
+      // Create a canvas to add a border radius to the final image
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          // Fallback if canvas context not available
+          downloadImage(dataUrl);
+          return;
+        }
+        
+        // Set canvas size to match image
+        canvas.width = img.width;
+        canvas.height = img.height;
+        
+        // Draw rounded rectangle
+        ctx.beginPath();
+        const radius = 24 * (img.width / 350); // Scale radius based on image size
+        ctx.moveTo(radius, 0);
+        ctx.lineTo(canvas.width - radius, 0);
+        ctx.arcTo(canvas.width, 0, canvas.width, radius, radius);
+        ctx.lineTo(canvas.width, canvas.height - radius);
+        ctx.arcTo(canvas.width, canvas.height, canvas.width - radius, canvas.height, radius);
+        ctx.lineTo(radius, canvas.height);
+        ctx.arcTo(0, canvas.height, 0, canvas.height - radius, radius);
+        ctx.lineTo(0, radius);
+        ctx.arcTo(0, 0, radius, 0, radius);
+        ctx.closePath();
+        
+        // Create clipping path and draw image
+        ctx.clip();
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        
+        // Get the rounded image as data URL and download
+        const roundedImageDataUrl = canvas.toDataURL('image/png');
+        downloadImage(roundedImageDataUrl);
+      };
       
-      toast.success("Business card downloaded successfully!");
+      // Load the captured image
+      img.src = dataUrl;
+      
+      // Helper function to download the image
+      function downloadImage(url: string) {
+        const link = document.createElement('a');
+        // Safe access to card using non-null assertion since we've checked it at the function start
+        link.download = `${card!.name.replace(/\s+/g, '-')}-business-card.png`;
+        link.href = url;
+        link.click();
+        toast.success("Business card downloaded successfully!");
+      }
     } catch (error) {
       console.error("Error generating image:", error);
       toast.error("Failed to download business card");
