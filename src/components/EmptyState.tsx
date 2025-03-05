@@ -4,7 +4,8 @@ import { motion } from "framer-motion";
 import { useRouter } from "next/router" 
 
 export function EmptyState() {
-
+  const router = useRouter();
+  
   const handleNewCard = () => {
      router.push("/create");
   };
