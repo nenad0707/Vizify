@@ -1,8 +1,14 @@
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { useRouter } from "next/router" 
 
 export function EmptyState() {
+
+  const handleNewCard = () => {
+     router.push("/create");
+  };
+  
   return (
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
@@ -16,7 +22,7 @@ export function EmptyState() {
       <p className="text-muted-foreground max-w-sm mb-6">
         You haven't created any business cards yet. Start by creating your first digital business card.
       </p>
-      <Button className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 transition-all shadow-md">
+      <Button onClick={ handleNewCard } className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 transition-all shadow-md">
         Create Your First Card
       </Button>
     </motion.div>
