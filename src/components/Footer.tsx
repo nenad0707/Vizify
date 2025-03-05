@@ -51,32 +51,32 @@ export default function Footer() {
             &copy; {currentYear} Vizify. All rights reserved.
           </p>
 
-          {/* Social Icons */}
-          <div className="mt-4 md:mt-0 flex justify-center gap-5">
+          {/* Enhanced Social Icons */}
+          <div className="mt-4 md:mt-0 flex justify-center gap-4">
             <Link
               href="https://github.com/vizify"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-muted-foreground hover:text-primary transition-colors"
+              className="bg-background text-muted-foreground hover:text-primary transition-all duration-200 p-2 rounded-full border border-border hover:border-primary/30 hover:shadow-sm hover:-translate-y-0.5"
               aria-label="GitHub"
             >
-              <Github size={18} />
+              <Github size={16} />
             </Link>
             <Link
               href="mailto:info@vizify.com"
-              className="text-muted-foreground hover:text-primary transition-colors"
+              className="bg-background text-muted-foreground hover:text-primary transition-all duration-200 p-2 rounded-full border border-border hover:border-primary/30 hover:shadow-sm hover:-translate-y-0.5"
               aria-label="Email"
             >
-              <Mail size={18} />
+              <Mail size={16} />
             </Link>
             <Link
               href="https://linkedin.com/company/vizify"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-muted-foreground hover:text-primary transition-colors"
+              className="bg-background text-muted-foreground hover:text-primary transition-all duration-200 p-2 rounded-full border border-border hover:border-primary/30 hover:shadow-sm hover:-translate-y-0.5"
               aria-label="LinkedIn"
             >
-              <Linkedin size={18} />
+              <Linkedin size={16} />
             </Link>
           </div>
         </div>
