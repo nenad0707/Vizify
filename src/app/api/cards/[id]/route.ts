@@ -7,9 +7,9 @@ type Params = { params: { id: string } };
 
 export async function GET(
   request: Request,
-  context: { params: Promise<{ id: string }> },
-) {
-  const { id } = await context.params;
+  context: { params: { id: string } },
+): Promise<Response> {
+  const { id } = context.params;
 
   const session = await getServerSession(authOptions);
   if (!session) {
@@ -18,7 +18,9 @@ export async function GET(
 
   try {
     const card = await prisma.businessCard.findUnique({
-      where: { id },
+      where: {
+        id,
+      },
     });
 
     if (!card) {
@@ -29,10 +31,23 @@ export async function GET(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    return NextResponse.json(card);
+    // Return only the fields that actually exist in the database model
+    return NextResponse.json({
+      id: card.id,
+      name: card.name,
+      title: card.title,
+      color: card.color,
+      template: card.template,
+      qrCode: card.qrCode,
+      createdAt: card.createdAt,
+      userId: card.userId,
+    });
   } catch (error) {
     console.error("Error fetching card:", error);
-    return NextResponse.json({ error: "Error fetching card" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch card" },
+      { status: 500 },
+    );
   }
 }
 
@@ -47,7 +62,26 @@ export async function PUT(
   }
 
   try {
-    const { name, title, color } = await request.json();
+    const { name, title, color, template } = await request.json();
+
+    if (!name || !title) {
+      return NextResponse.json(
+        { error: "Name and title are required" },
+        { status: 400 },
+      );
+    }
+
+    // Validate template - must be one of the allowed values
+    const allowedTemplates = ["modern", "classic", "minimalist"];
+    if (template && !allowedTemplates.includes(template)) {
+      return NextResponse.json(
+        {
+          error:
+            "Invalid template value. Must be one of: modern, classic, or minimalist",
+        },
+        { status: 400 },
+      );
+    }
 
     // First find the existing card
     const card = await prisma.businessCard.findUnique({ where: { id } });
@@ -84,7 +118,12 @@ export async function PUT(
     // Proceed with updating the card
     const updatedCard = await prisma.businessCard.update({
       where: { id },
-      data: { name, title, color },
+      data: {
+        name,
+        title,
+        color,
+        template: template || "modern", // Ensure template is saved with a default value
+      },
     });
 
     return NextResponse.json(updatedCard);

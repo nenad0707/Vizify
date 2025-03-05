@@ -17,6 +17,8 @@ import { AlertCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import ColorPicker from "@/components/ColorPicker";
 import { BusinessCard } from "@/types";
+import { TemplateSelector } from "@/components/ui/template-selector";
+import LivePreview from "@/components/LivePreview";
 
 interface EditCardModalProps {
   open: boolean;
@@ -35,6 +37,7 @@ export function EditCardModal({
     name: "",
     title: "",
     color: "",
+    template: "modern", // Default value so it's never undefined
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,6 +49,7 @@ export function EditCardModal({
         name: card.name,
         title: card.title,
         color: card.color,
+        template: card.template || "modern", // Default to modern if not set
       });
       setOriginalName(card.name);
       setError(null);
@@ -57,6 +61,10 @@ export function EditCardModal({
       setError(null);
     }
     setFormData({ ...formData, name: e.target.value });
+  };
+
+  const handleTemplateChange = (template: string) => {
+    setFormData({ ...formData, template });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -182,6 +190,28 @@ export function EditCardModal({
                   setSelectedColor={(color) =>
                     setFormData({ ...formData, color })
                   }
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label className="text-right pt-2">Template</Label>
+              <div className="col-span-3">
+                <TemplateSelector
+                  value={formData.template}
+                  onChange={handleTemplateChange}
+                />
+              </div>
+            </div>
+
+            {/* Live Preview of the card */}
+            <div className="mt-4 col-span-4">
+              <Label className="mb-2 block">Preview</Label>
+              <div className="max-w-xs mx-auto">
+                <LivePreview
+                  data={formData}
+                  interactive={false}
+                  className="shadow-md"
                 />
               </div>
             </div>

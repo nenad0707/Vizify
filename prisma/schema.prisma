@@ -26,12 +26,13 @@ model User {
 }
 
 model BusinessCard {
-  id     String @id @default(uuid())
-  userId String 
-  name   String
-  title  String
-  color  String
-  qrCode String
+  id       String @id @default(uuid())
+  userId   String 
+  name     String
+  title    String
+  color    String
+  template String @default("modern")
+  qrCode   String
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

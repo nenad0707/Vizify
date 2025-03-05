@@ -27,20 +27,44 @@ export async function POST(request: Request): Promise<Response> {
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
   try {
-    const { name, title, color } = await request.json();
+    const { name, title, color, template } = await request.json();
+
+    // Check for required fields
     if (!name || !title) {
-      return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 },
+      );
     }
+
+    // Validate template - must be one of the allowed values
+    const allowedTemplates = ["modern", "classic", "minimalist"];
+    if (template && !allowedTemplates.includes(template)) {
+      return NextResponse.json(
+        {
+          error:
+            "Invalid template value. Must be one of: modern, classic, or minimalist",
+        },
+        { status: 400 },
+      );
+    }
+
+    // Check if user exists
     const existingUser = await prisma.user.findUnique({
       where: { id: session.user.id },
     });
+
     if (!existingUser) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
+
+    // Check for duplicate card names
     const existingCard = await prisma.businessCard.findFirst({
       where: { userId: session.user.id, name },
     });
+
     if (existingCard) {
       return NextResponse.json(
         {
@@ -51,12 +75,14 @@ export async function POST(request: Request): Promise<Response> {
       );
     }
 
+    // Create the new card with template
     const card = await prisma.businessCard.create({
       data: {
         userId: session.user.id,
         name,
         title,
         color: color || "#ffffff",
+        template: template || "modern", // Use provided template or default to "modern"
         qrCode: "",
       },
     });

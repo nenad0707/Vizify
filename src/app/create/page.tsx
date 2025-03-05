@@ -194,14 +194,7 @@ function CardCreatorContent() {
                     isMobile ? "h-[240px]" : "h-[280px]"
                   }`}
                 >
-                  <LivePreview
-                    formData={{
-                      ...formData,
-                      name: formData.name || "Your Name",
-                      title: formData.title || "Your Title",
-                    }}
-                    isMobile={isMobile}
-                  />
+                  <LivePreview data={formData} interactive={!isMobile} />
                 </div>
               </motion.div>
 
@@ -275,8 +268,8 @@ export default function CreateCardPage() {
   // Show login prompt if user is not authenticated
   if (!session) {
     return (
-      <AuthRequired 
-        title="Create Your Digital Business Card" 
+      <AuthRequired
+        title="Create Your Digital Business Card"
         message="You need to be signed in to create and manage your business cards."
       />
     );

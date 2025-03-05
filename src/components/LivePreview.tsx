@@ -1,257 +1,160 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Mail } from "lucide-react";
-import { CardFormData } from "@/components/CardCreator/CardCreatorContext";
+import { forwardRef, ReactNode } from "react";
+import { cn } from "@/lib/utils";
+
+export interface BusinessCardData {
+  name: string;
+  title: string;
+  color: string;
+  template: string;
+  email?: string;
+  phone?: string;
+  company?: string;
+}
 
 interface LivePreviewProps {
-  formData: CardFormData;
-  isMobile?: boolean;
+  data: BusinessCardData;
+  className?: string;
+  interactive?: boolean;
 }
 
-export default function LivePreview({
-  formData,
-  isMobile: propIsMobile,
-}: LivePreviewProps) {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const [rotateX, setRotateX] = useState(0);
-  const [rotateY, setRotateY] = useState(0);
-  const [cardShadow, setCardShadow] = useState("0px 5px 15px rgba(0,0,0,0.1)");
+// Function to get border radius based on template
+const getBorderRadius = (template: string): string => {
+  switch (template) {
+    case "modern":
+      return "0.75rem";
+    case "minimalist":
+      return "0.5rem";
+    case "classic":
+      return "0.25rem";
+    default:
+      return "0.75rem"; // Default to modern
+  }
+};
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return;
-
-    const card = cardRef.current;
-    const rect = card.getBoundingClientRect();
-    const cardCenterX = rect.left + rect.width / 2;
-    const cardCenterY = rect.top + rect.height / 2;
-
-    const rotateYVal = ((e.clientX - cardCenterX) / (rect.width / 2)) * 10;
-    const rotateXVal = ((e.clientY - cardCenterY) / (rect.height / 2)) * -10;
-
-    setRotateX(rotateXVal);
-    setRotateY(rotateYVal);
-    setCardShadow(`
-      ${rotateYVal * 0.3}px ${
-      Math.abs(rotateXVal) * 0.6
-    }px 25px rgba(0,0,0,0.12),
-      ${rotateYVal * 0.1}px ${
-      Math.abs(rotateXVal) * 0.3
-    }px 10px rgba(0,0,0,0.08)
-    `);
+// Function to get text colors based on template
+const getTextColors = (template: string) => {
+  return {
+    primary: template === "modern" ? "#ffffff" : "#000000",
+    secondary:
+      template === "modern" ? "rgba(255,255,255,0.9)" : "rgba(0,0,0,0.7)",
+    tertiary:
+      template === "modern" ? "rgba(255,255,255,0.8)" : "rgba(0,0,0,0.6)",
   };
+};
 
-  // Reset card rotation when mouse leaves
-  const handleMouseLeave = () => {
-    setRotateX(0);
-    setRotateY(0);
-    setCardShadow("0px 5px 15px rgba(0,0,0,0.1)");
-  };
+// Function to get box shadow based on template
+const getBoxShadow = (template: string): string => {
+  switch (template) {
+    case "modern":
+      return "0 10px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)";
+    case "minimalist":
+      return "0 1px 3px rgba(0,0,0,0.05)";
+    case "classic":
+      return "0 4px 6px rgba(0,0,0,0.1)";
+    default:
+      return "0 10px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)";
+  }
+};
 
-  // Return to flat position smoothly when component unmounts
-  useEffect(() => {
-    return () => {
-      setRotateX(0);
-      setRotateY(0);
-      setCardShadow("0px 5px 15px rgba(0,0,0,0.1)");
-    };
-  }, []);
+export const LivePreview = forwardRef<HTMLDivElement, LivePreviewProps>(
+  ({ data, className, interactive = true }, ref) => {
+    const { name, title, email, phone, company, color, template } = data;
+    const borderRadius = getBorderRadius(template || "modern");
+    const textColors = getTextColors(template || "modern");
+    const boxShadow = getBoxShadow(template || "modern");
 
-  // Get the best text color based on background color
-  const getTextColor = (bgColor: string, template: string) => {
-    // Modern template uses white text regardless
-    if (template === "modern") {
-      return { primary: "#ffffff", secondary: "rgba(255,255,255,0.85)" };
-    }
-
-    // For other templates, check if background is dark
-    const isLight = isLightColor(bgColor);
-    return isLight
-      ? { primary: "#111111", secondary: "rgba(0,0,0,0.7)" }
-      : { primary: "#ffffff", secondary: "rgba(255,255,255,0.85)" };
-  };
-
-  // Helper to determine if a color is light or dark
-  const isLightColor = (color: string) => {
-    const hex = color.replace("#", "");
-    const r = parseInt(hex.substr(0, 2), 16);
-    const g = parseInt(hex.substr(2, 2), 16);
-    const b = parseInt(hex.substr(4, 2), 16);
-    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-    return brightness > 155;
-  };
-
-  // Get text colors based on background and template
-  const textColors = getTextColor(formData.color, formData.template);
-
-  const fontFamily =
-    "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-
-  const [windowWidth, setWindowWidth] = useState(
-    typeof window !== "undefined" ? window.innerWidth : 1024,
-  );
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const handleResize = () => {
-      setWindowWidth(window.innerWidth);
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  const isMobile =
-    propIsMobile !== undefined ? propIsMobile : windowWidth < 768;
-
-  const dimensions = isMobile
-    ? { height: "180px", width: "280px", fontSize: "0.9em" }
-    : { height: "210px", width: "350px", fontSize: "1em" };
-
-  return (
-    <div className="w-full h-full flex justify-center items-center">
+    return (
       <motion.div
-        ref={cardRef}
-        className="w-full rounded-lg relative cursor-pointer overflow-hidden"
-        animate={{
-          rotateX,
-          rotateY,
-        }}
-        transition={{
-          type: "spring",
-          stiffness: 280,
-          damping: 15,
-        }}
+        ref={ref}
+        className={cn(
+          "business-card w-full aspect-[1.7/1] overflow-hidden relative",
+          interactive && "premium-3d-card",
+          className,
+        )}
+        whileHover={
+          interactive
+            ? {
+                rotateX: [0, -5, 0],
+                rotateY: [0, 10, 0],
+                transition: { duration: 0.5 },
+              }
+            : undefined
+        }
         style={{
-          height: dimensions.height,
-          maxWidth: dimensions.width,
-          backgroundColor: formData.color,
-          borderRadius:
-            formData.template === "modern"
-              ? "0.75rem"
-              : formData.template === "minimalist"
-              ? "0.5rem"
-              : "0.25rem",
-          boxShadow: cardShadow,
-          transformStyle: "preserve-3d",
-          fontFamily,
+          backgroundColor: color,
+          borderRadius,
+          boxShadow,
         }}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
       >
-        {formData.template === "modern" && (
-          <div
-            className="absolute w-32 h-32 rounded-full opacity-10"
-            style={{
-              background:
-                "radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 70%)",
-              top: "-10px",
-              right: "-10px",
-              transform: "translateZ(2px)",
-            }}
-          />
+        {interactive && (
+          <>
+            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/20" />
+          </>
         )}
 
-        <div className="absolute inset-0 p-5 flex flex-col justify-between">
-          {" "}
-          <div style={{ transform: "translateZ(5px)" }}>
-            <h3
-              className={`font-bold mb-1.5 tracking-tight ${
-                isMobile ? "text-lg" : "text-xl"
-              }`}
-              style={{
-                color: textColors.primary,
-                letterSpacing:
-                  formData.template === "modern" ? "-0.02em" : "normal",
-                textShadow:
-                  formData.template === "modern"
-                    ? "0 1px 2px rgba(0,0,0,0.1)"
-                    : "none",
-              }}
-            >
-              {formData.name}
-            </h3>
-            <p
-              className={`opacity-90 font-medium ${
-                isMobile ? "text-sm" : "text-base"
-              }`}
-              style={{ color: textColors.secondary }}
-            >
-              {formData.title}
-            </p>
-          </div>
-          {formData.email && (
-            <div
-              className="flex items-center backdrop-blur-sm rounded-full py-1 overflow-hidden"
-              style={{
-                color: textColors.secondary,
-                backgroundColor:
-                  formData.template === "modern"
-                    ? "rgba(255,255,255,0.15)"
-                    : "rgba(0,0,0,0.04)",
-                width: "fit-content",
-                paddingLeft: isMobile ? "0.4rem" : "0.5rem",
-                paddingRight: isMobile ? "0.6rem" : "0.75rem",
-                backdropFilter: "blur(8px)",
-                border:
-                  formData.template === "modern"
-                    ? "1px solid rgba(255,255,255,0.12)"
-                    : "1px solid rgba(0,0,0,0.02)",
-                boxShadow: "0 2px 4px rgba(0,0,0,0.03)",
-                margin: "0",
-              }}
-            >
-              <Mail
-                className={`${
-                  isMobile ? "h-3.5 w-3.5 mr-1" : "h-4 w-4 mr-1.5"
-                }`}
-                style={{
-                  opacity: formData.template === "modern" ? 0.85 : 0.75,
-                }}
-              />
-              <span
-                className={`font-medium ${isMobile ? "text-xs" : "text-sm"}`}
-                style={{
-                  opacity: formData.template === "modern" ? 0.9 : 0.85,
-                  letterSpacing: "-0.01em",
-                }}
+        <div className="p-6 flex flex-col justify-between h-full relative">
+          <div className="flex justify-between items-start">
+            <div>
+              <h3
+                className="text-xl font-bold drop-shadow-sm"
+                style={{ color: textColors.primary }}
               >
-                {formData.email}
-              </span>
+                {name || "Your Name"}
+              </h3>
+              <p
+                className="text-sm mt-1"
+                style={{ color: textColors.secondary }}
+              >
+                {title || "Your Title"}
+              </p>
             </div>
-          )}
-          <div
-            className="absolute inset-0 rounded-lg opacity-15"
-            style={{
-              background: `linear-gradient(
-                ${315 + rotateY / 2}deg, 
-                transparent 35%, 
-                rgba(255, 255, 255, 0.3) 50%, 
-                transparent 65%
-              )`,
-              pointerEvents: "none",
-            }}
-          />
-          <div
-            className="absolute bottom-0 right-0 w-20 h-20 opacity-10"
-            style={{
-              background: `radial-gradient(circle, rgba(255,255,255,0.6) 0%, transparent 70%)`,
-              pointerEvents: "none",
-              transform: "translateZ(1px)",
-            }}
-          />
-          {formData.template === "modern" && (
-            <div
-              className="absolute bottom-3 right-3 text-[8px] opacity-30 font-medium uppercase tracking-widest"
-              style={{ color: textColors.primary }}
-            >
-              Vizify
+            <div className="h-12 w-12 rounded-full flex items-center justify-center bg-white/20 backdrop-blur-sm text-white font-bold text-lg shadow-md">
+              {(name || "?").charAt(0)}
             </div>
-          )}
+          </div>
+
+          <div>
+            {company && (
+              <p
+                className="text-xs mb-1"
+                style={{ color: textColors.tertiary }}
+              >
+                {company}
+              </p>
+            )}
+            {email && (
+              <p
+                className="text-xs font-medium"
+                style={{ color: textColors.secondary }}
+              >
+                {email}
+              </p>
+            )}
+            {phone && (
+              <p
+                className="text-xs font-medium"
+                style={{ color: textColors.secondary }}
+              >
+                {phone}
+              </p>
+            )}
+          </div>
+
+          <div className="absolute bottom-4 right-4 space-x-1 flex">
+            <div className="h-1.5 w-8 bg-white/20 rounded-full" />
+            <div className="h-1.5 w-5 bg-white/20 rounded-full" />
+            <div className="h-1.5 w-3 bg-white/20 rounded-full" />
+          </div>
         </div>
       </motion.div>
-    </div>
-  );
-}
+    );
+  },
+);
+
+LivePreview.displayName = "LivePreview";
+
+export default LivePreview;

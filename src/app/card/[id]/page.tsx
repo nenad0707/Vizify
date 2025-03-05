@@ -26,7 +26,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { DeleteDialog } from "@/components/DeleteDialog";
 import { EditCardModal } from "@/components/EditCardModal";
 import * as htmlToImage from "html-to-image";
-import { toPng } from 'html-to-image';
+import { toPng } from "html-to-image";
+import LivePreview from "@/components/LivePreview";
 
 interface CardPageProps {
   params: Promise<{ id: string }>;
@@ -37,6 +38,7 @@ interface CardData {
   name: string;
   title: string;
   color: string;
+  template: string; // Changed from optional to required
   email?: string;
   phone?: string;
   company?: string;
@@ -57,9 +59,69 @@ export default function CardPage({ params }: CardPageProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  
+
   // Reference to the business card component for image capture
   const businessCardRef = useRef<HTMLDivElement>(null);
+
+  // Function to get border radius based on template
+  const getBorderRadius = (template: string): string => {
+    switch (template) {
+      case "modern":
+        return "0.75rem";
+      case "minimalist":
+        return "0.5rem";
+      case "classic":
+        return "0.25rem";
+      default:
+        return "0.75rem"; // Default to modern
+    }
+  };
+
+  // Function to get card styles based on template
+  const getCardStyles = (template: string, color: string) => {
+    const borderRadius = getBorderRadius(template);
+
+    switch (template) {
+      case "modern":
+        return {
+          backgroundColor: color,
+          borderRadius,
+          boxShadow:
+            "0 10px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)",
+          padding: "1.5rem",
+          textColor: "#ffffff",
+          textColorSecondary: "rgba(255,255,255,0.9)",
+        };
+      case "classic":
+        return {
+          backgroundColor: color,
+          borderRadius,
+          boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+          padding: "1.5rem",
+          textColor: "#000000",
+          textColorSecondary: "rgba(0,0,0,0.7)",
+        };
+      case "minimalist":
+        return {
+          backgroundColor: color,
+          borderRadius,
+          boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+          padding: "1.5rem",
+          textColor: "#000000",
+          textColorSecondary: "rgba(0,0,0,0.7)",
+        };
+      default:
+        return {
+          backgroundColor: color,
+          borderRadius: "0.75rem",
+          boxShadow:
+            "0 10px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)",
+          padding: "1.5rem",
+          textColor: "#ffffff",
+          textColorSecondary: "rgba(255,255,255,0.9)",
+        };
+    }
+  };
 
   useEffect(() => {
     const fetchCard = async () => {
@@ -124,17 +186,17 @@ export default function CardPage({ params }: CardPageProps) {
   // Improved function to download the business card with proper rounded corners
   const handleDownloadCard = async () => {
     if (!businessCardRef.current || !card) return;
-    
+
     toast.info("Preparing image for download...");
-    
+
     try {
       // Set options with filter to ensure the rounded corners get captured
       const options = {
         pixelRatio: 3,
         backgroundColor: card.color,
         style: {
-          borderRadius: "12px", // Match the border-radius of the card
-          overflow: "hidden"    // Ensure content is clipped to the border-radius
+          borderRadius: getBorderRadius(card.template || "modern"), // Use the same function for consistency
+          overflow: "hidden", // Ensure content is clipped to the border-radius
         },
         filter: (node: HTMLElement) => {
           // Make sure we capture everything inside the card (including pseudo-elements that may create rounded corners)
@@ -142,63 +204,75 @@ export default function CardPage({ params }: CardPageProps) {
         },
         onCloneNode: (node: HTMLElement) => {
           // Preserve border radius on cloned nodes
-          if (node instanceof HTMLElement && 
-              node.classList?.contains('rounded-xl')) {
-            node.style.borderRadius = '12px';
+          if (
+            node instanceof HTMLElement &&
+            node.classList?.contains("business-card")
+          ) {
+            node.style.borderRadius = getBorderRadius(
+              card.template || "modern",
+            );
           }
           return node;
-        }
+        },
       };
-      
+
       // Use toPng for better quality
       const dataUrl = await toPng(businessCardRef.current, options);
-      
+
       // Create a canvas to add a border radius to the final image
       const img = new Image();
       img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
         if (!ctx) {
           // Fallback if canvas context not available
           downloadImage(dataUrl);
           return;
         }
-        
+
         // Set canvas size to match image
         canvas.width = img.width;
         canvas.height = img.height;
-        
+
         // Draw rounded rectangle
         ctx.beginPath();
-        const radius = 24 * (img.width / 350); // Scale radius based on image size
+        const radius =
+          parseInt(getBorderRadius(card.template || "modern")) *
+          (img.width / 350); // Adjust radius based on template
         ctx.moveTo(radius, 0);
         ctx.lineTo(canvas.width - radius, 0);
         ctx.arcTo(canvas.width, 0, canvas.width, radius, radius);
         ctx.lineTo(canvas.width, canvas.height - radius);
-        ctx.arcTo(canvas.width, canvas.height, canvas.width - radius, canvas.height, radius);
+        ctx.arcTo(
+          canvas.width,
+          canvas.height,
+          canvas.width - radius,
+          canvas.height,
+          radius,
+        );
         ctx.lineTo(radius, canvas.height);
         ctx.arcTo(0, canvas.height, 0, canvas.height - radius, radius);
         ctx.lineTo(0, radius);
         ctx.arcTo(0, 0, radius, 0, radius);
         ctx.closePath();
-        
+
         // Create clipping path and draw image
         ctx.clip();
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        
+
         // Get the rounded image as data URL and download
-        const roundedImageDataUrl = canvas.toDataURL('image/png');
+        const roundedImageDataUrl = canvas.toDataURL("image/png");
         downloadImage(roundedImageDataUrl);
       };
-      
+
       // Load the captured image
       img.src = dataUrl;
-      
+
       // Helper function to download the image
       function downloadImage(url: string) {
-        const link = document.createElement('a');
+        const link = document.createElement("a");
         // Safe access to card using non-null assertion since we've checked it at the function start
-        link.download = `${card!.name.replace(/\s+/g, '-')}-business-card.png`;
+        link.download = `${card!.name.replace(/\s+/g, "-")}-business-card.png`;
         link.href = url;
         link.click();
         toast.success("Business card downloaded successfully!");
@@ -269,7 +343,8 @@ export default function CardPage({ params }: CardPageProps) {
             </div>
             <h2 className="text-2xl font-bold">Card Not Found</h2>
             <p className="text-muted-foreground mt-2">
-              The business card you're looking for doesn't exist or has been removed.
+              The business card you're looking for doesn't exist or has been
+              removed.
             </p>
           </div>
           <Button asChild>
@@ -340,71 +415,13 @@ export default function CardPage({ params }: CardPageProps) {
             <div className="p-5 sm:p-8 flex flex-col md:flex-row md:items-center gap-8">
               <div className="relative flex-1" onMouseMove={handleMouseMove}>
                 <div className="perspective-1000 max-w-[350px] mx-auto md:mx-0">
-                  <motion.div
+                  {/* Replace the old card code with LivePreview */}
+                  <LivePreview
                     ref={businessCardRef}
-                    className="business-card premium-3d-card w-full aspect-[1.7/1] rounded-xl overflow-hidden relative"
-                    whileHover={{
-                      rotateX: [0, -5, 0],
-                      rotateY: [0, 10, 0],
-                      transition: { duration: 0.5 },
-                    }}
-                    style={{
-                      backgroundColor: card.color,
-                      boxShadow: "0 35px 60px -15px rgba(0, 0, 0, 0.2)",
-                    }}
-                  >
-                    <div
-                      className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"
-                      style={{
-                        transform: `translate(${mousePosition.x / 10}px, ${
-                          mousePosition.y / 10
-                        }px)`,
-                        background:
-                          "linear-gradient(105deg, transparent 20%, rgba(255, 255, 255, 0.25) 40%, rgba(255, 255, 255, 0.1) 60%, transparent 80%)",
-                      }}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/20" />
-
-                    <div className="p-6 flex flex-col justify-between h-full relative">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="text-white text-xl font-bold drop-shadow-sm">
-                            {card.name}
-                          </h3>
-                          <p className="text-white/90 text-sm mt-1">
-                            {card.title}
-                          </p>
-                        </div>
-                        <div className="h-12 w-12 rounded-full flex items-center justify-center bg-white/20 backdrop-blur-sm text-white font-bold text-lg shadow-md">
-                          {card.name.charAt(0)}
-                        </div>
-                      </div>
-
-                      <div>
-                        {card.company && (
-                          <p className="text-white/80 text-xs mb-1">
-                            {card.company}
-                          </p>
-                        )}
-                        {card.email && (
-                          <p className="text-white/90 text-xs font-medium">
-                            {card.email}
-                          </p>
-                        )}
-                        {card.phone && (
-                          <p className="text-white/90 text-xs font-medium">
-                            {card.phone}
-                          </p>
-                        )}
-                      </div>
-
-                      <div className="absolute bottom-4 right-4 space-x-1 flex">
-                        <div className="h-1.5 w-8 bg-white/20 rounded-full" />
-                        <div className="h-1.5 w-5 bg-white/20 rounded-full" />
-                        <div className="h-1.5 w-3 bg-white/20 rounded-full" />
-                      </div>
-                    </div>
-                  </motion.div>
+                    data={card}
+                    className="rounded-xl"
+                    interactive={true}
+                  />
                 </div>
 
                 <div className="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%]">
@@ -423,7 +440,7 @@ export default function CardPage({ params }: CardPageProps) {
                 </div>
               </div>
 
-              {/* Card Info */}
+              {/* Card Info section */}
               <div className="flex-1 max-w-md">
                 <h1 className="text-3xl font-bold text-foreground mb-2">
                   {card.name}
@@ -442,11 +459,13 @@ export default function CardPage({ params }: CardPageProps) {
                         Brand Color
                       </span>
                       <div className="flex items-center gap-2">
-                        <div 
+                        <div
                           className="h-4 w-4 rounded-full border border-border"
                           style={{ backgroundColor: card.color }}
                         />
-                        <span className="text-sm font-medium">{card.color}</span>
+                        <span className="text-sm font-medium">
+                          {card.color}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -460,7 +479,9 @@ export default function CardPage({ params }: CardPageProps) {
                         <span className="text-xs text-muted-foreground block">
                           Company
                         </span>
-                        <span className="text-sm font-medium">{card.company}</span>
+                        <span className="text-sm font-medium">
+                          {card.company}
+                        </span>
                       </div>
                     </div>
                   )}
@@ -481,18 +502,18 @@ export default function CardPage({ params }: CardPageProps) {
                 </div>
 
                 <div className="flex flex-col sm:flex-row sm:items-center gap-3 mt-8">
-                  <Button 
-                    onClick={handleShare} 
+                  <Button
+                    onClick={handleShare}
                     className="flex-1"
                     variant="default"
                   >
                     <Share2 className="mr-2 h-4 w-4" />
                     Share Card
                   </Button>
-                  
-                  <Button 
-                    onClick={handleDownloadCard} 
-                    variant="outline" 
+
+                  <Button
+                    onClick={handleDownloadCard}
+                    variant="outline"
                     className="flex-1"
                   >
                     <Download className="mr-2 h-4 w-4" />
@@ -507,34 +528,33 @@ export default function CardPage({ params }: CardPageProps) {
               <div className="flex flex-col sm:flex-row items-center gap-8">
                 <div className="flex-shrink-0">
                   <div className="bg-white p-3 rounded-lg shadow-md">
-                    <QRCodeComponent 
-                      url={cardUrl} 
-                      size={150}
-                    />
+                    <QRCodeComponent url={cardUrl} size={150} />
                   </div>
                 </div>
-                
+
                 <div>
                   <h3 className="text-lg font-medium mb-2 flex items-center gap-2">
                     <QrCode className="h-4 w-4" />
                     Scan to View
                   </h3>
                   <p className="text-muted-foreground max-w-md text-sm">
-                    Scan this QR code with a smartphone camera to instantly view this 
-                    digital business card. Share it in emails, presentations, or print it 
-                    on physical materials.
+                    Scan this QR code with a smartphone camera to instantly view
+                    this digital business card. Share it in emails,
+                    presentations, or print it on physical materials.
                   </p>
                 </div>
-                
+
                 <div className="mt-4">
-                  <p className="text-sm text-muted-foreground mb-2">Or share this link:</p>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Or share this link:
+                  </p>
                   <div className="flex items-center gap-2">
                     <div className="bg-background/80 border border-border/60 rounded-md px-3 py-1.5 text-xs text-foreground/80 overflow-hidden text-ellipsis max-w-[220px] sm:max-w-xs">
                       {cardUrl}
                     </div>
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
+                    <Button
+                      size="sm"
+                      variant="outline"
                       className="h-8"
                       onClick={handleShare}
                     >
@@ -559,7 +579,8 @@ export default function CardPage({ params }: CardPageProps) {
               Create your own digital business card
             </h2>
             <p className="text-muted-foreground mb-4">
-              Join Vizify and create professional digital business cards that stand out.
+              Join Vizify and create professional digital business cards that
+              stand out.
             </p>
             <Button asChild size="lg">
               <Link href="/create">
@@ -583,10 +604,7 @@ export default function CardPage({ params }: CardPageProps) {
           }}
           cardId={id}
           cardName={card.name}
-          onDelete={() => {
-            toast.success("Card deleted successfully");
-            router.push("/dashboard");
-          }}
+          onDelete={handleDeleteComplete}
         />
       )}
 
@@ -594,7 +612,10 @@ export default function CardPage({ params }: CardPageProps) {
         <EditCardModal
           open={isEditModalOpen}
           onOpenChange={setIsEditModalOpen}
-          card={card}
+          card={{
+            ...card,
+            template: card.template || "modern", // Ensure the template is never undefined
+          }}
           onUpdate={refreshCard}
         />
       )}

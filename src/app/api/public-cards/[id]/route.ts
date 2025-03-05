@@ -21,6 +21,7 @@ export async function GET(
       name: card.name,
       title: card.title,
       color: card.color,
+      template: card.template, // Already correctly included the template field
       createdAt: card.createdAt,
       qrCode: card.qrCode,
     });
