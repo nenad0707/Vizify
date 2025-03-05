@@ -30,7 +30,7 @@ const LivePreview = dynamic(() => import("@/components/LivePreview"), {
 });
 
 function CardCreatorContent() {
-  const { formData, currentStep, createdCard } = useCardCreator();
+  const { formData, currentStep, createdCard, resetForm } = useCardCreator();
   const [modalOpen, setModalOpen] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [windowWidth, setWindowWidth] = useState(
@@ -60,6 +60,8 @@ function CardCreatorContent() {
   const handleModalClose = (redirected = false) => {
     if (!redirected) {
       setModalOpen(false);
+      // Reset the form when modal is closed but user is not redirected
+      resetForm();
     }
   };
 
