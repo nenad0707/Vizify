@@ -3,7 +3,7 @@
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { useRouter } from "next/router" 
+import { useRouter } from "next/navigation";
 
 export function EmptyState() {
   const router = useRouter();
