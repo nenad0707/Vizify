@@ -8,7 +8,7 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-glass/10 backdrop-blur-[4px] border-t border-glass-border py-8">
+    <footer className="bg-background backdrop-blur-[4px] border-t border-border py-8">
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           {/* Logo and Tagline */}
@@ -46,7 +46,7 @@ export default function Footer() {
         </div>
 
         {/* Copyright and Social */}
-        <div className="mt-6 pt-6 border-t border-glass-border/50 text-center md:flex md:justify-between md:items-center">
+        <div className="mt-6 pt-6 border-t border-border text-center md:flex md:justify-between md:items-center">
           <p className="text-xs text-muted-foreground">
             &copy; {currentYear} Vizify. All rights reserved.
           </p>
