@@ -242,47 +242,11 @@ const CardItem = memo(
             </div>
 
             <div className="space-y-2">
-              {card.tags && card.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-2">
-                  {card.tags.slice(0, 2).map((tag) => (
-                    <Badge
-                      key={tag}
-                      variant="secondary"
-                      className="text-xs py-0"
-                    >
-                      {tag}
-                    </Badge>
-                  ))}
-                  {card.tags.length > 2 && (
-                    <Badge variant="outline" className="text-xs py-0">
-                      +{card.tags.length - 2}
-                    </Badge>
-                  )}
-                </div>
-              )}
-
-              <AnimatePresence>
-                {isExpanded && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                    className="text-xs text-muted-foreground space-y-1 pt-2 bg-muted/20 p-2 rounded-md"
-                  >
-                    {card.email && (
-                      <p className="truncate">
-                        <span className="font-medium">Email:</span> {card.email}
-                      </p>
-                    )}
-                    {card.phone && (
-                      <p className="truncate">
-                        <span className="font-medium">Phone:</span> {card.phone}
-                      </p>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              <div className="flex items-center justify-between mt-2">
+                <p className="text-xs text-muted-foreground">
+                  Created {new Date(card.createdAt).toLocaleDateString()}
+                </p>
+              </div>
             </div>
           </CardContent>
 
