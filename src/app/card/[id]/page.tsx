@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, use, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -16,7 +16,7 @@ import {
   Briefcase,
   Palette,
   Calendar,
-  ChevronRight,
+  Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import QRCodeComponent from "@/components/QRCodeComponent";
@@ -25,6 +25,8 @@ import { cn } from "@/lib/utils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { DeleteDialog } from "@/components/DeleteDialog";
 import { EditCardModal } from "@/components/EditCardModal";
+import * as htmlToImage from "html-to-image";
+import { toPng } from 'html-to-image';
 
 interface CardPageProps {
   params: Promise<{ id: string }>;
@@ -55,6 +57,9 @@ export default function CardPage({ params }: CardPageProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  
+  // Reference to the business card component for image capture
+  const businessCardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchCard = async () => {
@@ -114,6 +119,36 @@ export default function CardPage({ params }: CardPageProps) {
     const cardUrl = `${window.location.origin}/card/${id}`;
     navigator.clipboard.writeText(cardUrl);
     toast.success("Card URL copied to clipboard!");
+  };
+
+  // Function to download the business card as PNG with correct color
+  const handleDownloadCard = async () => {
+    if (!businessCardRef.current || !card) return;
+    
+    toast.info("Preparing image for download...");
+    
+    try {
+      // Create a simple version of the card with accurate color capture
+      const options = {
+        pixelRatio: 3,
+        backgroundColor: card.color,
+        skipAutoScale: true,
+        cacheBust: true
+      };
+      
+      const dataUrl = await toPng(businessCardRef.current, options);
+      
+      // Create a link element and trigger download
+      const link = document.createElement('a');
+      link.download = `${card.name.replace(/\s+/g, '-')}-business-card.png`;
+      link.href = dataUrl;
+      link.click();
+      
+      toast.success("Business card downloaded successfully!");
+    } catch (error) {
+      console.error("Error generating image:", error);
+      toast.error("Failed to download business card");
+    }
   };
 
   const refreshCard = async () => {
@@ -176,8 +211,7 @@ export default function CardPage({ params }: CardPageProps) {
             </div>
             <h2 className="text-2xl font-bold">Card Not Found</h2>
             <p className="text-muted-foreground mt-2">
-              The business card you're looking for doesn't exist or has been
-              removed.
+              The business card you're looking for doesn't exist or has been removed.
             </p>
           </div>
           <Button asChild>
@@ -249,6 +283,7 @@ export default function CardPage({ params }: CardPageProps) {
               <div className="relative flex-1" onMouseMove={handleMouseMove}>
                 <div className="perspective-1000 max-w-[350px] mx-auto md:mx-0">
                   <motion.div
+                    ref={businessCardRef}
                     className="business-card premium-3d-card w-full aspect-[1.7/1] rounded-xl overflow-hidden relative"
                     whileHover={{
                       rotateX: [0, -5, 0],
@@ -270,7 +305,6 @@ export default function CardPage({ params }: CardPageProps) {
                           "linear-gradient(105deg, transparent 20%, rgba(255, 255, 255, 0.25) 40%, rgba(255, 255, 255, 0.1) 60%, transparent 80%)",
                       }}
                     />
-
                     <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/20" />
 
                     <div className="p-6 flex flex-col justify-between h-full relative">
@@ -283,7 +317,6 @@ export default function CardPage({ params }: CardPageProps) {
                             {card.title}
                           </p>
                         </div>
-
                         <div className="h-12 w-12 rounded-full flex items-center justify-center bg-white/20 backdrop-blur-sm text-white font-bold text-lg shadow-md">
                           {card.name.charAt(0)}
                         </div>
@@ -351,14 +384,28 @@ export default function CardPage({ params }: CardPageProps) {
                         Brand Color
                       </span>
                       <div className="flex items-center gap-2">
-                        <div
-                          className="h-4 w-4 rounded-full"
+                        <div 
+                          className="h-4 w-4 rounded-full border border-border"
                           style={{ backgroundColor: card.color }}
                         />
-                        <code className="text-sm">{card.color}</code>
+                        <span className="text-sm font-medium">{card.color}</span>
                       </div>
                     </div>
                   </div>
+
+                  {card.company && (
+                    <div className="flex items-center gap-3">
+                      <div className="h-9 w-9 rounded-md flex items-center justify-center bg-primary/10">
+                        <Briefcase className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <span className="text-xs text-muted-foreground block">
+                          Company
+                        </span>
+                        <span className="text-sm font-medium">{card.company}</span>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="flex items-center gap-3">
                     <div className="h-9 w-9 rounded-md flex items-center justify-center bg-primary/10">
@@ -366,171 +413,132 @@ export default function CardPage({ params }: CardPageProps) {
                     </div>
                     <div>
                       <span className="text-xs text-muted-foreground block">
-                        Created On
+                        Created
                       </span>
-                      <span>
-                        {new Date(card.createdAt).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })}
+                      <span className="text-sm font-medium">
+                        {new Date(card.createdAt).toLocaleDateString()}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex gap-3 mt-2">
-                  <Button onClick={handleShare} className="flex-1">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 mt-8">
+                  <Button 
+                    onClick={handleShare} 
+                    className="flex-1"
+                    variant="default"
+                  >
                     <Share2 className="mr-2 h-4 w-4" />
                     Share Card
                   </Button>
-
-                  <Button
-                    variant="outline"
-                    onClick={() =>
-                      document
-                        .getElementById("qr-section")
-                        ?.scrollIntoView({ behavior: "smooth" })
-                    }
+                  
+                  <Button 
+                    onClick={handleDownloadCard} 
+                    variant="outline" 
                     className="flex-1"
                   >
-                    <QrCode className="mr-2 h-4 w-4" />
-                    View QR Code
+                    <Download className="mr-2 h-4 w-4" />
+                    Download Image
                   </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* QR Code Section */}
+            <div className="bg-muted/30 border-t border-border/30 p-5 sm:p-8">
+              <div className="flex flex-col sm:flex-row items-center gap-8">
+                <div className="flex-shrink-0">
+                  <div className="bg-white p-3 rounded-lg shadow-md">
+                    <QRCodeComponent 
+                      url={cardUrl} 
+                      size={150}
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <h3 className="text-lg font-medium mb-2 flex items-center gap-2">
+                    <QrCode className="h-4 w-4" />
+                    Scan to View
+                  </h3>
+                  <p className="text-muted-foreground max-w-md text-sm">
+                    Scan this QR code with a smartphone camera to instantly view this 
+                    digital business card. Share it in emails, presentations, or print it 
+                    on physical materials.
+                  </p>
+                </div>
+                
+                <div className="mt-4">
+                  <p className="text-sm text-muted-foreground mb-2">Or share this link:</p>
+                  <div className="flex items-center gap-2">
+                    <div className="bg-background/80 border border-border/60 rounded-md px-3 py-1.5 text-xs text-foreground/80 overflow-hidden text-ellipsis max-w-[220px] sm:max-w-xs">
+                      {cardUrl}
+                    </div>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="h-8"
+                      onClick={handleShare}
+                    >
+                      <Share2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
           </motion.div>
         </div>
 
-        <div
-          id="qr-section"
-          className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8"
-        >
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="bg-card/80 backdrop-blur-sm rounded-xl border border-border/50 shadow-lg overflow-hidden h-full"
-          >
-            <div className="p-4 border-b border-border/10 bg-gradient-to-r from-background/80 to-muted/5">
-              <h2 className="text-lg font-medium flex items-center">
-                <QrCode className="h-5 w-5 text-primary/70 mr-2" />
-                Scan & Share
-              </h2>
-            </div>
-
-            <div className="p-6 flex flex-col items-center h-full justify-center">
-              <motion.div
-                className="bg-white p-4 rounded-lg shadow-sm"
-                whileHover={{ scale: 1.02, rotate: 0.5 }}
-                transition={{ type: "spring", stiffness: 300, damping: 10 }}
-              >
-                <QRCodeComponent url={cardUrl} size={180} />
-              </motion.div>
-
-              <p className="text-sm text-muted-foreground text-center mt-6 mb-4">
-                Scan with your phone camera to instantly access this business
-                card on any device
-              </p>
-
-              <div className="w-full bg-background/40 rounded-lg p-3">
-                <p className="text-xs text-muted-foreground mb-1">Card URL:</p>
-                <div className="flex items-center">
-                  <code className="text-xs bg-background/80 flex-1 p-2 rounded truncate mr-1">
-                    {cardUrl}
-                  </code>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-8 w-8 p-0"
-                    onClick={handleShare}
-                  >
-                    <ExternalLink className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
+        {/* Call to action for non-owners */}
+        {!isOwner && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="bg-card/80 backdrop-blur-sm rounded-xl border border-border/50 shadow-lg overflow-hidden h-full"
+            className="max-w-2xl mx-auto bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg border border-primary/20 p-6 text-center"
           >
-            <div className="p-4 border-b border-border/10 bg-gradient-to-r from-background/80 to-muted/5">
-              <h2 className="text-lg font-medium flex items-center">
-                <span className="inline-block w-1 h-5 bg-primary/90 rounded-sm mr-2"></span>
-                Get the Most out of Your Card
-              </h2>
-            </div>
-
-            <div className="p-5 space-y-4">
-              <div className="p-3 rounded-lg bg-background/40 hover:bg-background/60 transition-colors border border-transparent hover:border-border/20">
-                <h3 className="font-medium mb-1 flex items-center">
-                  <Share2 className="h-4 w-4 mr-2 text-primary/70" />
-                  Share across platforms
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Send your digital card via email, SMS, or social media with a
-                  simple link
-                </p>
-              </div>
-
-              <div className="p-3 rounded-lg bg-background/40 hover:bg-background/60 transition-colors border border-transparent hover:border-border/20">
-                <h3 className="font-medium mb-1 flex items-center">
-                  <QrCode className="h-4 w-4 mr-2 text-primary/70" />
-                  Print QR for events
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Add your QR code to physical materials for networking at
-                  events
-                </p>
-              </div>
-
-              <div className="p-3 rounded-lg bg-background/40 hover:bg-background/60 transition-colors border border-transparent hover:border-border/20">
-                <h3 className="font-medium mb-1 flex items-center">
-                  <Edit className="h-4 w-4 mr-2 text-primary/70" />
-                  Keep information current
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Update your card anytime and changes are instantly available
-                  everywhere
-                </p>
-              </div>
-            </div>
+            <h2 className="text-xl font-semibold mb-2">
+              Create your own digital business card
+            </h2>
+            <p className="text-muted-foreground mb-4">
+              Join Vizify and create professional digital business cards that stand out.
+            </p>
+            <Button asChild size="lg">
+              <Link href="/create">
+                Get Started
+                <ExternalLink className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
           </motion.div>
-        </div>
+        )}
       </div>
 
-      {card && (
-        <>
-          <DeleteDialog
-            open={isDeleteDialogOpen}
-            onOpenChange={setIsDeleteDialogOpen}
-            cardName={card.name}
-            cardId={id}
-            onDelete={handleDeleteComplete}
-          />
+      {isDeleteDialogOpen && (
+        <DeleteDialog
+          open={isDeleteDialogOpen}
+          onOpenChange={(open) => {
+            setIsDeleteDialogOpen(open);
+            // If dialog is closing and we successfully deleted the card, redirect
+            if (!open) {
+              router.push("/dashboard");
+            }
+          }}
+          cardId={id}
+          cardName={card.name}
+          onDelete={() => {
+            toast.success("Card deleted successfully");
+            router.push("/dashboard");
+          }}
+        />
+      )}
 
-          <EditCardModal
-            open={isEditModalOpen}
-            onOpenChange={setIsEditModalOpen}
-            card={{
-              id: card.id,
-              name: card.name,
-              title: card.title,
-              color: card.color,
-              email: card.email || "",
-              phone: card.phone || "",
-              company: card.company || "",
-              createdAt: card.createdAt,
-              qrCode: card.qrCode || "",
-            }}
-            onUpdate={refreshCard}
-          />
-        </>
+      {isEditModalOpen && card && (
+        <EditCardModal
+          open={isEditModalOpen}
+          onOpenChange={setIsEditModalOpen}
+          card={card}
+          onUpdate={refreshCard}
+        />
       )}
     </div>
   );

@@ -14,12 +14,13 @@ import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-interface DeleteDialogProps {
+export interface DeleteDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   cardName: string;
   cardId: string;
   onDelete: () => void;
+  onDeleteComplete?: () => void; // Add this optional callback
 }
 
 export function DeleteDialog({
@@ -28,6 +29,7 @@ export function DeleteDialog({
   cardName,
   cardId,
   onDelete,
+  onDeleteComplete,
 }: DeleteDialogProps) {
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -42,12 +44,17 @@ export function DeleteDialog({
         throw new Error("Failed to delete card");
       }
 
-      toast.success("Card deleted successfully", {
-        description: `${cardName} has been removed from your cards.`,
-      });
+      // Call the onDeleteComplete callback if provided
+      if (onDeleteComplete) {
+        onDeleteComplete();
+      } else {
+        toast.success("Card deleted successfully", {
+          description: `${cardName} has been removed from your cards.`,
+        });
+        onOpenChange(false);
+      }
 
       onDelete();
-      onOpenChange(false);
     } catch (error) {
       console.error("Error deleting card:", error);
       toast.error("Failed to delete card", {
