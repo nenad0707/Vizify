@@ -67,9 +67,6 @@ export function TableView({ cards, onEdit, onDelete }: TableViewProps) {
             {row.original.name.charAt(0)}
           </div>
           <span>{row.getValue("name")}</span>
-          {row.original.isFavorite && (
-            <Star className="h-3 w-3 text-chart-4 fill-chart-4" />
-          )}
         </div>
       ),
     },

@@ -9,4 +9,5 @@ export interface BusinessCard {
   company?: string;
   qrCode?: string;
   createdAt: string;
+  isFavorite?: boolean;
 }
