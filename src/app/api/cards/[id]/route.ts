@@ -1,23 +1,18 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
 // Handle GET request - return a specific card
-export async function GET(
-  request: Request, 
-  { params }: { params: { id: string } }
-) {
+export async function GET(req: Request, { params }: any) {
   try {
-    // Get session first before using params
+    // Get session first before accessing route params
     const session = await getServerSession(authOptions);
     
-    // Access id parameter safely after async operations
-    const id = params.id;
-    
-    // Query the database
+    // Access the ID directly from params object without intermediate assignment
+    // This approach works reliably in Next.js App Router
     const result = await prisma.businessCard.findUnique({
-      where: { id },
+      where: { id: params.id },
       include: {
         user: {
           select: {
@@ -55,23 +50,17 @@ export async function GET(
 }
 
 // Handle PATCH request - update a card
-export async function PATCH(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(req: Request, { params }: any) {
   try {
-    // Get session first before using params
+    // Get session first before accessing route params
     const session = await getServerSession(authOptions);
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     
-    // Access id parameter safely after async operations
-    const id = params.id;
-    
     // Find the existing card
     const existingCard = await prisma.businessCard.findUnique({
-      where: { id }
+      where: { id: params.id }
     });
     
     // Handle not found or unauthorized
@@ -84,7 +73,7 @@ export async function PATCH(
     }
     
     // Get request body
-    const data = await request.json();
+    const data = await req.json();
     const { name, title, color } = data;
     
     // Check for duplicate names
@@ -93,7 +82,7 @@ export async function PATCH(
         where: {
           userId: session.user.id,
           name,
-          id: { not: id }
+          id: { not: params.id }
         }
       });
       
@@ -107,7 +96,7 @@ export async function PATCH(
     
     // Update the card
     const updatedCard = await prisma.businessCard.update({
-      where: { id },
+      where: { id: params.id },
       data: { name, title, color }
     });
     
@@ -132,23 +121,17 @@ export async function PATCH(
 }
 
 // Handle DELETE request - delete a card
-export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(req: Request, { params }: any) {
   try {
-    // Get session first before using params
+    // Get session first before accessing route params
     const session = await getServerSession(authOptions);
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     
-    // Access id parameter safely after async operations
-    const id = params.id;
-    
     // Find the card
     const existingCard = await prisma.businessCard.findUnique({
-      where: { id }
+      where: { id: params.id }
     });
     
     // Handle not found or unauthorized
@@ -162,7 +145,7 @@ export async function DELETE(
     
     // Delete the card
     await prisma.businessCard.delete({
-      where: { id }
+      where: { id: params.id }
     });
     
     return NextResponse.json({ success: true });
