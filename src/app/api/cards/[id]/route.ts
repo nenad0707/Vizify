@@ -3,72 +3,124 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-// Handle PATCH requests to update a card
-export async function PATCH(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+// ==========================================
+// IMPORTANT: Do not access params.id directly
+// ==========================================
 
+// Handle GET request - return a specific card
+export async function GET(request, context) {
   try {
-    // Use the id directly without awaiting or assigning to another variable
-    // Check if user is authorized to update this card
-    const existingCard = await prisma.businessCard.findUnique({
-      where: { id: params.id },
+    // Extract the card ID from the path segments in a Next.js 13+ compatible way
+    const cardId = context.params?.id;
+    
+    // Get authentication session
+    const session = await getServerSession(authOptions);
+    
+    // Query the database safely
+    const result = await prisma.businessCard.findUnique({
+      where: { 
+        id: String(cardId) 
+      },
+      include: {
+        user: {
+          select: {
+            email: true
+          }
+        }
+      }
     });
+    
+    // Handle card not found
+    if (!result) {
+      return NextResponse.json({ error: "Card not found" }, { status: 404 });
+    }
+    
+    // Check authorization
+    if (!session || result.userId !== session.user.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    
+    // Prepare the response
+    const response = {
+      ...result,
+      email: result.user?.email,
+      user: undefined // Remove nested user object
+    };
+    
+    return NextResponse.json(response);
+  } catch (error) {
+    console.error("Error fetching card:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch card" },
+      { status: 500 }
+    );
+  }
+}
 
+// Handle PATCH request - update a card
+export async function PATCH(request, context) {
+  try {
+    // Extract the card ID safely
+    const cardId = context.params?.id;
+    
+    // Get authentication session
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    
+    // Find the existing card
+    const existingCard = await prisma.businessCard.findUnique({
+      where: { id: String(cardId) }
+    });
+    
+    // Handle not found or unauthorized
     if (!existingCard) {
       return NextResponse.json({ error: "Card not found" }, { status: 404 });
     }
-
+    
     if (existingCard.userId !== session.user.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-
-    // Parse the request body
-    const { name, title, color } = await request.json();
-
-    // Check for duplicate card names
+    
+    // Get request body
+    const data = await request.json();
+    const { name, title, color } = data;
+    
+    // Check for duplicate names
     if (name !== existingCard.name) {
-      const duplicateCard = await prisma.businessCard.findFirst({
+      const duplicateCheck = await prisma.businessCard.findFirst({
         where: {
           userId: session.user.id,
           name,
-          id: { not: params.id }, // Exclude current card
-        },
+          id: { not: String(cardId) }
+        }
       });
-
-      if (duplicateCard) {
+      
+      if (duplicateCheck) {
         return NextResponse.json(
           { error: "A card with this name already exists" },
           { status: 409 }
         );
       }
     }
-
+    
     // Update the card
     const updatedCard = await prisma.businessCard.update({
-      where: { id: params.id },
-      data: {
-        name,
-        title,
-        color,
-      },
+      where: { id: String(cardId) },
+      data: { name, title, color }
     });
-
-    // Fetch the user's email to include in the response
+    
+    // Get user email
     const user = await prisma.user.findUnique({
       where: { id: updatedCard.userId },
-      select: { email: true },
+      select: { email: true }
     });
-
-    // Return the card with user's email
+    
+    // Return response
     return NextResponse.json({
       ...updatedCard,
-      email: user?.email || null,
+      email: user?.email || null
     });
   } catch (error) {
     console.error("Error updating card:", error);
@@ -79,81 +131,37 @@ export async function PATCH(
   }
 }
 
-// Handle GET request for a specific card
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
-  const session = await getServerSession(authOptions);
-  
+// Handle DELETE request - delete a card
+export async function DELETE(request, context) {
   try {
-    // Use params.id directly in the query without intermediate variables
-    const card = await prisma.businessCard.findUnique({
-      where: { id: params.id },
-      include: {
-        user: {
-          select: {
-            email: true,
-          },
-        },
-      },
-    });
-
-    if (!card) {
-      return NextResponse.json({ error: "Card not found" }, { status: 404 });
-    }
-
-    // Check if user is authorized to view this card (if it's their card)
-    if (!session || card.userId !== session.user.id) {
+    // Extract card ID safely
+    const cardId = context.params?.id;
+    
+    // Get authentication session
+    const session = await getServerSession(authOptions);
+    if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    // Restructure the data to include user email at the top level
-    const cardWithEmail = {
-      ...card,
-      email: card.user.email,
-      user: undefined, // Remove nested user object
-    };
-
-    return NextResponse.json(cardWithEmail);
-  } catch (error) {
-    console.error("Error fetching card:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch card" },
-      { status: 500 }
-    );
-  }
-}
-
-// Handle DELETE request
-export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  try {
-    // Use params.id directly in the query 
+    
+    // Find the card
     const existingCard = await prisma.businessCard.findUnique({
-      where: { id: params.id },
+      where: { id: String(cardId) }
     });
-
+    
+    // Handle not found or unauthorized
     if (!existingCard) {
       return NextResponse.json({ error: "Card not found" }, { status: 404 });
     }
-
+    
     if (existingCard.userId !== session.user.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-
+    
     // Delete the card
     await prisma.businessCard.delete({
-      where: { id: params.id },
+      where: { id: String(cardId) }
     });
-
+    
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting card:", error);
