@@ -3,24 +3,32 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
+// Define the params type as used by Next.js App Router
+type RouteParams = {
+  params: {
+    id: string;
+  };
+};
+
 // Handle PATCH requests to update a card
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
-) {
+  { params }: RouteParams
+): Promise<Response> {
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    // Access route parameter directly - no need for destructuring or accessing properties
-    const card = await request.json();
-    const { name, title, color } = card;
+    const id = params.id;
+
+    // Parse the request body
+    const { name, title, color } = await request.json();
 
     // Check if user is authorized to update this card
     const existingCard = await prisma.businessCard.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existingCard) {
@@ -37,7 +45,7 @@ export async function PATCH(
         where: {
           userId: session.user.id,
           name,
-          id: { not: params.id }, // Exclude current card
+          id: { not: id }, // Exclude current card
         },
       });
 
@@ -49,9 +57,9 @@ export async function PATCH(
       }
     }
 
-    // Simplified approach: directly pass the data object
+    // Update the card
     const updatedCard = await prisma.businessCard.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name,
         title,
@@ -82,14 +90,15 @@ export async function PATCH(
 // Handle GET request for a specific card
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
-) {
+  { params }: RouteParams
+): Promise<Response> {
   const session = await getServerSession(authOptions);
-  
+
   try {
-    // Use params.id directly without assigning to a constant
+    const id = params.id;
+
     const card = await prisma.businessCard.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         user: {
           select: {
@@ -128,17 +137,18 @@ export async function GET(
 // Handle DELETE request
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
-) {
+  { params }: RouteParams
+): Promise<Response> {
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    // Use params.id directly in the database queries
+    const id = params.id;
+
     const existingCard = await prisma.businessCard.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existingCard) {
@@ -151,7 +161,7 @@ export async function DELETE(
 
     // Delete the card
     await prisma.businessCard.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ success: true });
