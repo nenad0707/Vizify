@@ -3,22 +3,21 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-interface RouteContext {
-  params: { id: string };
-}
-
 // Handle GET request - return a specific card
-export async function GET(request: NextRequest, context: RouteContext) {
+export async function GET(
+  request: Request, 
+  { params }: { params: { id: string } }
+) {
   try {
-    // Extract the card ID from the path params
-    const cardId = context.params.id;
-    
-    // Get authentication session
+    // Get session first before using params
     const session = await getServerSession(authOptions);
     
-    // Query the database safely
+    // Access id parameter safely after async operations
+    const id = params.id;
+    
+    // Query the database
     const result = await prisma.businessCard.findUnique({
-      where: { id: cardId },
+      where: { id },
       include: {
         user: {
           select: {
@@ -56,20 +55,23 @@ export async function GET(request: NextRequest, context: RouteContext) {
 }
 
 // Handle PATCH request - update a card
-export async function PATCH(request: NextRequest, context: RouteContext) {
+export async function PATCH(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   try {
-    // Extract the card ID from path params
-    const cardId = context.params.id;
-    
-    // Get authentication session
+    // Get session first before using params
     const session = await getServerSession(authOptions);
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     
+    // Access id parameter safely after async operations
+    const id = params.id;
+    
     // Find the existing card
     const existingCard = await prisma.businessCard.findUnique({
-      where: { id: cardId }
+      where: { id }
     });
     
     // Handle not found or unauthorized
@@ -91,7 +93,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         where: {
           userId: session.user.id,
           name,
-          id: { not: cardId }
+          id: { not: id }
         }
       });
       
@@ -105,7 +107,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     
     // Update the card
     const updatedCard = await prisma.businessCard.update({
-      where: { id: cardId },
+      where: { id },
       data: { name, title, color }
     });
     
@@ -130,20 +132,23 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 }
 
 // Handle DELETE request - delete a card
-export async function DELETE(request: NextRequest, context: RouteContext) {
+export async function DELETE(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   try {
-    // Extract card ID from path params
-    const cardId = context.params.id;
-    
-    // Get authentication session
+    // Get session first before using params
     const session = await getServerSession(authOptions);
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     
+    // Access id parameter safely after async operations
+    const id = params.id;
+    
     // Find the card
     const existingCard = await prisma.businessCard.findUnique({
-      where: { id: cardId }
+      where: { id }
     });
     
     // Handle not found or unauthorized
@@ -157,7 +162,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     
     // Delete the card
     await prisma.businessCard.delete({
-      where: { id: cardId }
+      where: { id }
     });
     
     return NextResponse.json({ success: true });
