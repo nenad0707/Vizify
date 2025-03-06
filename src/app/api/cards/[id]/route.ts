@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { Prisma } from "@prisma/client";
 
 // Handle PATCH requests to update a card
 export async function PATCH(
@@ -15,13 +14,13 @@ export async function PATCH(
   }
 
   try {
-    const { id } = params;
-    // Only extract the fields that exist in your BusinessCard model
-    const { name, title, color } = await request.json();
+    // Access route parameter directly - no need for destructuring or accessing properties
+    const card = await request.json();
+    const { name, title, color } = card;
 
     // Check if user is authorized to update this card
     const existingCard = await prisma.businessCard.findUnique({
-      where: { id },
+      where: { id: params.id },
     });
 
     if (!existingCard) {
@@ -38,7 +37,7 @@ export async function PATCH(
         where: {
           userId: session.user.id,
           name,
-          id: { not: id }, // Exclude current card
+          id: { not: params.id }, // Exclude current card
         },
       });
 
@@ -50,17 +49,14 @@ export async function PATCH(
       }
     }
 
-    // Create update data with only the fields that exist in the model
-    const updateData: Prisma.BusinessCardUpdateInput = {
-      name,
-      title,
-      color,
-    };
-
-    // Update the card
+    // Simplified approach: directly pass the data object
     const updatedCard = await prisma.businessCard.update({
-      where: { id },
-      data: updateData,
+      where: { id: params.id },
+      data: {
+        name,
+        title,
+        color,
+      },
     });
 
     // Fetch the user's email to include in the response
@@ -91,9 +87,9 @@ export async function GET(
   const session = await getServerSession(authOptions);
   
   try {
-    const { id } = params;
+    // Use params.id directly without assigning to a constant
     const card = await prisma.businessCard.findUnique({
-      where: { id },
+      where: { id: params.id },
       include: {
         user: {
           select: {
@@ -140,11 +136,9 @@ export async function DELETE(
   }
 
   try {
-    const { id } = params;
-    
-    // Check if user is authorized to delete this card
+    // Use params.id directly in the database queries
     const existingCard = await prisma.businessCard.findUnique({
-      where: { id },
+      where: { id: params.id },
     });
 
     if (!existingCard) {
@@ -157,7 +151,7 @@ export async function DELETE(
 
     // Delete the card
     await prisma.businessCard.delete({
-      where: { id },
+      where: { id: params.id },
     });
 
     return NextResponse.json({ success: true });
