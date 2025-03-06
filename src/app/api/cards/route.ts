@@ -9,10 +9,26 @@ export async function GET(request: Request): Promise<Response> {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   try {
+    // Fetch cards with user info to get email
     const cards = await prisma.businessCard.findMany({
       where: { userId: session.user.id },
+      include: {
+        user: {
+          select: {
+            email: true,
+          }
+        }
+      }
     });
-    return NextResponse.json(cards, { status: 200 });
+    
+    // Restructure the data to include email at the top level
+    const formattedCards = cards.map(card => ({
+      ...card,
+      email: card.user.email,
+      user: undefined // Remove nested user object
+    }));
+    
+    return NextResponse.json(formattedCards, { status: 200 });
   } catch (error) {
     console.error("Error fetching cards:", error);
     return NextResponse.json(
@@ -29,6 +45,7 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   try {
+    // Only extract the fields that exist in your BusinessCard model
     const { name, title, color, template } = await request.json();
 
     // Check for required fields
@@ -75,7 +92,7 @@ export async function POST(request: Request): Promise<Response> {
       );
     }
 
-    // Create the new card with template
+    // Create the new card with only valid fields
     const card = await prisma.businessCard.create({
       data: {
         userId: session.user.id,
@@ -94,7 +111,17 @@ export async function POST(request: Request): Promise<Response> {
       data: { qrCode: qrCodeUrl },
     });
 
-    return NextResponse.json(updatedCard, { status: 201 });
+    // Fetch the user's email to include in the response
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { email: true },
+    });
+
+    // Return the card with user's email
+    return NextResponse.json({
+      ...updatedCard,
+      email: user?.email || null,
+    }, { status: 201 });
   } catch (error) {
     console.error("Error creating card:", error);
     return NextResponse.json(

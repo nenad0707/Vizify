@@ -220,6 +220,7 @@ export const LivePreview = forwardRef<HTMLDivElement, LivePreviewProps>(
                   </div>
                 </div>
 
+                {/* Contact Information - ensuring it shows properly */}
                 <div className="space-y-1.5 mt-auto relative z-10">
                   {company && (
                     <div className="flex items-center gap-2">
@@ -303,7 +304,8 @@ export const LivePreview = forwardRef<HTMLDivElement, LivePreviewProps>(
                   )}
                 </div>
 
-                <div className="space-y-1.5 mt-4">
+                {/* Ensure contact information is displayed */}
+                <div className="space-y-1.5 mt-auto">
                   {email && (
                     <div className="flex items-center gap-2">
                       <Mail 
@@ -365,6 +367,7 @@ export const LivePreview = forwardRef<HTMLDivElement, LivePreviewProps>(
                   </p>
                 </div>
 
+                {/* Ensure contact information is displayed */}
                 <div className="space-y-2 mt-4">
                   {company && (
                     <div className="flex items-center gap-2">
