@@ -19,8 +19,10 @@ import { AppearanceSection } from "@/components/CardCreator/AppearanceSection";
 import { ReviewSection } from "@/components/CardCreator/ReviewSection";
 import { AuthRequired } from "@/components/AuthRequired";
 
-// Dynamic import of LivePreview to avoid server-side rendering issues
-const LivePreview = dynamic(() => import("@/components/LivePreview"), {
+// Fix the dynamic import to use default export
+const LivePreview = dynamic(() => import("@/components/LivePreview").then(mod => ({ 
+  default: mod.default || mod.LivePreview 
+})), {
   ssr: false,
   loading: () => (
     <div className="flex items-center justify-center h-full bg-card/30 rounded-lg">

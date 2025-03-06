@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, use, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
@@ -27,7 +27,7 @@ import { DeleteDialog } from "@/components/DeleteDialog";
 import { EditCardModal } from "@/components/EditCardModal";
 import * as htmlToImage from "html-to-image";
 import { toPng } from "html-to-image";
-import LivePreview from "@/components/LivePreview";
+import { LivePreview } from "@/components/LivePreview";
 
 interface CardPageProps {
   params: Promise<{ id: string }>;
