@@ -389,7 +389,7 @@ export const LivePreview = forwardRef<HTMLDivElement, LivePreviewProps>(
             secondaryColor: "rgba(255,255,255,0.9)",
             containerStyle: "bg-gradient-to-br",
             contentClass: "relative z-10",
-            overlayStyle: `absolute inset-0 bg-gradient-to-br from-${data.color}/70 to-${data.color}/90`,
+            overlayStyle: `absolute inset-0`,
             backgroundOpacity: 0.95,
           };
         case "classic":
@@ -398,7 +398,7 @@ export const LivePreview = forwardRef<HTMLDivElement, LivePreviewProps>(
             secondaryColor: "rgba(0,0,0,0.8)",
             containerStyle: "bg-white",
             contentClass: "relative z-10",
-            overlayStyle: `absolute inset-0 bg-gradient-to-b from-transparent via-${data.color}/10 to-${data.color}/20`,
+            overlayStyle: `absolute inset-0`,
             backgroundOpacity: 0.85,
           };
         case "minimalist":
@@ -407,7 +407,7 @@ export const LivePreview = forwardRef<HTMLDivElement, LivePreviewProps>(
             secondaryColor: "rgba(0,0,0,0.8)",
             containerStyle: "bg-white",
             contentClass: "relative z-10",
-            overlayStyle: `absolute inset-0 bg-gradient-to-r from-${data.color}/5 to-${data.color}/10`,
+            overlayStyle: `absolute inset-0`,
             backgroundOpacity: 0.9,
           };
         default:
@@ -496,15 +496,15 @@ export const LivePreview = forwardRef<HTMLDivElement, LivePreviewProps>(
                       -20,
                     )}70, ${adjustColor(data.color, -80)}90)`
                   : data.template === "classic"
-                  ? `linear-gradient(to bottom, ${adjustColor(
+                  ? `linear-gradient(to bottom, transparent 30%, ${adjustColor(
                       data.color,
-                      60,
-                    )}20, ${adjustColor(data.color, -20)}40)`
+                      20,
+                    )}25 100%)`
                   : data.template === "minimalist"
-                  ? `linear-gradient(to right, ${adjustColor(
+                  ? `linear-gradient(to right, transparent, ${adjustColor(
                       data.color,
-                      70,
-                    )}10, ${adjustColor(data.color, 30)}20)`
+                      40,
+                    )}15)`
                   : undefined,
             }}
           />
@@ -512,16 +512,16 @@ export const LivePreview = forwardRef<HTMLDivElement, LivePreviewProps>(
           {/* Additional color layer for classic template */}
           {data.template === "classic" && (
             <div
-              className="absolute top-0 left-0 right-0 h-8 z-10"
-              style={{ backgroundColor: adjustColor(data.color, -40) }}
+              className="absolute top-0 left-0 right-0 h-12 z-10"
+              style={{ backgroundColor: data.color }}
             />
           )}
 
           {/* Additional accent for minimalist template */}
           {data.template === "minimalist" && (
             <div
-              className="absolute top-0 bottom-0 left-0 w-3 z-10"
-              style={{ backgroundColor: adjustColor(data.color, 20) }}
+              className="absolute top-0 bottom-0 left-0 w-6 z-10"
+              style={{ backgroundColor: data.color }}
             />
           )}
 

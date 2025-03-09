@@ -11,33 +11,15 @@ import Image from "next/image";
 import LivePreview from "@/components/LivePreview";
 import { useEffect } from "react";
 
-// Enhanced premium color palette - expanded with more options
+// Refined premium color palette with fewer, carefully selected colors
 const PREMIUM_COLORS = [
   "#1E293B", // Corporate Blue
   "#6366F1", // Indigo
-  "#8B5CF6", // Purple
   "#10B981", // Green
   "#F59E0B", // Amber
   "#EF4444", // Red
-  "#14B8A6", // Teal
   "#3B82F6", // Blue
-  "#EC4899", // Pink
-  "#334155", // Slate
-  "#0369A1", // Sky Blue
-  "#4F46E5", // Deep Indigo
-  "#7C3AED", // Violet
-  "#059669", // Emerald
-  "#D97706", // Yellow
-  "#DC2626", // Red
-  "#0D9488", // Teal
-  "#2563EB", // Royal Blue
-  "#DB2777", // Pink
-  "#475569", // Gray Slate
-  "#0891B2", // Cyan
-  "#A21CAF", // Fuchsia
-  "#15803D", // Forest Green
-  "#B45309", // Amber
-  "#9F1239", // Rose
+  "#8B5CF6", // Purple
 ];
 
 export function AppearanceSection() {
@@ -164,48 +146,50 @@ export function AppearanceSection() {
             </span>
           </div>
 
-          <div className="p-4 bg-muted/20 rounded-lg border border-border/50">
+          <div className="p-6 bg-muted/30 rounded-xl border border-border/60 shadow-sm">
             <ColorPicker
               selectedColor={formData.color}
               setSelectedColor={(color) => updateFormData("color", color)}
             />
 
-            {/* Premium colors with circular design */}
-            <div className="mt-6">
-              <Label className="text-sm text-foreground/80 font-medium mb-3 block flex items-center gap-2">
+            {/* Premium colors with enhanced circular design */}
+            <div className="mt-8 relative">
+              <Label className="text-sm text-foreground/80 font-medium mb-4 block flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-primary/70" />
                 Premium Color Selection
               </Label>
-              <div className="grid grid-cols-5 gap-3 mt-3">
+
+              <div className="flex justify-center items-center gap-4 mt-3">
                 {PREMIUM_COLORS.map((color) => (
                   <motion.div
                     key={color}
-                    whileHover={{ y: -2, scale: 1.05 }}
+                    whileHover={{ y: -2, scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => handleColorSelect(color)}
                     className={cn(
-                      "h-8 w-8 rounded-full cursor-pointer border-2 transition-all duration-200 flex items-center justify-center relative group shadow-sm hover:shadow-md",
+                      "h-8 w-8 rounded-full cursor-pointer border transition-all duration-200 flex items-center justify-center relative shadow-sm hover:shadow-md",
                       formData.color.toLowerCase() === color.toLowerCase()
-                        ? "border-primary shadow-md ring-2 ring-primary/30"
-                        : "border-border/30 hover:border-primary/50",
+                        ? "border-primary shadow-lg ring-2 ring-primary/30"
+                        : "border-border/40 hover:border-primary/50",
                     )}
                     style={{ backgroundColor: color }}
                   >
-                    {formData.color.toLowerCase() === color.toLowerCase() && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="flex items-center justify-center bg-white/90 rounded-full p-1 shadow-sm absolute"
-                      >
-                        <Check className="h-3 w-3 text-primary" />
-                      </motion.div>
+                    {/* White dot in center when selected */}
+                    {formData.color.toLowerCase() === color.toLowerCase() ? (
+                      <div className="absolute w-1.5 h-1.5 bg-white rounded-full shadow-inner"></div>
+                    ) : (
+                      /* Small white dot at top for all */
+                      <div className="absolute top-[3px] w-1 h-1 bg-white/80 rounded-full"></div>
                     )}
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/10 via-transparent to-black/20" />
+
+                    {/* Enhanced gradient for 3D effect */}
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/20 via-transparent to-black/30" />
                   </motion.div>
                 ))}
               </div>
-              <p className="text-xs text-muted-foreground mt-3 text-center">
-                Premium colors for your brand identity
+
+              <p className="text-xs text-muted-foreground mt-5 text-center">
+                Choose a premium color that reflects your brand identity
               </p>
             </div>
           </div>
@@ -258,7 +242,7 @@ export function AppearanceSection() {
 
                   {/* Color overlay based on selected color */}
                   <div
-                    className="absolute inset-0 mix-blend-color opacity-60 transition-opacity group-hover:opacity-80"
+                    className="absolute inset-0 mix-blend-multiply opacity-40 transition-opacity group-hover:opacity-60"
                     style={{ backgroundColor: formData.color }}
                   />
                 </div>
