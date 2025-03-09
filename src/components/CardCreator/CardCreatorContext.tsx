@@ -13,6 +13,7 @@ export interface CardFormData {
   company: string;
   color: string;
   template: string;
+  backgroundColor?: string;
 }
 
 // Define interface for status message
@@ -51,6 +52,7 @@ const defaultFormData: CardFormData = {
   company: "",
   color: "#6366F1", // Default color
   template: "modern", // Default template
+  backgroundColor: "",
 };
 
 // Provider component

@@ -1,257 +1,234 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
-import { LoginModal } from "@/components/LoginModal";
-import { ArrowLeft, Loader2, Palette, QrCode } from "lucide-react";
+import {
+  ArrowLeft,
+  Loader2,
+  UserCircle,
+  Palette,
+  CheckCircle,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import QRCodeComponent from "@/components/QRCodeComponent";
 import { CardPreviewModal } from "@/components/CardPreviewModal";
 import {
   CardCreatorProvider,
   useCardCreator,
 } from "@/components/CardCreator/CardCreatorContext";
-import { StepNavigator } from "@/components/CardCreator/StepNavigator";
+import { AuthRequired } from "@/components/AuthRequired";
 import { UserDetailsSection } from "@/components/CardCreator/UserDetailsSection";
 import { AppearanceSection } from "@/components/CardCreator/AppearanceSection";
 import { ReviewSection } from "@/components/CardCreator/ReviewSection";
-import { AuthRequired } from "@/components/AuthRequired";
 
-// Fix the dynamic import to use default export
-const LivePreview = dynamic(() => import("@/components/LivePreview").then(mod => ({ 
-  default: mod.default || mod.LivePreview 
-})), {
+// Dynamic imports for better performance
+const LivePreview = dynamic(() => import("@/components/LivePreview"), {
   ssr: false,
-  loading: () => (
-    <div className="flex items-center justify-center h-full bg-card/30 rounded-lg">
-      <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
-    </div>
-  ),
+  loading: () => <PreviewSkeleton />,
 });
+
+const PreviewSkeleton = () => (
+  <div className="flex items-center justify-center h-full bg-card/30 rounded-lg">
+    <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
+  </div>
+);
+
+// Step configuration with enhanced icons and descriptions
+const STEPS = [
+  {
+    id: "details",
+    title: "Personal Details",
+    description: "Build your professional identity",
+    icon: UserCircle,
+  },
+  {
+    id: "design",
+    title: "Brand & Design",
+    description: "Choose your visual style",
+    icon: Palette,
+  },
+  {
+    id: "review",
+    title: "Review & Create",
+    description: "Finalize your business card",
+    icon: CheckCircle,
+  },
+];
+
+function StepNavigator({ currentStep }: { currentStep: number }) {
+  return (
+    <div className="relative flex items-center justify-between mb-8 px-2">
+      {/* Progress bar background */}
+      <div className="absolute h-0.5 bg-muted left-0 top-5 w-full -z-10" />
+
+      {/* Active progress bar */}
+      <div
+        className="absolute h-0.5 bg-primary left-0 top-5 -z-10 transition-all duration-300"
+        style={{ width: `${(currentStep / (STEPS.length - 1)) * 100}%` }}
+      />
+
+      {STEPS.map((step, index) => {
+        const Icon = step.icon;
+        const isActive = index === currentStep;
+        const isCompleted = index < currentStep;
+
+        return (
+          <div key={step.id} className="flex flex-col items-center gap-2">
+            <div
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+                isCompleted
+                  ? "bg-primary text-primary-foreground"
+                  : isActive
+                  ? "bg-primary/90 text-primary-foreground ring-4 ring-primary/20"
+                  : "bg-muted text-muted-foreground"
+              }`}
+            >
+              <Icon className="h-5 w-5" />
+            </div>
+            <div className="flex flex-col items-center">
+              <span
+                className={`text-sm font-medium ${
+                  isActive ? "text-primary" : "text-muted-foreground"
+                }`}
+              >
+                {step.title}
+              </span>
+              <span className="text-xs text-muted-foreground hidden sm:block">
+                {step.description}
+              </span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function getCurrentStep() {
+  const { currentStep } = useCardCreator();
+  switch (currentStep) {
+    case 0:
+      return <UserDetailsSection />;
+    case 1:
+      return <AppearanceSection />;
+    case 2:
+      return <ReviewSection />;
+    default:
+      return null;
+  }
+}
 
 function CardCreatorContent() {
   const { formData, currentStep, createdCard, resetForm } = useCardCreator();
   const [modalOpen, setModalOpen] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
-  const [windowWidth, setWindowWidth] = useState(
-    typeof window !== "undefined" ? window.innerWidth : 1024,
-  );
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const handleResize = () => {
-      setWindowWidth(window.innerWidth);
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  const isMobile = windowWidth < 768;
-
-  // Open modal when card is created
-  useEffect(() => {
-    if (createdCard) {
-      setModalOpen(true);
-    }
-  }, [createdCard]);
 
   const handleModalClose = (redirected = false) => {
     if (!redirected) {
       setModalOpen(false);
-      // Reset the form when modal is closed but user is not redirected
       resetForm();
     }
   };
 
-  // Get current step component
-  const getCurrentStep = () => {
-    switch (currentStep) {
-      case 0:
-        return <UserDetailsSection />;
-      case 1:
-        return <AppearanceSection />;
-      case 2:
-        return <ReviewSection />;
-      default:
-        return <UserDetailsSection />;
-    }
-  };
-
   return (
-    <>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="container mx-auto py-4 px-3 relative"
-      >
-        <div className="mb-4 flex flex-col space-y-3">
-          {" "}
+    <div className="min-h-screen bg-gradient-to-b from-background via-background/95 to-background/90">
+      <div className="container max-w-7xl mx-auto py-8 px-4">
+        {/* Header with enhanced styling */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-12"
+        >
           <Link
             href="/dashboard"
-            className="flex items-center text-muted-foreground hover:text-foreground transition-colors group w-fit"
+            className="flex items-center text-muted-foreground hover:text-foreground transition-colors group w-fit mb-6"
           >
             <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
             Back to Dashboard
           </Link>
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-card/40 backdrop-blur-sm border border-border/30 p-4 rounded-lg shadow-md"
-          >
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent mb-1">
-              {" "}
-              Create Your Business Card
+
+          <div className="text-center max-w-3xl mx-auto">
+            <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70">
+              Create Your Digital Presence
             </h1>
-            <p className="text-sm text-muted-foreground max-w-2xl">
-              {" "}
-              Follow the steps below to design your professional digital
-              business card.
+            <p className="text-muted-foreground mt-3 text-lg">
+              Design a professional business card that represents your brand.
+              Follow our guided process to create something remarkable.
             </p>
-          </motion.div>
-        </div>
+          </div>
+        </motion.div>
 
-        {/* Controls for mobile view */}
-        <div className="lg:hidden flex mb-4 border border-border/30 rounded-lg overflow-hidden">
-          <button
-            className={`flex-1 py-2 text-sm font-medium ${
-              !showPreview
-                ? "bg-primary/10 text-primary"
-                : "bg-transparent text-muted-foreground"
-            }`}
-            onClick={() => setShowPreview(false)}
+        {/* Main Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Form Section */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="lg:col-span-7 space-y-6"
           >
-            Form Steps
-          </button>
-          <button
-            className={`flex-1 py-2 text-sm font-medium ${
-              showPreview
-                ? "bg-primary/10 text-primary"
-                : "bg-transparent text-muted-foreground"
-            }`}
-            onClick={() => setShowPreview(true)}
-          >
-            Preview
-          </button>
-        </div>
+            <div className="bg-card/50 backdrop-blur-sm rounded-xl border border-border/30 p-6 shadow-sm">
+              <StepNavigator currentStep={currentStep} />
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-          {" "}
-          <div
-            className={`lg:col-span-7 order-2 lg:order-1 flex flex-col relative ${
-              showPreview ? "hidden lg:flex" : "flex"
-            }`}
-            style={{ zIndex: 100 }}
-          >
-            <StepNavigator compact={true} />
-
-            <div className="relative mt-2">
-              {" "}
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentStep}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.4 }}
-                  className="relative"
-                  style={{ zIndex: 100 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
                 >
                   {getCurrentStep()}
                 </motion.div>
               </AnimatePresence>
             </div>
-          </div>
-          <div
-            className={`lg:col-span-5 order-1 lg:order-2 flex flex-col space-y-4 lg:pl-2 ${
-              !showPreview ? "hidden lg:flex" : "flex"
-            }`}
-          >
-            <div
-              className="lg:sticky lg:top-20 space-y-4 flex flex-col items-center lg:items-end"
-              style={{ zIndex: 10 }}
-            >
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="bg-gradient-to-br from-card to-card/70 border border-border/40 shadow-lg rounded-lg overflow-hidden w-full lg:max-w-[95%]"
-              >
-                <div className="p-3 border-b border-border/10 bg-gradient-to-r from-background/80 to-muted/5">
-                  <h2 className="text-sm font-medium bg-gradient-to-r from-primary/90 to-primary/70 bg-clip-text text-transparent flex items-center gap-1.5">
-                    <Palette className="h-3.5 w-3.5 text-primary/70" />
-                    Live Preview
-                  </h2>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Interactive 3D business card preview
-                  </p>
-                </div>
-                <div
-                  className={`relative p-4 bg-background/20 ${
-                    isMobile ? "h-[240px]" : "h-[280px]"
-                  }`}
-                >
-                  <LivePreview
-                    data={{
-                      name: formData.name,
-                      title: formData.title,
-                      email: formData.email,
-                      color: formData.color,
-                      template: formData.template,
-                      company: formData.company,
-                      phone: formData.phone,
-                    }}
-                    interactive={!isMobile}
-                  />
-                </div>
-              </motion.div>
+          </motion.div>
 
-              {/* QR code preview with matching styles */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                className="bg-card border border-border/40 shadow-md rounded-lg overflow-hidden w-full lg:max-w-[95%]"
-              >
-                <div className="p-2 border-b border-border/10 bg-gradient-to-r from-background/80 to-muted/5">
-                  <h2 className="text-sm font-medium bg-gradient-to-r from-primary/90 to-primary/70 bg-clip-text text-transparent flex items-center gap-1">
-                    <QrCode className="h-3.5 w-3.5 text-primary/70" />
-                    QR Code
-                  </h2>
-                </div>
-                <div className="py-4 px-3 flex flex-col items-center justify-center bg-background/30">
-                  <motion.div
-                    className="bg-white p-1.5 rounded-md shadow-sm"
-                    whileHover={{ rotate: [0, -1, 1, -1, 0] }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    <QRCodeComponent
-                      url={
-                        createdCard?.id
-                          ? `${window.location.origin}/card/${createdCard.id}`
-                          : `${window.location.origin}/preview`
-                      }
-                      size={110}
-                    />
-                  </motion.div>
-                  <p className="text-xs text-muted-foreground text-center mt-3 px-2 max-w-[200px]">
-                    {createdCard
-                      ? "Scan to view your card"
-                      : currentStep < 2
-                      ? "Complete all steps"
-                      : "Create your card"}
+          {/* Preview Section */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="lg:col-span-5"
+          >
+            <div className="lg:sticky lg:top-8 space-y-6">
+              <div className="bg-gradient-to-br from-card/90 to-background border border-border/30 rounded-xl overflow-hidden shadow-sm">
+                <div className="p-4 border-b border-border/10">
+                  <h2 className="font-semibold">Live Preview</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Interactive 3D preview - Hover to interact
                   </p>
                 </div>
-              </motion.div>
+                <div className="p-6 bg-gradient-to-br from-muted/20 to-transparent">
+                  <div className="h-[300px] relative">
+                    <LivePreview data={formData} interactive={true} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-primary/5 rounded-xl p-6 border border-primary/10">
+                <h3 className="text-sm font-medium flex items-center gap-2 mb-3">
+                  <div className="p-1.5 rounded-full bg-primary/10">
+                    <CheckCircle className="h-4 w-4 text-primary" />
+                  </div>
+                  Pro Tips
+                </h3>
+                <ul className="text-sm text-muted-foreground space-y-2.5">
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary">•</span>
+                    Keep your title clear and specific to your role
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary">•</span>
+                    Choose colors that align with your brand identity
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary">•</span>
+                    Test your card preview from different angles
+                  </li>
+                </ul>
+              </div>
             </div>
-          </div>
+          </motion.div>
         </div>
-      </motion.div>
+      </div>
 
       {modalOpen && createdCard && (
         <CardPreviewModal
@@ -261,7 +238,7 @@ function CardCreatorContent() {
           allowRedirect={true}
         />
       )}
-    </>
+    </div>
   );
 }
 
@@ -269,26 +246,23 @@ function CardCreatorContent() {
 export default function CreateCardPage() {
   const { data: session, status } = useSession();
 
-  // Show loading state while checking session
   if (status === "loading") {
     return (
       <div className="flex items-center justify-center min-h-[70vh]">
-        <Loader2 className="h-12 w-12 animate-spin text-muted-foreground" />
+        <Loader2 className="h-12 w-12 animate-spin text-primary/30" />
       </div>
     );
   }
 
-  // Show login prompt if user is not authenticated
   if (!session) {
     return (
       <AuthRequired
         title="Create Your Digital Business Card"
-        message="You need to be signed in to create and manage your business cards."
+        message="Sign in to create and manage your professional digital presence."
       />
     );
   }
 
-  // Render main content with CardCreatorProvider
   return (
     <CardCreatorProvider>
       <CardCreatorContent />

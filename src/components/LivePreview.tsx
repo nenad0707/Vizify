@@ -26,25 +26,26 @@ interface LivePreviewProps {
 
 // Helper function to determine if a color is light or dark
 const isLightColor = (hexColor: string): boolean => {
-  hexColor = hexColor.replace("#", "");
-  const r = parseInt(hexColor.substring(0, 2), 16);
-  const g = parseInt(hexColor.substring(2, 4), 16);
-  const b = parseInt(hexColor.substring(4, 6), 16);
-  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.5;
+  const r = parseInt(hexColor.slice(1, 3), 16);
+  const g = parseInt(hexColor.slice(3, 5), 16);
+  const b = parseInt(hexColor.slice(5, 7), 16);
+  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+  return brightness > 128;
 };
 
 // Helper function to adjust color lightness
 const adjustColor = (color: string, amount: number): string => {
-  color = color.replace(/^#/, "");
-  let r = parseInt(color.substring(0, 2), 16);
-  let g = parseInt(color.substring(2, 4), 16);
-  let b = parseInt(color.substring(4, 6), 16);
-  r = Math.max(0, Math.min(255, r + amount));
-  g = Math.max(0, Math.min(255, g + amount));
-  b = Math.max(0, Math.min(255, b + amount));
-  return `#${r.toString(16).padStart(2, "0")}${g
-    .toString(16)
-    .padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+  const clamp = (num: number) => Math.min(255, Math.max(0, num));
+  const hex = color.replace('#', '');
+  const r = parseInt(hex.slice(0, 2), 16);
+  const g = parseInt(hex.slice(2, 4), 16);
+  const b = parseInt(hex.slice(4, 6), 16);
+
+  const newR = clamp(r + amount);
+  const newG = clamp(g + amount);
+  const newB = clamp(b + amount);
+
+  return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
 };
 
 // 3D Card Component for React Three Fiber
@@ -176,7 +177,7 @@ function Card3D({
 
     // Add text shadow for better readability
     if (textStyle.textShadow !== "none") {
-      ctx.shadowColor = "rgba(0, 0, 0, 0.3)";
+      ctx.shadowColor = "rgba(0, 0, 0, 3)";
       ctx.shadowBlur = 4;
       ctx.shadowOffsetX = 1;
       ctx.shadowOffsetY = 1;
@@ -267,7 +268,7 @@ function Card3D({
     if (!interactive) return;
 
     // Convert pointer position to normalized range [-1, 1]
-    const rect = e.nativeEvent.target.getBoundingClientRect();
+    const rect = (e.nativeEvent.target as HTMLElement).getBoundingClientRect();
     let x = ((e.nativeEvent.clientX - rect.left) / rect.width) * 2 - 1;
     let y = ((e.nativeEvent.clientY - rect.top) / rect.height) * 2 - 1;
 
@@ -360,79 +361,103 @@ function Card3D({
 // Main LivePreview component with 3D canvas
 export const LivePreview = forwardRef<HTMLDivElement, LivePreviewProps>(
   ({ data, className, interactive = true }, ref) => {
-    const [isMounted, setIsMounted] = useState(false);
+    const [imageLoaded, setImageLoaded] = useState(false);
+    const [templateImage, setTemplateImage] = useState<string>("");
 
-    // Handle client-side mounting for React Three Fiber
     useEffect(() => {
-      setIsMounted(true);
-    }, []);
+      // Load template background based on selected template
+      const loadTemplateImage = async () => {
+        try {
+          const imagePath = `/images/${data.template}.png`;
+          setTemplateImage(imagePath);
+          setImageLoaded(true);
+        } catch (error) {
+          console.error("Error loading template image:", error);
+          setImageLoaded(false);
+        }
+      };
 
-    // Return loader while component is mounting
-    if (!isMounted) {
-      return (
-        <div
-          ref={ref}
-          className={cn("w-full max-w-md mx-auto aspect-[1.7/1]", className)}
-        >
-          <div className="w-full h-full flex items-center justify-center bg-muted/20 rounded-lg">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-          </div>
-        </div>
-      );
-    }
+      loadTemplateImage();
+    }, [data.template]);
+
+    const textColor = isLightColor(data.color) ? '#000000' : '#FFFFFF';
+    const secondaryColor = isLightColor(data.color) ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.8)';
 
     return (
-      <div
+      <div 
         ref={ref}
         className={cn(
-          "w-full max-w-md mx-auto aspect-[1.7/1] business-card premium-3d-card",
-          className,
+          "relative w-full transform-style-3d perspective-1000",
+          interactive && "cursor-pointer",
+          className
         )}
+        style={{
+          aspectRatio: "1.6",
+        }}
       >
-        <Canvas
-          camera={{ position: [0, 0, 2], fov: 35 }}
-          dpr={[1, 2]} // Improved DPI for sharper rendering
-          gl={{ antialias: true, alpha: true }}
+        <div 
+          className={cn(
+            "absolute inset-0 rounded-xl overflow-hidden premium-3d-card",
+            data.template === "modern" ? "bg-gradient-to-br" : "bg-white"
+          )}
+          style={{
+            backgroundColor: data.template === "modern" ? data.color : undefined,
+            backgroundImage: imageLoaded ? `url(${templateImage})` : undefined,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
         >
-          <ambientLight intensity={0.7} />
-          <spotLight
-            position={[5, 5, 10]}
-            angle={0.15}
-            penumbra={1}
-            intensity={0.8}
-            castShadow
-          />
-          <pointLight position={[-10, -10, -10]} intensity={0.3} />
+          <div className="absolute inset-0 bg-gradient-to-br from-black/0 via-black/0 to-black/20" />
+          
+          <div className="premium-card-content relative h-full p-6 flex flex-col justify-between">
+            {/* Main content */}
+            <div>
+              <h3 
+                className="premium-text text-2xl font-bold mb-1"
+                style={{ color: textColor }}
+              >
+                {data.name || "Your Name"}
+              </h3>
+              <p 
+                className="premium-text text-lg"
+                style={{ color: secondaryColor }}
+              >
+                {data.title || "Your Title"}
+              </p>
+            </div>
 
-          <Suspense fallback={null}>
-            <Card3D data={data} interactive={interactive} />
-            <ContactShadows
-              position={[0, -0.5, 0]}
-              opacity={0.4}
-              scale={3}
-              blur={1.5}
-              far={0.5}
-            />
-            <Environment preset="city" />
-          </Suspense>
-        </Canvas>
-
-        {/* Elegant shadow under card */}
-        {interactive && (
-          <div
-            className="absolute mt-4 left-0 right-0 h-[16px] opacity-25 blur-sm"
-            style={{
-              background: `linear-gradient(to bottom, ${data.color}, transparent)`,
-              borderRadius: "50%",
-              width: "90%",
-              marginLeft: "auto",
-              marginRight: "auto",
-            }}
-          />
-        )}
+            {/* Contact Information */}
+            <div className="space-y-1">
+              {data.email && (
+                <p 
+                  className="premium-text text-sm flex items-center gap-2"
+                  style={{ color: secondaryColor }}
+                >
+                  <span>✉</span> {data.email}
+                </p>
+              )}
+              {data.phone && (
+                <p 
+                  className="premium-text text-sm flex items-center gap-2"
+                  style={{ color: secondaryColor }}
+                >
+                  <span>📱</span> {data.phone}
+                </p>
+              )}
+              {data.company && (
+                <p 
+                  className="premium-text text-sm flex items-center gap-2"
+                  style={{ color: secondaryColor }}
+                >
+                  <span>🏢</span> {data.company}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     );
-  },
+  }
 );
 
 LivePreview.displayName = "LivePreview";

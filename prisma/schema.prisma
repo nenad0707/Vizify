@@ -26,14 +26,20 @@ model User {
 }
 
 model BusinessCard {
-  id       String @id @default(uuid())
-  userId   String 
-  name     String
-  title    String
-  color    String
-  template String @default("modern")
-  qrCode   String
+  id        String   @id @default(uuid())
+  userId    String
+  name      String
+  title     String
+  email     String?
+  phone     String?
+  company   String?
+  color     String
+  template  String   @default("modern")
+  logo      String?  // Company logo URL
+  qrCode    String
+  backgroundColor String? // For custom background colors
   createdAt DateTime @default(now())
+  isFavorite Boolean @default(false)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
