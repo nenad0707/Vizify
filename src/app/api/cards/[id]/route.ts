@@ -3,13 +3,10 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-interface RequestContext {
-  params: {
-    id: string;
-  };
-}
-
-export async function GET(request: NextRequest, context: RequestContext) {
+export async function GET(
+  request: NextRequest,
+  context: { params: { id: string } },
+) {
   try {
     const session = await getServerSession(authOptions);
     const id = context.params.id;
@@ -47,7 +44,10 @@ export async function GET(request: NextRequest, context: RequestContext) {
   }
 }
 
-export async function DELETE(request: NextRequest, context: RequestContext) {
+export async function DELETE(
+  request: NextRequest,
+  context: { params: { id: string } },
+) {
   try {
     const session = await getServerSession(authOptions);
     if (!session) {
@@ -85,14 +85,17 @@ export async function DELETE(request: NextRequest, context: RequestContext) {
       where: { id },
     });
 
-    return new NextResponse(null, { status: 204 });
+    return new NextResponse("Card deleted successfully", { status: 200 });
   } catch (error) {
     console.error("Error deleting card:", error);
     return new NextResponse("Internal Server Error", { status: 500 });
   }
 }
 
-export async function PATCH(request: NextRequest, context: RequestContext) {
+export async function PATCH(
+  request: NextRequest,
+  context: { params: { id: string } },
+) {
   try {
     const session = await getServerSession(authOptions);
     if (!session) {
@@ -131,18 +134,9 @@ export async function PATCH(request: NextRequest, context: RequestContext) {
     const updatedCard = await prisma.businessCard.update({
       where: { id },
       data: body,
-      include: {
-        user: {
-          select: {
-            name: true,
-            email: true,
-            image: true,
-          },
-        },
-      },
     });
 
-    return NextResponse.json(updatedCard);
+    return NextResponse.json(updatedCard, { status: 200 });
   } catch (error) {
     console.error("Error updating card:", error);
     return new NextResponse("Internal Server Error", { status: 500 });
