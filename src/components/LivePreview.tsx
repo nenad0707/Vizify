@@ -36,7 +36,7 @@ const isLightColor = (hexColor: string): boolean => {
 // Helper function to adjust color lightness
 const adjustColor = (color: string, amount: number): string => {
   const clamp = (num: number) => Math.min(255, Math.max(0, num));
-  const hex = color.replace('#', '');
+  const hex = color.replace("#", "");
   const r = parseInt(hex.slice(0, 2), 16);
   const g = parseInt(hex.slice(2, 4), 16);
   const b = parseInt(hex.slice(4, 6), 16);
@@ -45,7 +45,9 @@ const adjustColor = (color: string, amount: number): string => {
   const newG = clamp(g + amount);
   const newB = clamp(b + amount);
 
-  return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
+  return `#${newR.toString(16).padStart(2, "0")}${newG
+    .toString(16)
+    .padStart(2, "0")}${newB.toString(16).padStart(2, "0")}`;
 };
 
 // 3D Card Component for React Three Fiber
@@ -380,47 +382,93 @@ export const LivePreview = forwardRef<HTMLDivElement, LivePreviewProps>(
       loadTemplateImage();
     }, [data.template]);
 
-    const textColor = isLightColor(data.color) ? '#000000' : '#FFFFFF';
-    const secondaryColor = isLightColor(data.color) ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.8)';
+    // Helper function to get template-specific styles
+    const getTemplateStyles = () => {
+      switch (data.template) {
+        case "modern":
+          return {
+            textColor: "#FFFFFF",
+            secondaryColor: "rgba(255,255,255,0.9)",
+            containerStyle: "bg-gradient-to-br",
+            contentClass: "relative z-10",
+            overlayStyle:
+              "absolute inset-0 bg-gradient-to-br from-black/20 to-black/40",
+          };
+        case "classic":
+          return {
+            textColor: "#1a1a1a",
+            secondaryColor: "rgba(0,0,0,0.8)",
+            containerStyle: "bg-white",
+            contentClass: "relative z-10",
+            overlayStyle:
+              "absolute inset-0 bg-gradient-to-b from-white/80 via-white/60 to-transparent",
+          };
+        case "minimalist":
+          return {
+            textColor: "#1a1a1a",
+            secondaryColor: "rgba(0,0,0,0.8)",
+            containerStyle: "bg-white",
+            contentClass: "relative z-10",
+            overlayStyle:
+              "absolute inset-0 bg-gradient-to-r from-white/90 to-white/70",
+          };
+        default:
+          return {
+            textColor: "#FFFFFF",
+            secondaryColor: "rgba(255,255,255,0.8)",
+            containerStyle: "",
+            contentClass: "",
+            overlayStyle: "",
+          };
+      }
+    };
+
+    const templateStyles = getTemplateStyles();
 
     return (
-      <div 
+      <div
         ref={ref}
         className={cn(
           "relative w-full transform-style-3d perspective-1000",
           interactive && "cursor-pointer",
-          className
+          className,
         )}
         style={{
           aspectRatio: "1.6",
         }}
       >
-        <div 
+        <div
           className={cn(
             "absolute inset-0 rounded-xl overflow-hidden premium-3d-card",
-            data.template === "modern" ? "bg-gradient-to-br" : "bg-white"
+            templateStyles.containerStyle,
           )}
           style={{
-            backgroundColor: data.template === "modern" ? data.color : undefined,
+            backgroundColor: data.color,
             backgroundImage: imageLoaded ? `url(${templateImage})` : undefined,
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-black/0 via-black/0 to-black/20" />
-          
-          <div className="premium-card-content relative h-full p-6 flex flex-col justify-between">
+          {/* Overlay for better text visibility */}
+          <div className={templateStyles.overlayStyle} />
+
+          <div
+            className={cn(
+              "premium-card-content relative h-full p-6 flex flex-col justify-between",
+              templateStyles.contentClass,
+            )}
+          >
             {/* Main content */}
             <div>
-              <h3 
-                className="premium-text text-2xl font-bold mb-1"
-                style={{ color: textColor }}
+              <h3
+                className="premium-text text-2xl font-bold mb-1 drop-shadow-sm"
+                style={{ color: templateStyles.textColor }}
               >
                 {data.name || "Your Name"}
               </h3>
-              <p 
-                className="premium-text text-lg"
-                style={{ color: secondaryColor }}
+              <p
+                className="premium-text text-lg drop-shadow-sm"
+                style={{ color: templateStyles.secondaryColor }}
               >
                 {data.title || "Your Title"}
               </p>
@@ -429,25 +477,25 @@ export const LivePreview = forwardRef<HTMLDivElement, LivePreviewProps>(
             {/* Contact Information */}
             <div className="space-y-1">
               {data.email && (
-                <p 
-                  className="premium-text text-sm flex items-center gap-2"
-                  style={{ color: secondaryColor }}
+                <p
+                  className="premium-text text-sm flex items-center gap-2 drop-shadow-sm"
+                  style={{ color: templateStyles.secondaryColor }}
                 >
                   <span>✉</span> {data.email}
                 </p>
               )}
               {data.phone && (
-                <p 
-                  className="premium-text text-sm flex items-center gap-2"
-                  style={{ color: secondaryColor }}
+                <p
+                  className="premium-text text-sm flex items-center gap-2 drop-shadow-sm"
+                  style={{ color: templateStyles.secondaryColor }}
                 >
                   <span>📱</span> {data.phone}
                 </p>
               )}
               {data.company && (
-                <p 
-                  className="premium-text text-sm flex items-center gap-2"
-                  style={{ color: secondaryColor }}
+                <p
+                  className="premium-text text-sm flex items-center gap-2 drop-shadow-sm"
+                  style={{ color: templateStyles.secondaryColor }}
                 >
                   <span>🏢</span> {data.company}
                 </p>
@@ -457,7 +505,7 @@ export const LivePreview = forwardRef<HTMLDivElement, LivePreviewProps>(
         </div>
       </div>
     );
-  }
+  },
 );
 
 LivePreview.displayName = "LivePreview";
