@@ -24,15 +24,6 @@ interface LivePreviewProps {
   interactive?: boolean;
 }
 
-// Helper function to determine if a color is light or dark
-const isLightColor = (hexColor: string): boolean => {
-  const r = parseInt(hexColor.slice(1, 3), 16);
-  const g = parseInt(hexColor.slice(3, 5), 16);
-  const b = parseInt(hexColor.slice(5, 7), 16);
-  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-  return brightness > 128;
-};
-
 // Helper function to adjust color lightness
 const adjustColor = (color: string, amount: number): string => {
   const clamp = (num: number) => Math.min(255, Math.max(0, num));
@@ -95,10 +86,8 @@ function Card3D({
   // Safe zone for mouse interaction to prevent jittering at edges
   const safeZoneMargin = 0.15; // 15% margin from edges
 
-  // Determine text style based on template and color
+  // Determine text style based on template (fixed colors per template)
   const getTextStyle = () => {
-    const isLight = isLightColor(color);
-
     switch (template) {
       case "modern":
         return {
@@ -108,15 +97,15 @@ function Card3D({
         };
       case "classic":
         return {
-          textColor: isLight ? "#000000" : "#ffffff",
-          secondaryColor: isLight ? "rgba(0,0,0,0.7)" : "rgba(255,255,255,0.7)",
-          textShadow: isLight ? "none" : "0 1px 2px rgba(0,0,0,0.3)",
+          textColor: "#1a1a1a",
+          secondaryColor: "rgba(0,0,0,0.7)",
+          textShadow: "none",
         };
       case "minimalist":
       default:
         return {
-          textColor: isLight ? "#000000" : "#ffffff",
-          secondaryColor: isLight ? "rgba(0,0,0,0.7)" : "rgba(255,255,255,0.7)",
+          textColor: "#1a1a1a",
+          secondaryColor: "rgba(0,0,0,0.7)",
           textShadow: "none",
         };
     }
@@ -141,7 +130,7 @@ function Card3D({
     // Specialized drawing for different templates
     switch (template) {
       case "modern":
-        // Add modern elements
+        // Add modern elements with brand color influence
         const gradient = ctx.createLinearGradient(
           0,
           0,
@@ -153,22 +142,25 @@ function Card3D({
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Modern decorative element
-        ctx.fillStyle = "rgba(255,255,255,0.15)";
+        // Modern decorative element influenced by brand color
+        ctx.fillStyle = `rgba(${parseInt(color.slice(1, 3), 16)}, ${parseInt(
+          color.slice(3, 5),
+          16,
+        )}, ${parseInt(color.slice(5, 7), 16)}, 0.2)`;
         ctx.beginPath();
         ctx.arc(canvas.width - 100, 100, 80, 0, Math.PI * 2);
         ctx.fill();
         break;
 
       case "classic":
-        // Add top border for classic design
+        // Add top border for classic design using brand color
         ctx.fillStyle = adjustColor(color, -40);
         ctx.fillRect(0, 0, canvas.width, 24);
         break;
 
       case "minimalist":
-        // Add side accent for minimalist design
-        ctx.fillStyle = adjustColor(color, isLightColor(color) ? -40 : 40);
+        // Add side accent for minimalist design using brand color
+        ctx.fillStyle = adjustColor(color, 40);
         ctx.fillRect(0, 0, 20, canvas.height);
         break;
     }
@@ -229,13 +221,13 @@ function Card3D({
       const material = new THREE.MeshStandardMaterial({
         map: texture,
         transparent: true,
-        metalness: 0.1,
+        metalness: 0.2,
         roughness: 0.7,
       });
 
       // Apply color to texture with opacity for better visibility
       material.color = new THREE.Color(color);
-      material.opacity = 0.9;
+      material.opacity = 0.95;
 
       // Create text overlay material
       const textMaterial = new THREE.MeshBasicMaterial({
@@ -297,12 +289,12 @@ function Card3D({
 
   // Handle card rotation with smooth transitions
   useFrame((state) => {
-    if (!meshRef.current || !interactive) return;
+    if (!meshRef.current) return;
 
-    if (hovered) {
+    if (hovered && interactive) {
       // Calculate target rotation based on mouse position
-      targetRotation.current.y = mousePosition.x * Math.PI * 0.08; // Reduced for smoother movement
-      targetRotation.current.x = -mousePosition.y * Math.PI * 0.04; // Reduced for smoother movement
+      targetRotation.current.y = mousePosition.x * Math.PI * 0.1; // Slightly increased for better effect
+      targetRotation.current.x = -mousePosition.y * Math.PI * 0.05; // Slightly increased for better effect
 
       // Apply smooth interpolation to current rotation
       currentRotation.current.x = THREE.MathUtils.lerp(
@@ -316,12 +308,12 @@ function Card3D({
         smoothingFactor,
       );
     } else {
-      // Subtle idle animation when not hovered
+      // More noticeable idle animation
       const time = state.clock.getElapsedTime();
 
-      // Very subtle idle movement
-      targetRotation.current.x = Math.sin(time * 0.3) * 0.01;
-      targetRotation.current.y = Math.sin(time * 0.4) * 0.01;
+      // Enhanced subtle idle movement
+      targetRotation.current.x = Math.sin(time * 0.3) * 0.03; // Increased amplitude
+      targetRotation.current.y = Math.sin(time * 0.5) * 0.03; // Increased amplitude and different frequency
 
       // Apply even smoother interpolation for idle movement
       currentRotation.current.x = THREE.MathUtils.lerp(
@@ -365,12 +357,18 @@ export const LivePreview = forwardRef<HTMLDivElement, LivePreviewProps>(
   ({ data, className, interactive = true }, ref) => {
     const [imageLoaded, setImageLoaded] = useState(false);
     const [templateImage, setTemplateImage] = useState<string>("");
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [isHovered, setIsHovered] = useState(false);
+    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
     useEffect(() => {
       // Load template background based on selected template
       const loadTemplateImage = async () => {
         try {
-          const imagePath = `/images/${data.template}.png`;
+          // Correct template image naming
+          const templateName =
+            data.template === "minimalist" ? "minimalistic" : data.template;
+          const imagePath = `/images/${templateName}.png`;
           setTemplateImage(imagePath);
           setImageLoaded(true);
         } catch (error) {
@@ -382,7 +380,7 @@ export const LivePreview = forwardRef<HTMLDivElement, LivePreviewProps>(
       loadTemplateImage();
     }, [data.template]);
 
-    // Helper function to get template-specific styles
+    // Helper function to get template-specific styles with fixed text colors
     const getTemplateStyles = () => {
       switch (data.template) {
         case "modern":
@@ -392,25 +390,25 @@ export const LivePreview = forwardRef<HTMLDivElement, LivePreviewProps>(
             containerStyle: "bg-gradient-to-br",
             contentClass: "relative z-10",
             overlayStyle:
-              "absolute inset-0 bg-gradient-to-br from-black/20 to-black/40",
+              "absolute inset-0 bg-gradient-to-br from-black/30 to-black/50",
           };
         case "classic":
           return {
-            textColor: "#1a1a1a",
+            textColor: "#1A1A1A",
             secondaryColor: "rgba(0,0,0,0.8)",
             containerStyle: "bg-white",
             contentClass: "relative z-10",
             overlayStyle:
-              "absolute inset-0 bg-gradient-to-b from-white/80 via-white/60 to-transparent",
+              "absolute inset-0 bg-gradient-to-b from-white/90 via-white/80 to-transparent",
           };
         case "minimalist":
           return {
-            textColor: "#1a1a1a",
+            textColor: "#1A1A1A",
             secondaryColor: "rgba(0,0,0,0.8)",
             containerStyle: "bg-white",
             contentClass: "relative z-10",
             overlayStyle:
-              "absolute inset-0 bg-gradient-to-r from-white/90 to-white/70",
+              "absolute inset-0 bg-gradient-to-r from-white/95 to-white/80",
           };
         default:
           return {
@@ -425,21 +423,54 @@ export const LivePreview = forwardRef<HTMLDivElement, LivePreviewProps>(
 
     const templateStyles = getTemplateStyles();
 
+    // Handle mouse move for 3D effect
+    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!containerRef.current || !interactive) return;
+
+      const rect = containerRef.current.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width - 0.5;
+      const y = (e.clientY - rect.top) / rect.height - 0.5;
+
+      setMousePosition({ x, y });
+    };
+
+    // Calculate the 3D transform style
+    const get3DTransformStyle = () => {
+      if (!isHovered || !interactive) return {};
+
+      const rotateX = mousePosition.y * -10; // Inverse Y for natural movement
+      const rotateY = mousePosition.x * 10;
+
+      return {
+        transform: `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`,
+        transition: "transform 0.1s ease",
+      };
+    };
+
+    // Regular preview without Three.js (for faster rendering and better compatibility)
     return (
       <div
-        ref={ref}
+        ref={(node) => {
+          // Merge refs
+          if (typeof ref === "function") ref(node);
+          else if (ref) ref.current = node;
+          (containerRef.current as HTMLDivElement | null) = node;
+        }}
         className={cn(
-          "relative w-full transform-style-3d perspective-1000",
+          "relative w-full transform-gpu perspective-800",
           interactive && "cursor-pointer",
           className,
         )}
         style={{
           aspectRatio: "1.6",
         }}
+        onMouseMove={handleMouseMove}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
         <div
           className={cn(
-            "absolute inset-0 rounded-xl overflow-hidden premium-3d-card",
+            "absolute inset-0 rounded-xl overflow-hidden premium-3d-card shadow-lg",
             templateStyles.containerStyle,
           )}
           style={{
@@ -447,10 +478,22 @@ export const LivePreview = forwardRef<HTMLDivElement, LivePreviewProps>(
             backgroundImage: imageLoaded ? `url(${templateImage})` : undefined,
             backgroundSize: "cover",
             backgroundPosition: "center",
+            ...get3DTransformStyle(),
           }}
         >
-          {/* Overlay for better text visibility */}
-          <div className={templateStyles.overlayStyle} />
+          {/* Overlay for better text visibility, adapting to brand color */}
+          <div
+            className={templateStyles.overlayStyle}
+            style={{
+              background:
+                data.template === "modern"
+                  ? `linear-gradient(135deg, ${adjustColor(
+                      data.color,
+                      -20,
+                    )}50, ${adjustColor(data.color, -80)}80)`
+                  : undefined,
+            }}
+          />
 
           <div
             className={cn(

@@ -47,6 +47,10 @@ export function AppearanceSection() {
       updateFormData("company", "Design Studio");
       updateFormData("phone", "+1 234 567 890");
     }
+
+    if (!formData.color) {
+      updateFormData("color", "#6366F1");
+    }
   }, []);
 
   // Handle the continue button click explicitly
@@ -54,25 +58,7 @@ export function AppearanceSection() {
     goToNextStep();
   };
 
-  const premiumColors = [
-    "#6366f1",
-    "#8b5cf6",
-    "#ec4899",
-    "#10b981",
-    "#f59e0b",
-    "#ef4444",
-
-    "#1e293b",
-    "#312e81",
-    "#065f46",
-    "#831843",
-
-    "#93c5fd",
-    "#a5b4fc",
-    "#c4b5fd",
-    "#86efac",
-    "#fcd34d",
-  ];
+  const premiumColors = ["#1E293B", "#6366F1", "#8B5CF6", "#10B981", "#F59E0B"];
 
   return (
     <FormSectionWrapper
@@ -94,7 +80,7 @@ export function AppearanceSection() {
               Brand Color
             </Label>
             <span className="text-xs text-muted-foreground">
-              Select or customize your color
+              Select a premium color
             </span>
           </div>
 
@@ -104,33 +90,36 @@ export function AppearanceSection() {
               setSelectedColor={(color) => updateFormData("color", color)}
             />
 
-            <div className="mt-4">
-              <Label className="text-xs text-muted-foreground mb-2 block">
-                Premium Color Palette
+            <div className="mt-6">
+              <Label className="text-sm text-foreground font-medium mb-3 block">
+                Premium Color Selection
               </Label>
-              <div className="flex flex-wrap gap-2 mt-1">
+              <div className="grid grid-cols-5 gap-4 mt-3">
                 {premiumColors.map((color) => (
                   <motion.div
                     key={color}
-                    whileHover={{ y: -2, scale: 1.05 }}
+                    whileHover={{ y: -4, scale: 1.08 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => updateFormData("color", color)}
                     className={cn(
-                      "h-8 w-8 rounded-full cursor-pointer border-2 transition-all duration-200",
+                      "h-14 w-full rounded-xl cursor-pointer border-2 transition-all duration-200 flex flex-col items-center justify-center shadow-sm",
                       formData.color.toLowerCase() === color.toLowerCase()
-                        ? "border-primary scale-110 shadow-md"
-                        : "border-transparent hover:border-primary/50",
+                        ? "border-primary scale-105 shadow-md ring-2 ring-primary/30"
+                        : "border-border/30 hover:border-primary/50",
                     )}
                     style={{ backgroundColor: color }}
                   >
                     {formData.color.toLowerCase() === color.toLowerCase() && (
-                      <div className="h-full w-full flex items-center justify-center">
-                        <div className="h-2 w-2 rounded-full bg-white shadow-sm"></div>
+                      <div className="flex items-center justify-center bg-white/90 rounded-full p-1.5 shadow-sm">
+                        <Check className="h-3.5 w-3.5 text-primary" />
                       </div>
                     )}
                   </motion.div>
                 ))}
               </div>
+              <p className="text-xs text-muted-foreground mt-3 text-center">
+                Colors update your card preview instantly
+              </p>
             </div>
           </div>
         </motion.div>
@@ -235,7 +224,7 @@ export function AppearanceSection() {
                 <div className="p-1.5 rounded-full bg-primary/10">
                   <Sparkles className="h-4 w-4 text-primary" />
                 </div>
-                <span>Interactive 3D Preview</span>
+                <span>Interactive Preview</span>
               </div>
               <span className="text-xs text-primary/80 bg-primary/5 px-2 py-1 rounded-full">
                 Hover to interact
