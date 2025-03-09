@@ -3,13 +3,16 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } },
-) {
+interface RequestContext {
+  params: {
+    id: string;
+  };
+}
+
+export async function GET(request: NextRequest, context: RequestContext) {
   try {
     const session = await getServerSession(authOptions);
-    const id = await params.id;
+    const id = context.params.id;
 
     if (!id) {
       return new NextResponse("ID is required", { status: 400 });
@@ -44,17 +47,14 @@ export async function GET(
   }
 }
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } },
-) {
+export async function DELETE(request: NextRequest, context: RequestContext) {
   try {
     const session = await getServerSession(authOptions);
     if (!session) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const id = await params.id;
+    const id = context.params.id;
     if (!id) {
       return new NextResponse("ID is required", { status: 400 });
     }
@@ -92,17 +92,14 @@ export async function DELETE(
   }
 }
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } },
-) {
+export async function PATCH(request: NextRequest, context: RequestContext) {
   try {
     const session = await getServerSession(authOptions);
     if (!session) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const id = await params.id;
+    const id = context.params.id;
     if (!id) {
       return new NextResponse("ID is required", { status: 400 });
     }

@@ -1,11 +1,14 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(
-  request: Request,
-  context: { params: Promise<{ id: string }> },
-) {
-  const { id } = await context.params;
+interface RequestContext {
+  params: {
+    id: string;
+  };
+}
+
+export async function GET(request: NextRequest, context: RequestContext) {
+  const id = context.params.id;
 
   try {
     const card = await prisma.businessCard.findUnique({
