@@ -28,6 +28,17 @@ import { EditCardModal } from "@/components/EditCardModal";
 import * as htmlToImage from "html-to-image";
 import { toPng } from "html-to-image";
 import { LivePreview } from "@/components/LivePreview";
+import dynamic from "next/dynamic";
+
+// Dinamički učitaj 3D komponentu bez SSR
+// const Card3DPreview = dynamic(() => import("@/components/Card3DPreview"), {
+//   ssr: false,
+//   loading: () => (
+//     <div className="w-full h-full aspect-[1.6/1] bg-muted/30 animate-pulse rounded-lg flex items-center justify-center">
+//       <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+//     </div>
+//   ),
+// });
 
 interface CardPageProps {
   params: Promise<{ id: string }>;
@@ -415,12 +426,12 @@ export default function CardPage({ params }: CardPageProps) {
             <div className="p-5 sm:p-8 flex flex-col md:flex-row md:items-center gap-8">
               <div className="relative flex-1" onMouseMove={handleMouseMove}>
                 <div className="perspective-1000 max-w-[350px] mx-auto md:mx-0">
-                  {/* Replace the old card code with LivePreview */}
+                  {/* Zamenili smo Card3DPreview sa LivePreview */}
                   <LivePreview
                     ref={businessCardRef}
                     data={card}
-                    className="rounded-xl"
                     interactive={true}
+                    className="rounded-xl"
                   />
                 </div>
 

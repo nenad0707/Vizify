@@ -1,9 +1,11 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { forwardRef, useState, useRef, useEffect } from "react";
+import { forwardRef, useState, useRef, useEffect, Suspense } from "react";
 import { cn } from "@/lib/utils";
-import { Mail, Phone, Building2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { Canvas, useFrame, ThreeEvent } from "@react-three/fiber";
+import { useTexture, Environment, ContactShadows } from "@react-three/drei";
+import * as THREE from "three";
 
 export interface BusinessCardData {
   name?: string;
@@ -13,6 +15,7 @@ export interface BusinessCardData {
   email?: string;
   phone?: string;
   company?: string;
+  logo?: string;
 }
 
 interface LivePreviewProps {
@@ -21,21 +24,16 @@ interface LivePreviewProps {
   interactive?: boolean;
 }
 
-// Simple helper function to determine if a color is light or dark
+// Helper function to determine if a color is light or dark
 const isLightColor = (hexColor: string): boolean => {
-  // Remove the # if present
-  hexColor = hexColor.replace('#', '');
-  
-  // Convert to RGB
+  hexColor = hexColor.replace("#", "");
   const r = parseInt(hexColor.substring(0, 2), 16);
   const g = parseInt(hexColor.substring(2, 4), 16);
   const b = parseInt(hexColor.substring(4, 6), 16);
-  
-  // Calculate luminance (perceived brightness)
   return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.5;
 };
 
-// Helper function to adjust color
+// Helper function to adjust color lightness
 const adjustColor = (color: string, amount: number): string => {
   color = color.replace(/^#/, "");
   let r = parseInt(color.substring(0, 2), 16);
@@ -44,398 +42,397 @@ const adjustColor = (color: string, amount: number): string => {
   r = Math.max(0, Math.min(255, r + amount));
   g = Math.max(0, Math.min(255, g + amount));
   b = Math.max(0, Math.min(255, b + amount));
-  return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+  return `#${r.toString(16).padStart(2, "0")}${g
+    .toString(16)
+    .padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
 };
 
+// 3D Card Component for React Three Fiber
+function Card3D({
+  data,
+  interactive,
+}: {
+  data: BusinessCardData;
+  interactive: boolean;
+}) {
+  const { name, title, email, phone, company, color, template } = data;
+
+  // Reference to mesh
+  const meshRef = useRef<THREE.Mesh>(null);
+
+  // Get the correct template name for image path
+  const templateName = template === "minimalist" ? "minimalistic" : template;
+
+  // Load template texture
+  const texture = useTexture(`/images/${templateName}.png`);
+
+  // Improve texture quality
+  useEffect(() => {
+    if (texture) {
+      texture.anisotropy = 16;
+      texture.minFilter = THREE.LinearFilter;
+      texture.magFilter = THREE.LinearFilter;
+      texture.needsUpdate = true;
+    }
+  }, [texture]);
+
+  // Hover state and mouse position for rotation
+  const [hovered, setHovered] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  // Smoothing factor for rotation transitions - lower = smoother
+  const smoothingFactor = 0.08;
+
+  // Target rotation values to smooth transitions
+  const targetRotation = useRef({ x: 0, y: 0 });
+
+  // Current rotation values with smooth transitions
+  const currentRotation = useRef({ x: 0, y: 0 });
+
+  // Safe zone for mouse interaction to prevent jittering at edges
+  const safeZoneMargin = 0.15; // 15% margin from edges
+
+  // Determine text style based on template and color
+  const getTextStyle = () => {
+    const isLight = isLightColor(color);
+
+    switch (template) {
+      case "modern":
+        return {
+          textColor: "#ffffff",
+          secondaryColor: "rgba(255,255,255,0.8)",
+          textShadow: "0 1px 2px rgba(0,0,0,0.3)",
+        };
+      case "classic":
+        return {
+          textColor: isLight ? "#000000" : "#ffffff",
+          secondaryColor: isLight ? "rgba(0,0,0,0.7)" : "rgba(255,255,255,0.7)",
+          textShadow: isLight ? "none" : "0 1px 2px rgba(0,0,0,0.3)",
+        };
+      case "minimalist":
+      default:
+        return {
+          textColor: isLight ? "#000000" : "#ffffff",
+          secondaryColor: isLight ? "rgba(0,0,0,0.7)" : "rgba(255,255,255,0.7)",
+          textShadow: "none",
+        };
+    }
+  };
+
+  // Create dynamic canvas texture for text rendering
+  useEffect(() => {
+    if (!meshRef.current) return;
+
+    const textStyle = getTextStyle();
+
+    // Create canvas for dynamic text
+    const canvas = document.createElement("canvas");
+    canvas.width = 1024;
+    canvas.height = 600;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Specialized drawing for different templates
+    switch (template) {
+      case "modern":
+        // Add modern elements
+        const gradient = ctx.createLinearGradient(
+          0,
+          0,
+          canvas.width,
+          canvas.height,
+        );
+        gradient.addColorStop(0, "rgba(255,255,255,0.15)");
+        gradient.addColorStop(1, "rgba(0,0,0,0.15)");
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Modern decorative element
+        ctx.fillStyle = "rgba(255,255,255,0.15)";
+        ctx.beginPath();
+        ctx.arc(canvas.width - 100, 100, 80, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+
+      case "classic":
+        // Add top border for classic design
+        ctx.fillStyle = adjustColor(color, -40);
+        ctx.fillRect(0, 0, canvas.width, 24);
+        break;
+
+      case "minimalist":
+        // Add side accent for minimalist design
+        ctx.fillStyle = adjustColor(color, isLightColor(color) ? -40 : 40);
+        ctx.fillRect(0, 0, 20, canvas.height);
+        break;
+    }
+
+    // Name - increased font size
+    ctx.font = "bold 52px Inter, sans-serif";
+    ctx.fillStyle = textStyle.textColor;
+
+    // Add text shadow for better readability
+    if (textStyle.textShadow !== "none") {
+      ctx.shadowColor = "rgba(0, 0, 0, 0.3)";
+      ctx.shadowBlur = 4;
+      ctx.shadowOffsetX = 1;
+      ctx.shadowOffsetY = 1;
+    }
+
+    // Draw name - display entered text or placeholder
+    const displayName = name || "Your Name";
+    ctx.fillText(displayName, template === "minimalist" ? 50 : 80, 120);
+
+    // Reset shadow for other text
+    ctx.shadowColor = "transparent";
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+
+    // Title
+    ctx.font = "36px Inter, sans-serif";
+    ctx.fillStyle = textStyle.secondaryColor;
+    const displayTitle = title || "Your Title";
+    ctx.fillText(displayTitle, template === "minimalist" ? 50 : 80, 180);
+
+    // Contact information
+    ctx.font = "24px Inter, sans-serif";
+    let yPos = 460;
+
+    if (company) {
+      ctx.fillText(`🏢 ${company}`, template === "minimalist" ? 50 : 80, yPos);
+      yPos -= 40;
+    }
+
+    if (email) {
+      ctx.fillText(`✉ ${email}`, template === "minimalist" ? 50 : 80, yPos);
+      yPos -= 40;
+    }
+
+    if (phone) {
+      ctx.fillText(`📱 ${phone}`, template === "minimalist" ? 50 : 80, yPos);
+    }
+
+    // Convert canvas to texture
+    const dynamicTexture = new THREE.CanvasTexture(canvas);
+    dynamicTexture.needsUpdate = true;
+
+    // Apply texture to material
+    if (meshRef.current) {
+      // Base material with template texture
+      const material = new THREE.MeshStandardMaterial({
+        map: texture,
+        transparent: true,
+        metalness: 0.1,
+        roughness: 0.7,
+      });
+
+      // Apply color to texture with opacity for better visibility
+      material.color = new THREE.Color(color);
+      material.opacity = 0.9;
+
+      // Create text overlay material
+      const textMaterial = new THREE.MeshBasicMaterial({
+        map: dynamicTexture,
+        transparent: true,
+        opacity: 1.0,
+      });
+
+      // Apply materials
+      if (Array.isArray(meshRef.current.material)) {
+        meshRef.current.material[5] = textMaterial; // Front face
+
+        // Set other sides
+        for (let i = 0; i < 5; i++) {
+          meshRef.current.material[i] = material;
+        }
+      } else {
+        meshRef.current.material = [
+          material, // left
+          material, // right
+          material, // top
+          material, // bottom
+          material, // back
+          textMaterial, // front (with text)
+        ];
+      }
+    }
+  }, [name, title, email, phone, company, color, template]);
+
+  // Handle pointer movement within safe zone to prevent edge jittering
+  const handlePointerMove = (e: ThreeEvent<PointerEvent>) => {
+    if (!interactive) return;
+
+    // Convert pointer position to normalized range [-1, 1]
+    const rect = e.nativeEvent.target.getBoundingClientRect();
+    let x = ((e.nativeEvent.clientX - rect.left) / rect.width) * 2 - 1;
+    let y = ((e.nativeEvent.clientY - rect.top) / rect.height) * 2 - 1;
+
+    // Calculate distance from edge
+    const distFromEdgeX = Math.min(1 - Math.abs(x), 1);
+    const distFromEdgeY = Math.min(1 - Math.abs(y), 1);
+
+    // If near edge, gradually reduce effect (smooth transition to edge)
+    if (distFromEdgeX < safeZoneMargin) {
+      // Reduce x rotation effect near horizontal edges
+      const factor = distFromEdgeX / safeZoneMargin;
+      x *= factor;
+    }
+
+    if (distFromEdgeY < safeZoneMargin) {
+      // Reduce y rotation effect near vertical edges
+      const factor = distFromEdgeY / safeZoneMargin;
+      y *= factor;
+    }
+
+    // Store safe mouse position
+    setMousePosition({ x, y });
+  };
+
+  // Handle card rotation with smooth transitions
+  useFrame((state) => {
+    if (!meshRef.current || !interactive) return;
+
+    if (hovered) {
+      // Calculate target rotation based on mouse position
+      targetRotation.current.y = mousePosition.x * Math.PI * 0.08; // Reduced for smoother movement
+      targetRotation.current.x = -mousePosition.y * Math.PI * 0.04; // Reduced for smoother movement
+
+      // Apply smooth interpolation to current rotation
+      currentRotation.current.x = THREE.MathUtils.lerp(
+        currentRotation.current.x,
+        targetRotation.current.x,
+        smoothingFactor,
+      );
+      currentRotation.current.y = THREE.MathUtils.lerp(
+        currentRotation.current.y,
+        targetRotation.current.y,
+        smoothingFactor,
+      );
+    } else {
+      // Subtle idle animation when not hovered
+      const time = state.clock.getElapsedTime();
+
+      // Very subtle idle movement
+      targetRotation.current.x = Math.sin(time * 0.3) * 0.01;
+      targetRotation.current.y = Math.sin(time * 0.4) * 0.01;
+
+      // Apply even smoother interpolation for idle movement
+      currentRotation.current.x = THREE.MathUtils.lerp(
+        currentRotation.current.x,
+        targetRotation.current.x,
+        0.02, // Very slow return to idle
+      );
+      currentRotation.current.y = THREE.MathUtils.lerp(
+        currentRotation.current.y,
+        targetRotation.current.y,
+        0.02, // Very slow return to idle
+      );
+    }
+
+    // Apply rotation
+    meshRef.current.rotation.x = currentRotation.current.x;
+    meshRef.current.rotation.y = currentRotation.current.y;
+  });
+
+  return (
+    <mesh
+      ref={meshRef}
+      onPointerOver={(e: ThreeEvent<PointerEvent>) => {
+        setHovered(true);
+        handlePointerMove(e);
+      }}
+      onPointerMove={handlePointerMove}
+      onPointerOut={() => setHovered(false)}
+      scale={[1.7, 1, 0.07]} // Business card proportions
+      castShadow
+      receiveShadow
+    >
+      <boxGeometry args={[1, 1, 1]} />
+      {/* Materials are set in the useEffect */}
+    </mesh>
+  );
+}
+
+// Main LivePreview component with 3D canvas
 export const LivePreview = forwardRef<HTMLDivElement, LivePreviewProps>(
   ({ data, className, interactive = true }, ref) => {
-    const { name, title, email, phone, company, color, template } = data;
-    const cardRef = useRef<HTMLDivElement>(null);
-    const [rotation, setRotation] = useState({ x: 0, y: 0 });
-    const isLight = isLightColor(color);
-    
-    // Calculate theme-specific styles
-    const getTemplateStyles = () => {
-      switch (template) {
-        case 'modern':
-          return {
-            borderRadius: '0.75rem',
-            boxShadow: '0 10px 30px -12px rgba(0,0,0,0.25)',
-            textColor: '#ffffff', // Modern template always uses white text
-            accentColor: adjustColor(color, -40),
-          };
-        case 'classic':
-          return {
-            borderRadius: '0.25rem',
-            boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-            textColor: isLight ? '#000000' : '#ffffff',
-            accentColor: adjustColor(color, isLight ? -50 : 40),
-          };
-        case 'minimalist':
-          return {
-            borderRadius: '0.5rem',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-            textColor: isLight ? '#000000' : '#ffffff',
-            accentColor: adjustColor(color, isLight ? -30 : 30),
-          };
-        default:
-          return {
-            borderRadius: '0.75rem',
-            boxShadow: '0 10px 30px -12px rgba(0,0,0,0.25)',
-            textColor: '#ffffff',
-            accentColor: adjustColor(color, -40),
-          };
-      }
-    };
-    
-    const styles = getTemplateStyles();
+    const [isMounted, setIsMounted] = useState(false);
 
-    // Handle mouse movement for 3D effect
-    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-      if (!interactive || !cardRef.current) return;
-      
-      const card = cardRef.current;
-      const rect = card.getBoundingClientRect();
-      
-      // Calculate cursor position relative to the card center, normalized to -1 to 1
-      const x = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
-      const y = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
-      
-      // Set rotation values (inverted Y for natural feel)
-      setRotation({
-        x: -y * 10, // Multiply by strength factor
-        y: x * 10,  // Multiply by strength factor
-      });
-    };
-    
-    // Reset rotation when mouse leaves
-    const handleMouseLeave = () => {
-      setRotation({ x: 0, y: 0 });
-    };
-
-    // Apply an initial animation effect
+    // Handle client-side mounting for React Three Fiber
     useEffect(() => {
-      if (interactive) {
-        const timer = setTimeout(() => {
-          setRotation({ x: 2, y: -2 });
-          setTimeout(() => {
-            setRotation({ x: 0, y: 0 });
-          }, 500);
-        }, 300);
-        
-        return () => clearTimeout(timer);
-      }
-    }, [interactive]);
+      setIsMounted(true);
+    }, []);
+
+    // Return loader while component is mounting
+    if (!isMounted) {
+      return (
+        <div
+          ref={ref}
+          className={cn("w-full max-w-md mx-auto aspect-[1.7/1]", className)}
+        >
+          <div className="w-full h-full flex items-center justify-center bg-muted/20 rounded-lg">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        </div>
+      );
+    }
 
     return (
       <div
         ref={ref}
         className={cn(
-          "w-full max-w-md mx-auto aspect-[1.7/1]",
-          className
+          "w-full max-w-md mx-auto aspect-[1.7/1] business-card premium-3d-card",
+          className,
         )}
       >
-        <motion.div
-          ref={cardRef}
-          className="business-card w-full h-full relative overflow-hidden"
-          style={{
-            backgroundColor: color,
-            borderRadius: styles.borderRadius,
-            boxShadow: styles.boxShadow,
-            perspective: "1000px",
-            transformStyle: "preserve-3d",
-          }}
-          animate={{
-            rotateX: rotation.x,
-            rotateY: rotation.y,
-          }}
-          transition={{
-            type: "spring",
-            stiffness: 300,
-            damping: 20,
-            mass: 0.8
-          }}
-          whileHover={interactive ? { scale: 1.02 } : undefined}
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
+        <Canvas
+          camera={{ position: [0, 0, 2], fov: 35 }}
+          dpr={[1, 2]} // Improved DPI for sharper rendering
+          gl={{ antialias: true, alpha: true }}
         >
-          {/* TEMPLATE-SPECIFIC ELEMENTS */}
+          <ambientLight intensity={0.7} />
+          <spotLight
+            position={[5, 5, 10]}
+            angle={0.15}
+            penumbra={1}
+            intensity={0.8}
+            castShadow
+          />
+          <pointLight position={[-10, -10, -10]} intensity={0.3} />
 
-          {/* Modern template elements */}
-          {template === 'modern' && (
-            <>
-              <div className="absolute inset-0 bg-gradient-to-br from-white/15 to-black/20 opacity-50" />
-              <div className="absolute top-0 right-0 h-20 w-20 rounded-full bg-white/10 -translate-y-1/3 translate-x-1/3" />
-              <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-black/30 to-transparent" />
-            </>
-          )}
-
-          {/* Classic template elements */}
-          {template === 'classic' && (
-            <>
-              <div 
-                className="absolute top-0 left-0 right-0 h-2"
-                style={{ 
-                  backgroundColor: styles.accentColor,
-                  borderTopLeftRadius: styles.borderRadius,
-                  borderTopRightRadius: styles.borderRadius
-                }}
-              />
-            </>
-          )}
-
-          {/* Minimalist template elements */}
-          {template === 'minimalist' && (
-            <div 
-              className="absolute left-0 top-0 bottom-0 w-1.5"
-              style={{ backgroundColor: styles.accentColor }}
+          <Suspense fallback={null}>
+            <Card3D data={data} interactive={interactive} />
+            <ContactShadows
+              position={[0, -0.5, 0]}
+              opacity={0.4}
+              scale={3}
+              blur={1.5}
+              far={0.5}
             />
-          )}
+            <Environment preset="city" />
+          </Suspense>
+        </Canvas>
 
-          {/* CARD CONTENT */}
-          <div className={cn(
-            "p-6 h-full relative flex flex-col",
-            template === 'minimalist' ? "pl-8 justify-center" : "justify-between"
-          )}>
-            {/* Modern template layout */}
-            {template === 'modern' && (
-              <>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 
-                      className="text-xl font-bold" 
-                      style={{ color: styles.textColor }}
-                    >
-                      {name || "Your Name"}
-                    </h3>
-                    <p 
-                      className="text-sm mt-1 opacity-90" 
-                      style={{ color: styles.textColor }}
-                    >
-                      {title || "Your Title"}
-                    </p>
-                  </div>
-                  <div className="h-10 w-10 rounded-full flex items-center justify-center bg-white/20 text-white font-semibold text-lg">
-                    {(name || "?").charAt(0)}
-                  </div>
-                </div>
-
-                {/* Contact Information - ensuring it shows properly */}
-                <div className="space-y-1.5 mt-auto relative z-10">
-                  {company && (
-                    <div className="flex items-center gap-2">
-                      <Building2 
-                        size={14} 
-                        className="opacity-80"
-                        style={{ color: styles.textColor }} 
-                      />
-                      <p 
-                        className="text-xs opacity-80" 
-                        style={{ color: styles.textColor }}
-                      >
-                        {company}
-                      </p>
-                    </div>
-                  )}
-                  {email && (
-                    <div className="flex items-center gap-2">
-                      <Mail 
-                        size={14} 
-                        className="opacity-80"
-                        style={{ color: styles.textColor }} 
-                      />
-                      <p 
-                        className="text-xs opacity-80"
-                        style={{ color: styles.textColor }}
-                      >
-                        {email}
-                      </p>
-                    </div>
-                  )}
-                  {phone && (
-                    <div className="flex items-center gap-2">
-                      <Phone 
-                        size={14}
-                        className="opacity-80"
-                        style={{ color: styles.textColor }}
-                      />
-                      <p 
-                        className="text-xs opacity-80"
-                        style={{ color: styles.textColor }}
-                      >
-                        {phone}
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                <div className="absolute bottom-4 right-4 space-x-1 flex">
-                  <div className="h-1.5 w-8 bg-white/25 rounded-full" />
-                  <div className="h-1.5 w-5 bg-white/15 rounded-full" />
-                  <div className="h-1.5 w-3 bg-white/10 rounded-full" />
-                </div>
-              </>
-            )}
-
-            {/* Classic template layout */}
-            {template === 'classic' && (
-              <>
-                <div>
-                  <h3
-                    className="text-xl font-bold"
-                    style={{ color: styles.textColor }}
-                  >
-                    {name || "Your Name"}
-                  </h3>
-                  <p
-                    className="text-sm mt-1 opacity-90"
-                    style={{ color: styles.textColor }}
-                  >
-                    {title || "Your Title"}
-                  </p>
-                  
-                  {company && (
-                    <p
-                      className="text-xs mt-2 opacity-70"
-                      style={{ color: styles.textColor }}
-                    >
-                      {company}
-                    </p>
-                  )}
-                </div>
-
-                {/* Ensure contact information is displayed */}
-                <div className="space-y-1.5 mt-auto">
-                  {email && (
-                    <div className="flex items-center gap-2">
-                      <Mail 
-                        size={12}
-                        className="opacity-70" 
-                        style={{ color: styles.textColor }} 
-                      />
-                      <p
-                        className="text-xs opacity-70"
-                        style={{ color: styles.textColor }}
-                      >
-                        {email}
-                      </p>
-                    </div>
-                  )}
-                  {phone && (
-                    <div className="flex items-center gap-2">
-                      <Phone 
-                        size={12}
-                        className="opacity-70"
-                        style={{ color: styles.textColor }}
-                      />
-                      <p
-                        className="text-xs opacity-70"
-                        style={{ color: styles.textColor }}
-                      >
-                        {phone}
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                <div className="absolute bottom-4 right-4 opacity-90">
-                  <div
-                    className="text-xs font-semibold"
-                    style={{ color: styles.textColor }}
-                  >
-                    {name?.split(' ')[0]?.toUpperCase() || 'VIZIFY'}
-                  </div>
-                </div>
-              </>
-            )}
-
-            {/* Minimalist template layout */}
-            {template === 'minimalist' && (
-              <>
-                <div>
-                  <h3
-                    className="text-xl font-bold"
-                    style={{ color: styles.textColor }}
-                  >
-                    {name || "Your Name"}
-                  </h3>
-                  <p
-                    className="text-sm mt-1"
-                    style={{ color: styles.textColor }}
-                  >
-                    {title || "Your Title"}
-                  </p>
-                </div>
-
-                {/* Ensure contact information is displayed */}
-                <div className="space-y-2 mt-4">
-                  {company && (
-                    <div className="flex items-center gap-2">
-                      <Building2 
-                        size={12}
-                        className="opacity-80"
-                        style={{ color: styles.textColor }}
-                      />
-                      <p
-                        className="text-xs"
-                        style={{ color: styles.textColor }}
-                      >
-                        {company}
-                      </p>
-                    </div>
-                  )}
-                  {email && (
-                    <div className="flex items-center gap-2">
-                      <Mail 
-                        size={12}
-                        className="opacity-80"
-                        style={{ color: styles.textColor }}
-                      />
-                      <p
-                        className="text-xs"
-                        style={{ color: styles.textColor }}
-                      >
-                        {email}
-                      </p>
-                    </div>
-                  )}
-                  {phone && (
-                    <div className="flex items-center gap-2">
-                      <Phone 
-                        size={12}
-                        className="opacity-80"
-                        style={{ color: styles.textColor }}
-                      />
-                      <p
-                        className="text-xs"
-                        style={{ color: styles.textColor }}
-                      >
-                        {phone}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
-          </div>
-        </motion.div>
-
-        {/* Card shadow effect */}
+        {/* Elegant shadow under card */}
         {interactive && (
-          <div 
-            className="absolute mt-2 left-0 right-0 h-[16px] opacity-20 blur-sm"
+          <div
+            className="absolute mt-4 left-0 right-0 h-[16px] opacity-25 blur-sm"
             style={{
-              background: `linear-gradient(to bottom, ${color}, transparent)`,
-              borderRadius: '50%',
-              width: '92%',
-              marginLeft: 'auto',
-              marginRight: 'auto',
+              background: `linear-gradient(to bottom, ${data.color}, transparent)`,
+              borderRadius: "50%",
+              width: "90%",
+              marginLeft: "auto",
+              marginRight: "auto",
             }}
           />
         )}
       </div>
     );
-  }
+  },
 );
 
 LivePreview.displayName = "LivePreview";
