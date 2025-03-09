@@ -389,8 +389,8 @@ export const LivePreview = forwardRef<HTMLDivElement, LivePreviewProps>(
             secondaryColor: "rgba(255,255,255,0.9)",
             containerStyle: "bg-gradient-to-br",
             contentClass: "relative z-10",
-            overlayStyle:
-              "absolute inset-0 bg-gradient-to-br from-black/30 to-black/50",
+            overlayStyle: `absolute inset-0 bg-gradient-to-br from-${data.color}/70 to-${data.color}/90`,
+            backgroundOpacity: 0.95,
           };
         case "classic":
           return {
@@ -398,8 +398,8 @@ export const LivePreview = forwardRef<HTMLDivElement, LivePreviewProps>(
             secondaryColor: "rgba(0,0,0,0.8)",
             containerStyle: "bg-white",
             contentClass: "relative z-10",
-            overlayStyle:
-              "absolute inset-0 bg-gradient-to-b from-white/90 via-white/80 to-transparent",
+            overlayStyle: `absolute inset-0 bg-gradient-to-b from-transparent via-${data.color}/10 to-${data.color}/20`,
+            backgroundOpacity: 0.85,
           };
         case "minimalist":
           return {
@@ -407,8 +407,8 @@ export const LivePreview = forwardRef<HTMLDivElement, LivePreviewProps>(
             secondaryColor: "rgba(0,0,0,0.8)",
             containerStyle: "bg-white",
             contentClass: "relative z-10",
-            overlayStyle:
-              "absolute inset-0 bg-gradient-to-r from-white/95 to-white/80",
+            overlayStyle: `absolute inset-0 bg-gradient-to-r from-${data.color}/5 to-${data.color}/10`,
+            backgroundOpacity: 0.9,
           };
         default:
           return {
@@ -417,6 +417,7 @@ export const LivePreview = forwardRef<HTMLDivElement, LivePreviewProps>(
             containerStyle: "",
             contentClass: "",
             overlayStyle: "",
+            backgroundOpacity: 1,
           };
       }
     };
@@ -474,10 +475,13 @@ export const LivePreview = forwardRef<HTMLDivElement, LivePreviewProps>(
             templateStyles.containerStyle,
           )}
           style={{
-            backgroundColor: data.color,
+            backgroundColor:
+              data.template === "modern" ? data.color : "#ffffff",
             backgroundImage: imageLoaded ? `url(${templateImage})` : undefined,
             backgroundSize: "cover",
             backgroundPosition: "center",
+            backgroundBlendMode:
+              data.template === "modern" ? "soft-light" : "normal",
             ...get3DTransformStyle(),
           }}
         >
@@ -490,10 +494,36 @@ export const LivePreview = forwardRef<HTMLDivElement, LivePreviewProps>(
                   ? `linear-gradient(135deg, ${adjustColor(
                       data.color,
                       -20,
-                    )}50, ${adjustColor(data.color, -80)}80)`
+                    )}70, ${adjustColor(data.color, -80)}90)`
+                  : data.template === "classic"
+                  ? `linear-gradient(to bottom, ${adjustColor(
+                      data.color,
+                      60,
+                    )}20, ${adjustColor(data.color, -20)}40)`
+                  : data.template === "minimalist"
+                  ? `linear-gradient(to right, ${adjustColor(
+                      data.color,
+                      70,
+                    )}10, ${adjustColor(data.color, 30)}20)`
                   : undefined,
             }}
           />
+
+          {/* Additional color layer for classic template */}
+          {data.template === "classic" && (
+            <div
+              className="absolute top-0 left-0 right-0 h-8 z-10"
+              style={{ backgroundColor: adjustColor(data.color, -40) }}
+            />
+          )}
+
+          {/* Additional accent for minimalist template */}
+          {data.template === "minimalist" && (
+            <div
+              className="absolute top-0 bottom-0 left-0 w-3 z-10"
+              style={{ backgroundColor: adjustColor(data.color, 20) }}
+            />
+          )}
 
           <div
             className={cn(

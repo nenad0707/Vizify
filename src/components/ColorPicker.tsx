@@ -12,7 +12,19 @@ import { Copy, Check, Palette } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
-const PREMIUM_PRESETS = ["#1E293B", "#6366F1", "#8B5CF6", "#10B981", "#F59E0B"];
+// Enhanced premium color palette
+const PREMIUM_PRESETS = [
+  "#1E293B", // Corporate Blue
+  "#6366F1", // Indigo
+  "#8B5CF6", // Purple
+  "#10B981", // Green
+  "#F59E0B", // Amber
+  "#EF4444", // Red
+  "#14B8A6", // Teal
+  "#3B82F6", // Blue
+  "#EC4899", // Pink
+  "#334155", // Slate
+];
 
 interface ColorPickerProps {
   selectedColor: string;
@@ -49,7 +61,7 @@ export default function ColorPicker({
         <button className="relative flex items-center gap-3 px-4 py-3 border border-border/50 rounded-lg bg-background shadow-sm hover:shadow-md hover:border-primary/30 transition-all cursor-pointer group w-full">
           <div className="relative">
             <span
-              className="flex w-8 h-8 rounded-md border border-border/40 shadow-sm group-hover:shadow-md transition-all overflow-hidden"
+              className="flex w-8 h-8 rounded-full border border-border/40 shadow-sm group-hover:shadow-md transition-all overflow-hidden"
               style={{ backgroundColor: selectedColor }}
             >
               <span className="absolute inset-0 bg-gradient-to-br from-white/5 to-black/10" />
@@ -68,7 +80,7 @@ export default function ColorPicker({
       </PopoverTrigger>
 
       <PopoverContent
-        className="w-64 p-4 bg-background/80 backdrop-blur-sm shadow-lg rounded-lg border border-border/40"
+        className="w-72 p-4 bg-background/80 backdrop-blur-sm shadow-lg rounded-lg border border-border/40"
         sideOffset={5}
       >
         <motion.div
@@ -80,10 +92,10 @@ export default function ColorPicker({
           {/* Color display */}
           <div className="flex items-center gap-2">
             <div
-              className="w-10 h-10 rounded-md shadow-sm border border-border/50"
+              className="w-10 h-10 rounded-full shadow-sm border border-border/50"
               style={{ backgroundColor: localColor }}
             >
-              <div className="w-full h-full bg-gradient-to-br from-white/5 to-black/10" />
+              <div className="w-full h-full bg-gradient-to-br from-white/5 to-black/10 rounded-full" />
             </div>
             <div className="flex-1 relative">
               <div className="flex items-center justify-between px-2 py-1.5 h-9 font-mono text-sm border rounded-md bg-muted/20">
@@ -121,34 +133,43 @@ export default function ColorPicker({
             </div>
           )}
 
+          {/* Premium Colors with circular design */}
           {showPresets && (
             <div>
               <Label className="text-xs text-muted-foreground mb-2 block">
                 Premium Colors
               </Label>
-              <div className="grid grid-cols-5 gap-3 p-1">
+              <div className="grid grid-cols-5 gap-2.5">
                 {PREMIUM_PRESETS.map((color) => (
                   <motion.button
                     key={color}
-                    whileHover={{ scale: 1.08 }}
+                    whileHover={{ y: -2, scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
+                    onClick={() => setSelectedColor(color)}
                     className={cn(
-                      "w-10 h-10 rounded-md border transition-all transform",
+                      "h-8 w-8 rounded-full cursor-pointer border-2 transition-all duration-200 flex items-center justify-center relative group",
                       selectedColor.toLowerCase() === color.toLowerCase()
-                        ? "border-primary shadow-md ring-2 ring-primary/20 scale-105"
-                        : "border-border/40 hover:border-primary/50",
+                        ? "border-primary shadow-md ring-2 ring-primary/30"
+                        : "border-border/30 hover:border-primary/50",
                     )}
                     style={{ backgroundColor: color }}
-                    onClick={() => setSelectedColor(color)}
                   >
                     {selectedColor.toLowerCase() === color.toLowerCase() && (
-                      <div className="flex items-center justify-center">
-                        <Check className="h-4 w-4 text-white drop-shadow-sm" />
-                      </div>
+                      <motion.div 
+                        initial={{ opacity: 0, scale: 0 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="flex items-center justify-center bg-white/90 rounded-full p-1 shadow-sm absolute"
+                      >
+                        <Check className="h-3 w-3 text-primary" />
+                      </motion.div>
                     )}
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/10 via-transparent to-black/20" />
                   </motion.button>
                 ))}
               </div>
+              <p className="text-xs text-muted-foreground mt-2 text-center">
+                Premium colors for your brand identity
+              </p>
             </div>
           )}
         </motion.div>
