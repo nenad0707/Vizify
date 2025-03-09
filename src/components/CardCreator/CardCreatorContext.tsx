@@ -36,6 +36,9 @@ interface CardCreatorContextValue {
   submitForm: () => Promise<void>;
   validateStep: (step?: number) => boolean;
   resetForm: () => void;
+  isLoading: boolean;
+  setIsLoading: (loading: boolean) => void;
+  setCreatedCard: (card: any) => void;
 }
 
 // Create context
@@ -67,6 +70,7 @@ export const CardCreatorProvider = ({ children }: { children: ReactNode }) => {
     null,
   );
   const [createdCard, setCreatedCard] = useState<any | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   // Update a single form field
@@ -228,6 +232,9 @@ export const CardCreatorProvider = ({ children }: { children: ReactNode }) => {
     submitForm,
     validateStep,
     resetForm,
+    isLoading,
+    setIsLoading,
+    setCreatedCard,
   };
 
   return (
