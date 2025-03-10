@@ -41,6 +41,14 @@ const adjustColor = (color: string, amount: number): string => {
     .padStart(2, "0")}${newB.toString(16).padStart(2, "0")}`;
 };
 
+// Helper to convert hex to rgba
+const hexToRgba = (hex: string, alpha: number): string => {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
 // 3D Card Component for React Three Fiber
 function Card3D({
   data,
@@ -97,9 +105,9 @@ function Card3D({
         };
       case "classic":
         return {
-          textColor: "#1a1a1a",
-          secondaryColor: "rgba(0,0,0,0.7)",
-          textShadow: "none",
+          textColor: "#ffffff", // Changed to white for better contrast
+          secondaryColor: "rgba(255,255,255,0.8)",
+          textShadow: "0 1px 2px rgba(0,0,0,0.3)",
         };
       case "minimalist":
       default:
@@ -153,15 +161,55 @@ function Card3D({
         break;
 
       case "classic":
-        // Add top border for classic design using brand color
-        ctx.fillStyle = adjustColor(color, -40);
-        ctx.fillRect(0, 0, canvas.width, 24);
+        // Add elegant banner and subtle gradient
+        const classicGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        classicGradient.addColorStop(0, "rgba(0,0,0,0.05)");
+        classicGradient.addColorStop(1, "rgba(0,0,0,0.25)");
+        ctx.fillStyle = classicGradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Top header with brand color
+        ctx.fillStyle = color;
+        ctx.fillRect(0, 0, canvas.width, 40);
+        
+        // Bottom subtle accent 
+        ctx.fillStyle = adjustColor(color, -30);
+        ctx.fillRect(0, canvas.height - 20, canvas.width, 20);
         break;
 
       case "minimalist":
-        // Add side accent for minimalist design using brand color
-        ctx.fillStyle = adjustColor(color, 40);
-        ctx.fillRect(0, 0, 20, canvas.height);
+        // IMPROVED MINIMALIST DESIGN - avoiding content overlap
+        
+        // Create corner accent in the top right
+        ctx.beginPath();
+        ctx.moveTo(canvas.width - 120, 0);
+        ctx.lineTo(canvas.width, 0);
+        ctx.lineTo(canvas.width, 120);
+        ctx.fillStyle = color;
+        ctx.fill();
+        
+        // Accent bar at the bottom
+        ctx.fillStyle = hexToRgba(color, 0.2);
+        ctx.fillRect(0, canvas.height - 5, canvas.width, 5);
+        
+        // Subtle geometric decoration in top left (away from content)
+        ctx.strokeStyle = hexToRgba(color, 0.3);
+        ctx.lineWidth = 2;
+        for (let i = 0; i < 3; i++) {
+          ctx.beginPath();
+          ctx.arc(40, 40, 15 + i * 10, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+        
+        // Fine dot pattern in bottom right corner (for texture)
+        ctx.fillStyle = hexToRgba(color, 0.1);
+        for (let i = 0; i < 80; i += 10) {
+          for (let j = 0; j < 80; j += 10) {
+            ctx.beginPath();
+            ctx.arc(canvas.width - 80 + i, canvas.height - 80 + j, 1, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
         break;
     }
 
@@ -394,19 +442,19 @@ export const LivePreview = forwardRef<HTMLDivElement, LivePreviewProps>(
           };
         case "classic":
           return {
-            textColor: "#1A1A1A",
-            secondaryColor: "rgba(0,0,0,0.8)",
-            containerStyle: "bg-white",
+            textColor: "#FFFFFF", // Changed to white for better contrast
+            secondaryColor: "rgba(255,255,255,0.9)",
+            containerStyle: "bg-gradient-to-br from-gray-800 to-gray-900",
             contentClass: "relative z-10",
             overlayStyle: `absolute inset-0`,
-            backgroundOpacity: 0.85,
+            backgroundOpacity: 0.75, // Reduced opacity to show more of the color
           };
         case "minimalist":
           return {
             textColor: "#1A1A1A",
             secondaryColor: "rgba(0,0,0,0.8)",
             containerStyle: "bg-white",
-            contentClass: "relative z-10",
+            contentClass: "relative z-10", // Removed left margin
             overlayStyle: `absolute inset-0`,
             backgroundOpacity: 0.9,
           };
@@ -476,12 +524,14 @@ export const LivePreview = forwardRef<HTMLDivElement, LivePreviewProps>(
           )}
           style={{
             backgroundColor:
-              data.template === "modern" ? data.color : "#ffffff",
+              data.template === "modern" ? data.color : 
+              data.template === "classic" ? "#1a1a1a" : "#ffffff",
             backgroundImage: imageLoaded ? `url(${templateImage})` : undefined,
             backgroundSize: "cover",
             backgroundPosition: "center",
             backgroundBlendMode:
-              data.template === "modern" ? "soft-light" : "normal",
+              data.template === "modern" ? "soft-light" : 
+              data.template === "classic" ? "overlay" : "normal",
             ...get3DTransformStyle(),
           }}
         >
@@ -496,33 +546,81 @@ export const LivePreview = forwardRef<HTMLDivElement, LivePreviewProps>(
                       -20,
                     )}70, ${adjustColor(data.color, -80)}90)`
                   : data.template === "classic"
-                  ? `linear-gradient(to bottom, transparent 30%, ${adjustColor(
-                      data.color,
-                      20,
-                    )}25 100%)`
+                  ? `linear-gradient(to bottom, ${adjustColor(
+                      data.color, 
+                      0
+                    )}80 0%, ${adjustColor(
+                      data.color, 
+                      -40
+                    )}60 100%)`
                   : data.template === "minimalist"
-                  ? `linear-gradient(to right, transparent, ${adjustColor(
-                      data.color,
-                      40,
-                    )}15)`
+                  ? `linear-gradient(to bottom, transparent, ${hexToRgba(data.color, 0.03)})`
                   : undefined,
             }}
           />
 
           {/* Additional color layer for classic template */}
           {data.template === "classic" && (
-            <div
-              className="absolute top-0 left-0 right-0 h-12 z-10"
-              style={{ backgroundColor: data.color }}
-            />
+            <>
+              <div
+                className="absolute top-0 left-0 right-0 h-12 z-10"
+                style={{ backgroundColor: data.color }}
+              />
+              <div
+                className="absolute bottom-0 left-0 right-0 h-6 z-10"
+                style={{ backgroundColor: adjustColor(data.color, -30) }}
+              />
+            </>
           )}
 
           {/* Additional accent for minimalist template */}
           {data.template === "minimalist" && (
-            <div
-              className="absolute top-0 bottom-0 left-0 w-6 z-10"
-              style={{ backgroundColor: data.color }}
-            />
+            <>
+              {/* Redesigned corner accent */}
+              <div
+                className="absolute top-0 right-0 w-[120px] h-[120px] z-10 overflow-hidden"
+              >
+                <div 
+                  className="absolute top-0 right-0 w-0 h-0 border-t-[120px] border-r-[120px]" 
+                  style={{ 
+                    borderTopColor: 'transparent', 
+                    borderRightColor: data.color 
+                  }}
+                />
+              </div>
+              
+              {/* Bottom border */}
+              <div
+                className="absolute bottom-0 left-0 right-0 h-1 z-10 opacity-20"
+                style={{ backgroundColor: data.color }}
+              />
+              
+              {/* Decorative circles in top left - away from content */}
+              <div className="absolute top-6 left-6 z-10 opacity-30">
+                {[0, 1, 2].map((i) => (
+                  <div 
+                    key={i}
+                    className="absolute rounded-full border-2"
+                    style={{ 
+                      width: `${30 + i * 20}px`, 
+                      height: `${30 + i * 20}px`,
+                      top: `-${i * 10}px`, 
+                      left: `-${i * 10}px`,
+                      borderColor: data.color 
+                    }}
+                  />
+                ))}
+              </div>
+              
+              {/* Fine dot pattern in bottom right corner */}
+              <div 
+                className="absolute bottom-6 right-6 w-20 h-20 z-10 opacity-20"
+                style={{
+                  backgroundImage: `radial-gradient(${data.color} 1px, transparent 1px)`,
+                  backgroundSize: '10px 10px'
+                }}
+              />
+            </>
           )}
 
           <div

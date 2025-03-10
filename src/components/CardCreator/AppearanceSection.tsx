@@ -30,23 +30,23 @@ export function AppearanceSection() {
     {
       id: "modern",
       name: "Modern",
-      description: "Sleek with gradients and rounded corners",
+      description: "Dynamic color gradients with sleek finish",
       imagePath: "/images/modern.png",
-      features: ["Rounded corners", "Gradient overlays", "Hover effects"],
+      features: ["Color overlay", "Gradient background", "Premium finish"],
     },
     {
       id: "classic",
       name: "Classic",
-      description: "Traditional, elegant, and timeless",
+      description: "Bold header with elegant dark styling",
       imagePath: "/images/classic.png",
-      features: ["Clean design", "Professional look", "Border accents"],
+      features: ["Prominent header", "Dark theme", "Professional contrast"],
     },
     {
       id: "minimalist",
-      name: "minimalist",
-      description: "Simple, clean, and to the point",
+      name: "Minimal",
+      description: "Clean design with elegant corner accent",
       imagePath: "/images/minimalistic.png",
-      features: ["Minimal design", "Focus on content", "Elegant typography"],
+      features: ["Corner detail", "Geometric elements", "Space-focused layout"],
     },
   ];
 
@@ -94,20 +94,20 @@ export function AppearanceSection() {
         };
       case "classic":
         return {
-          textColor: "#1A1A1A",
-          secondaryColor: "rgba(0,0,0,0.8)",
-          containerStyle: "bg-white",
+          textColor: "#FFFFFF", // Changed to white for better contrast on dark background
+          secondaryColor: "rgba(255,255,255,0.9)",
+          containerStyle: "bg-gradient-to-br from-gray-800 to-gray-900",
           contentClass: "relative z-10",
-          overlayStyle: `absolute inset-0 bg-gradient-to-b from-transparent via-${formData.color}/10 to-${formData.color}/20`,
-          backgroundOpacity: 0.85,
+          overlayStyle: `absolute inset-0 bg-gradient-to-b from-${formData.color}/80 via-${formData.color}/40 to-${formData.color}/60`,
+          backgroundOpacity: 0.75,
         };
       case "minimalist":
         return {
           textColor: "#1A1A1A",
           secondaryColor: "rgba(0,0,0,0.8)",
           containerStyle: "bg-white",
-          contentClass: "relative z-10",
-          overlayStyle: `absolute inset-0 bg-gradient-to-r from-${formData.color}/5 to-${formData.color}/10`,
+          contentClass: "relative z-10", // Removed margin to match new design
+          overlayStyle: `absolute inset-0 bg-gradient-to-b from-transparent to-${formData.color}/5`,
           backgroundOpacity: 0.9,
         };
       default:
@@ -315,6 +315,20 @@ export function AppearanceSection() {
                 interactive={true}
                 className="max-w-[350px] transform-gpu shadow-xl"
               />
+            </div>
+            
+            {/* Template specific tips */}
+            <div className="mt-4 text-xs text-muted-foreground bg-card/50 p-3 rounded-md border border-border/20">
+              <p className="font-medium text-foreground/70 mb-1">Template Tips:</p>
+              {formData.template === "modern" && (
+                <p>Modern template works best with vibrant colors that create eye-catching gradients.</p>
+              )}
+              {formData.template === "classic" && (
+                <p>Classic template uses your brand color for the header bar with a dark elegant background for premium contrast.</p>
+              )}
+              {formData.template === "minimalist" && (
+                <p>Minimalist template features a distinctive corner accent and subtle geometric elements that highlight your information.</p>
+              )}
             </div>
           </div>
         </motion.div>
