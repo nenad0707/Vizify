@@ -131,6 +131,7 @@ export function AppearanceSection() {
       onNextClick={handleContinue}
     >
       <div className="space-y-8">
+        {/* Color selection section */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -196,7 +197,7 @@ export function AppearanceSection() {
           </div>
         </motion.div>
 
-        {/* Templates section - improved for mobile */}
+        {/* Template selection section */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -285,43 +286,23 @@ export function AppearanceSection() {
           </div>
         </motion.div>
 
+        {/* Template tips section - moved from LivePreview section */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2 }}
-          className="mt-8 relative overflow-hidden rounded-lg border border-border/40 bg-gradient-to-br from-muted/10 to-card/20"
+          className="mt-4 relative overflow-hidden rounded-lg border border-border/40 bg-gradient-to-br from-muted/10 to-card/20 lg:hidden"
         >
           <div className="p-4 sm:p-6 backdrop-blur-sm">
-            <div className="text-sm font-medium mb-4 flex justify-between items-center border-b border-border/20 pb-3">
-              <div className="flex items-center gap-2">
-                <div className="p-1.5 rounded-full bg-primary/10">
-                  <Sparkles className="h-4 w-4 text-primary" />
-                </div>
-                <span>Interactive Preview</span>
+            <div className="text-sm font-medium mb-4 flex items-center gap-2 border-b border-border/20 pb-3">
+              <div className="p-1.5 rounded-full bg-primary/10">
+                <Sparkles className="h-4 w-4 text-primary" />
               </div>
-              <span className="text-xs text-primary/80 bg-primary/5 px-2 py-1 rounded-full">
-                Hover to interact
-              </span>
-            </div>
-            <div className="w-full h-[250px] sm:h-72 relative rounded flex items-center justify-center">
-              <LivePreview
-                data={{
-                  name: formData.name || "Your Name",
-                  title: formData.title || "Your Title",
-                  email: formData.email || "email@example.com",
-                  color: formData.color,
-                  template: formData.template,
-                  company: formData.company || "Company Name",
-                  phone: formData.phone || "+1 234 567 8900",
-                }}
-                interactive={true}
-                className="max-w-[300px] sm:max-w-[350px] transform-gpu shadow-xl"
-              />
+              <span>Template Tips</span>
             </div>
             
-            {/* Template specific tips */}
-            <div className="mt-4 text-xs text-muted-foreground bg-card/50 p-3 rounded-md border border-border/20">
-              <p className="font-medium text-foreground/70 mb-1">Template Tips:</p>
+            <div className="text-xs text-muted-foreground p-2">
+              <p className="font-medium text-foreground/70 mb-1">Design Tips:</p>
               {formData.template === "modern" && (
                 <p>Modern template works best with vibrant colors that create eye-catching gradients.</p>
               )}
@@ -334,6 +315,8 @@ export function AppearanceSection() {
             </div>
           </div>
         </motion.div>
+
+        {/* Note that we've removed the Interactive Preview section completely */}
       </div>
     </FormSectionWrapper>
   );

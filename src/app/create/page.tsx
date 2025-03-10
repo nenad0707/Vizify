@@ -9,6 +9,7 @@ import {
   UserCircle,
   Palette,
   CheckCircle,
+  Sparkles,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
@@ -158,6 +159,29 @@ function CardCreatorContent() {
           </div>
         </motion.div>
 
+        {/* Mobile preview - Only show on small screens when on appearance step */}
+        {currentStep === 1 && (
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 lg:hidden"
+          >
+            <div className="bg-gradient-to-br from-card/90 to-background border border-border/30 rounded-xl overflow-hidden shadow-sm">
+              <div className="p-3 border-b border-border/10 flex justify-between items-center">
+                <h2 className="font-semibold text-sm">Live Preview</h2>
+                <span className="text-xs text-primary/80 bg-primary/5 px-2 py-1 rounded-full">
+                  Tap to interact
+                </span>
+              </div>
+              <div className="p-4 bg-gradient-to-br from-muted/20 to-transparent">
+                <div className="h-[250px] relative">
+                  <LivePreview data={formData} interactive={true} />
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Form Section */}
@@ -182,11 +206,11 @@ function CardCreatorContent() {
             </div>
           </motion.div>
 
-          {/* Preview Section */}
+          {/* Preview Section - Only visible on larger screens */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="lg:col-span-5"
+            className="lg:col-span-5 hidden lg:block"
           >
             <div className="lg:sticky lg:top-8 space-y-6">
               <div className="bg-gradient-to-br from-card/90 to-background border border-border/30 rounded-xl overflow-hidden shadow-sm">
@@ -203,28 +227,54 @@ function CardCreatorContent() {
                 </div>
               </div>
 
-              <div className="bg-primary/5 rounded-xl p-6 border border-primary/10">
-                <h3 className="text-sm font-medium flex items-center gap-2 mb-3">
-                  <div className="p-1.5 rounded-full bg-primary/10">
-                    <CheckCircle className="h-4 w-4 text-primary" />
+              {/* Template tips - Only show on Appearance step */}
+              {currentStep === 1 && (
+                <div className="bg-primary/5 rounded-xl p-6 border border-primary/10">
+                  <h3 className="text-sm font-medium flex items-center gap-2 mb-3">
+                    <div className="p-1.5 rounded-full bg-primary/10">
+                      <Sparkles className="h-4 w-4 text-primary" />
+                    </div>
+                    Template Tips
+                  </h3>
+                  <div className="text-sm text-muted-foreground">
+                    {formData.template === "modern" && (
+                      <p>Modern template works best with vibrant colors that create eye-catching gradients.</p>
+                    )}
+                    {formData.template === "classic" && (
+                      <p>Classic template features an elegant side accent with horizontal lines and a dark sophisticated background for a premium executive look.</p>
+                    )}
+                    {formData.template === "minimalist" && (
+                      <p>Minimalist template features a distinctive corner accent and subtle geometric elements that highlight your information.</p>
+                    )}
                   </div>
-                  Pro Tips
-                </h3>
-                <ul className="text-sm text-muted-foreground space-y-2.5">
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary">•</span>
-                    Keep your title clear and specific to your role
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary">•</span>
-                    Choose colors that align with your brand identity
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary">•</span>
-                    Test your card preview from different angles
-                  </li>
-                </ul>
-              </div>
+                </div>
+              )}
+
+              {/* Pro tips - don't show on appearance step since we have template tips */}
+              {currentStep !== 1 && (
+                <div className="bg-primary/5 rounded-xl p-6 border border-primary/10">
+                  <h3 className="text-sm font-medium flex items-center gap-2 mb-3">
+                    <div className="p-1.5 rounded-full bg-primary/10">
+                      <CheckCircle className="h-4 w-4 text-primary" />
+                    </div>
+                    Pro Tips
+                  </h3>
+                  <ul className="text-sm text-muted-foreground space-y-2.5">
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary">•</span>
+                      Keep your title clear and specific to your role
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary">•</span>
+                      Choose colors that align with your brand identity
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary">•</span>
+                      Test your card preview from different angles
+                    </li>
+                  </ul>
+                </div>
+              )}
             </div>
           </motion.div>
         </div>
