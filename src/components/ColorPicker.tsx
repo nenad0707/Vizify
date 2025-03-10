@@ -55,10 +55,10 @@ export default function ColorPicker({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <button className="relative flex items-center gap-3 px-4 py-3 border border-border/50 rounded-lg bg-background shadow-sm hover:shadow-md hover:border-primary/30 transition-all cursor-pointer group w-full">
+        <button className="relative flex items-center gap-3 px-3 sm:px-4 py-3 border border-border/50 rounded-lg bg-background shadow-sm hover:shadow-md hover:border-primary/30 transition-all cursor-pointer group w-full">
           <div className="relative">
             <span
-              className="flex w-8 h-8 rounded-full border border-border/40 shadow-sm group-hover:shadow-md transition-all overflow-hidden"
+              className="flex w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-border/40 shadow-sm group-hover:shadow-md transition-all overflow-hidden"
               style={{ backgroundColor: selectedColor }}
             >
               {/* White highlight dot */}
@@ -79,19 +79,19 @@ export default function ColorPicker({
       </PopoverTrigger>
 
       <PopoverContent
-        className="w-72 p-4 bg-background/90 backdrop-blur-sm shadow-lg rounded-lg border border-border/40"
+        className="w-[280px] sm:w-72 p-3 sm:p-4 bg-background/90 backdrop-blur-sm shadow-lg rounded-lg border border-border/40"
         sideOffset={5}
       >
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2 }}
-          className="flex flex-col gap-4"
+          className="flex flex-col gap-3 sm:gap-4"
         >
           {/* Color display */}
           <div className="flex items-center gap-2">
             <div
-              className="w-10 h-10 rounded-full shadow-sm border border-border/50 relative"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full shadow-sm border border-border/50 relative"
               style={{ backgroundColor: localColor }}
             >
               {/* White highlight dot */}
@@ -116,13 +116,13 @@ export default function ColorPicker({
             </div>
           </div>
 
-          {/* Premium Colors with enhanced circular design */}
+          {/* Premium Colors with enhanced circular design - improved for mobile */}
           {showPresets && (
             <div>
               <Label className="text-xs text-muted-foreground mb-2 block">
                 Premium Colors
               </Label>
-              <div className="flex justify-center items-center gap-2 mt-2">
+              <div className="flex flex-wrap justify-center items-center gap-2.5 mt-2">
                 {PREMIUM_PRESETS.map((color) => (
                   <motion.button
                     key={color}

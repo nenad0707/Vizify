@@ -146,20 +146,21 @@ export function AppearanceSection() {
             </span>
           </div>
 
-          <div className="p-6 bg-muted/30 rounded-xl border border-border/60 shadow-sm">
+          <div className="p-4 sm:p-6 bg-muted/30 rounded-xl border border-border/60 shadow-sm">
             <ColorPicker
               selectedColor={formData.color}
               setSelectedColor={(color) => updateFormData("color", color)}
             />
 
-            {/* Premium colors with enhanced circular design */}
-            <div className="mt-8 relative">
-              <Label className="text-sm text-foreground/80 font-medium mb-4 block flex items-center gap-2">
+            {/* Premium colors with enhanced circular design - improved for mobile */}
+            <div className="mt-6 sm:mt-8 relative">
+              <Label className="text-sm text-foreground/80 font-medium mb-3 block flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-primary/70" />
                 Premium Color Selection
               </Label>
 
-              <div className="flex justify-center items-center gap-4 mt-3">
+              {/* Responsive container for color circles */}
+              <div className="flex flex-wrap justify-center items-center gap-3 sm:gap-4 mt-2 sm:mt-3">
                 {PREMIUM_COLORS.map((color) => (
                   <motion.div
                     key={color}
@@ -167,7 +168,7 @@ export function AppearanceSection() {
                     whileTap={{ scale: 0.95 }}
                     onClick={() => handleColorSelect(color)}
                     className={cn(
-                      "h-8 w-8 rounded-full cursor-pointer border transition-all duration-200 flex items-center justify-center relative shadow-sm hover:shadow-md",
+                      "h-7 w-7 sm:h-8 sm:w-8 rounded-full cursor-pointer border transition-all duration-200 flex items-center justify-center relative shadow-sm hover:shadow-md",
                       formData.color.toLowerCase() === color.toLowerCase()
                         ? "border-primary shadow-lg ring-2 ring-primary/30"
                         : "border-border/40 hover:border-primary/50",
@@ -188,13 +189,14 @@ export function AppearanceSection() {
                 ))}
               </div>
 
-              <p className="text-xs text-muted-foreground mt-5 text-center">
+              <p className="text-xs text-muted-foreground mt-4 sm:mt-5 text-center">
                 Choose a premium color that reflects your brand identity
               </p>
             </div>
           </div>
         </motion.div>
 
+        {/* Templates section - improved for mobile */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -206,12 +208,12 @@ export function AppearanceSection() {
               <Sparkles className="h-4 w-4 text-primary/80" />
               Card Template
             </Label>
-            <span className="text-xs text-primary inline-flex items-center gap-1">
+            <span className="hidden xs:inline-flex text-xs text-primary items-center gap-1">
               <EyeIcon className="h-3 w-3" /> Live preview updates as you select
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             {templates.map((template) => (
               <motion.div
                 key={template.id}
@@ -289,7 +291,7 @@ export function AppearanceSection() {
           transition={{ delay: 0.2 }}
           className="mt-8 relative overflow-hidden rounded-lg border border-border/40 bg-gradient-to-br from-muted/10 to-card/20"
         >
-          <div className="p-6 backdrop-blur-sm">
+          <div className="p-4 sm:p-6 backdrop-blur-sm">
             <div className="text-sm font-medium mb-4 flex justify-between items-center border-b border-border/20 pb-3">
               <div className="flex items-center gap-2">
                 <div className="p-1.5 rounded-full bg-primary/10">
@@ -301,7 +303,7 @@ export function AppearanceSection() {
                 Hover to interact
               </span>
             </div>
-            <div className="w-full h-72 relative rounded flex items-center justify-center">
+            <div className="w-full h-[250px] sm:h-72 relative rounded flex items-center justify-center">
               <LivePreview
                 data={{
                   name: formData.name || "Your Name",
@@ -313,7 +315,7 @@ export function AppearanceSection() {
                   phone: formData.phone || "+1 234 567 8900",
                 }}
                 interactive={true}
-                className="max-w-[350px] transform-gpu shadow-xl"
+                className="max-w-[300px] sm:max-w-[350px] transform-gpu shadow-xl"
               />
             </div>
             
