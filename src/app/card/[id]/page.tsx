@@ -1,55 +1,30 @@
 "use client";
 
 import { useState, useEffect, use, useRef } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
-  Loader2,
-  ArrowLeft,
-  Share2,
-  Edit,
-  QrCode,
-  ExternalLink,
-  User,
-  Trash2,
-  Briefcase,
-  Palette,
-  Calendar,
-  Download,
+  Loader2, ArrowLeft, Share2, Edit, QrCode, 
+  ExternalLink, User, Trash2, Briefcase, 
+  Palette, Calendar, Download
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import QRCodeComponent from "@/components/QRCodeComponent";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { DeleteDialog } from "@/components/DeleteDialog";
 import { EditCardModal } from "@/components/EditCardModal";
-import * as htmlToImage from "html-to-image";
 import { toPng } from "html-to-image";
 import { LivePreview } from "@/components/LivePreview";
-import dynamic from "next/dynamic";
 
-// Dinamički učitaj 3D komponentu bez SSR
-// const Card3DPreview = dynamic(() => import("@/components/Card3DPreview"), {
-//   ssr: false,
-//   loading: () => (
-//     <div className="w-full h-full aspect-[1.6/1] bg-muted/30 animate-pulse rounded-lg flex items-center justify-center">
-//       <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-//     </div>
-//   ),
-// });
-
-interface CardPageProps {
-  params: Promise<{ id: string }>;
-}
-
+// Card data interface
 interface CardData {
   id: string;
   name: string;
   title: string;
   color: string;
-  template: string; // Changed from optional to required
+  template: string;
   email?: string;
   phone?: string;
   company?: string;
@@ -57,88 +32,24 @@ interface CardData {
   qrCode?: string;
 }
 
-export default function CardPage({ params }: CardPageProps) {
+export default function CardPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-
   const router = useRouter();
+  const businessCardRef = useRef<HTMLDivElement>(null);
+  
+  // State management
   const [card, setCard] = useState<CardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isOwner, setIsOwner] = useState(false);
-
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-
-  // Reference to the business card component for image capture
-  const businessCardRef = useRef<HTMLDivElement>(null);
-
-  // Function to get border radius based on template
-  const getBorderRadius = (template: string): string => {
-    switch (template) {
-      case "modern":
-        return "0.75rem";
-      case "minimalist":
-        return "0.5rem";
-      case "classic":
-        return "0.25rem";
-      default:
-        return "0.75rem"; // Default to modern
-    }
-  };
-
-  // Function to get card styles based on template
-  const getCardStyles = (template: string, color: string) => {
-    const borderRadius = getBorderRadius(template);
-
-    switch (template) {
-      case "modern":
-        return {
-          backgroundColor: color,
-          borderRadius,
-          boxShadow:
-            "0 10px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)",
-          padding: "1.5rem",
-          textColor: "#ffffff",
-          textColorSecondary: "rgba(255,255,255,0.9)",
-        };
-      case "classic":
-        return {
-          backgroundColor: color,
-          borderRadius,
-          boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
-          padding: "1.5rem",
-          textColor: "#000000",
-          textColorSecondary: "rgba(0,0,0,0.7)",
-        };
-      case "minimalist":
-        return {
-          backgroundColor: color,
-          borderRadius,
-          boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-          padding: "1.5rem",
-          textColor: "#000000",
-          textColorSecondary: "rgba(0,0,0,0.7)",
-        };
-      default:
-        return {
-          backgroundColor: color,
-          borderRadius: "0.75rem",
-          boxShadow:
-            "0 10px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)",
-          padding: "1.5rem",
-          textColor: "#ffffff",
-          textColorSecondary: "rgba(255,255,255,0.9)",
-        };
-    }
-  };
-
+  // Fetch card data
   useEffect(() => {
-    const fetchCard = async () => {
+    async function fetchCard() {
       try {
         setLoading(true);
-
         const res = await fetch(`/api/cards/${id}`);
 
         if (res.status === 404) {
@@ -149,23 +60,17 @@ export default function CardPage({ params }: CardPageProps) {
         if (res.status === 401 || res.status === 403) {
           const publicRes = await fetch(`/api/public-cards/${id}`);
           if (publicRes.ok) {
-            const data = await publicRes.json();
-            setCard(data);
+            setCard(await publicRes.json());
             setIsOwner(false);
-            return;
           } else {
-            if (res.status === 401) {
-              router.push("/login");
-            } else {
-              setError("You don't have permission to view this card");
-            }
-            return;
+            if (res.status === 401) router.push("/login");
+            else setError("You don't have permission to view this card");
           }
+          return;
         }
 
         if (res.ok) {
-          const data = await res.json();
-          setCard(data);
+          setCard(await res.json());
           setIsOwner(true);
         } else {
           throw new Error("Failed to fetch card");
@@ -176,44 +81,31 @@ export default function CardPage({ params }: CardPageProps) {
       } finally {
         setLoading(false);
       }
-    };
+    }
 
     fetchCard();
   }, [id, router]);
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    setMousePosition({ x, y });
-  };
+  // Card URL for sharing
+  const cardUrl = card ? `${window.location.origin}/card/${id}` : '';
 
+  // Handle actions
   const handleShare = () => {
-    const cardUrl = `${window.location.origin}/card/${id}`;
     navigator.clipboard.writeText(cardUrl);
     toast.success("Card URL copied to clipboard!");
   };
 
-  // Simple function to download the business card exactly as it appears on screen
   const handleDownloadCard = async () => {
     if (!businessCardRef.current || !card) return;
-
+    
     toast.info("Preparing image for download...");
-
     try {
-      // Simple options to capture exactly what's on screen with high quality
-      const options = {
-        pixelRatio: 3, // Higher resolution
-        backgroundColor: 'transparent', // Keep transparency
-        style: {
-          transform: 'none', // Reset any 3D transforms for screenshot
-        }
-      };
-
-      // Capture the image
-      const dataUrl = await toPng(businessCardRef.current, options);
+      const dataUrl = await toPng(businessCardRef.current, {
+        pixelRatio: 3,
+        backgroundColor: 'transparent',
+        style: { transform: 'none' }
+      });
       
-      // Download the image directly
       const link = document.createElement("a");
       link.download = `${card.name.replace(/\s+/g, "-")}-business-card.png`;
       link.href = dataUrl;
@@ -230,8 +122,7 @@ export default function CardPage({ params }: CardPageProps) {
     try {
       const res = await fetch(`/api/cards/${id}`);
       if (res.ok) {
-        const data = await res.json();
-        setCard(data);
+        setCard(await res.json());
       } else if (res.status === 404) {
         toast.info("Card has been deleted");
         router.push("/dashboard");
@@ -241,11 +132,7 @@ export default function CardPage({ params }: CardPageProps) {
     }
   };
 
-  const handleDeleteComplete = () => {
-    toast.success("Card deleted successfully");
-    router.push("/dashboard");
-  };
-
+  // Render loading state
   if (loading) {
     return (
       <div className="min-h-[80vh] flex items-center justify-center">
@@ -270,7 +157,8 @@ export default function CardPage({ params }: CardPageProps) {
       </div>
     );
   }
-
+  
+  // Render error state
   if (error) {
     return (
       <div className="container max-w-md mx-auto px-4 py-16">
@@ -286,8 +174,7 @@ export default function CardPage({ params }: CardPageProps) {
             </div>
             <h2 className="text-2xl font-bold">Card Not Found</h2>
             <p className="text-muted-foreground mt-2">
-              The business card you're looking for doesn't exist or has been
-              removed.
+              The business card you're looking for doesn't exist or has been removed.
             </p>
           </div>
           <Button asChild>
@@ -300,15 +187,13 @@ export default function CardPage({ params }: CardPageProps) {
       </div>
     );
   }
-
-  if (!card) {
-    return null;
-  }
-
-  const cardUrl = `${window.location.origin}/card/${id}`;
+  
+  // Return null if card data isn't available
+  if (!card) return null;
 
   return (
     <div className="min-h-screen">
+      {/* Header bar */}
       <div className="bg-background/80 backdrop-blur-sm border-b border-border/10 sticky top-0 z-30">
         <div className="container mx-auto px-4 py-3 flex items-center">
           {isOwner && (
@@ -324,11 +209,7 @@ export default function CardPage({ params }: CardPageProps) {
           <div className="ml-auto flex gap-2">
             {isOwner && (
               <>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setIsEditModalOpen(true)}
-                >
+                <Button size="sm" variant="outline" onClick={() => setIsEditModalOpen(true)}>
                   <Edit className="mr-2 h-3.5 w-3.5" />
                   Edit
                 </Button>
@@ -348,6 +229,7 @@ export default function CardPage({ params }: CardPageProps) {
       </div>
 
       <div className="container mx-auto px-4 py-8 max-w-5xl">
+        {/* Main card content */}
         <div className="mb-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -355,10 +237,11 @@ export default function CardPage({ params }: CardPageProps) {
             transition={{ duration: 0.5 }}
             className="bg-gradient-to-br from-card to-card/60 backdrop-blur-sm rounded-xl border border-border/50 shadow-lg overflow-hidden"
           >
+            {/* Card and Info section */}
             <div className="p-5 sm:p-8 flex flex-col md:flex-row md:items-center gap-8">
-              <div className="relative flex-1" onMouseMove={handleMouseMove}>
+              {/* Card preview */}
+              <div className="relative flex-1">
                 <div className="perspective-1000 max-w-[350px] mx-auto md:mx-0">
-                  {/* Zamenili smo Card3DPreview sa LivePreview */}
                   <LivePreview
                     ref={businessCardRef}
                     data={card}
@@ -367,98 +250,72 @@ export default function CardPage({ params }: CardPageProps) {
                   />
                 </div>
 
+                {/* Background effects */}
                 <div className="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%]">
                   <div
                     className="absolute top-0 left-10 w-40 h-40 rounded-full blur-3xl opacity-20"
-                    style={{
-                      background: `radial-gradient(circle at center, ${card.color}80, transparent 70%)`,
-                    }}
+                    style={{ background: `radial-gradient(circle at center, ${card.color}80, transparent 70%)` }}
                   />
                   <div
                     className="absolute bottom-10 right-0 w-32 h-32 rounded-full blur-3xl opacity-10"
-                    style={{
-                      background: `radial-gradient(circle at center, ${card.color}60, transparent 70%)`,
-                    }}
+                    style={{ background: `radial-gradient(circle at center, ${card.color}60, transparent 70%)` }}
                   />
                 </div>
               </div>
 
               {/* Card Info section */}
               <div className="flex-1 max-w-md">
-                <h1 className="text-3xl font-bold text-foreground mb-2">
-                  {card.name}
-                </h1>
-                <p className="text-xl text-muted-foreground mb-6">
-                  {card.title}
-                </p>
+                <h1 className="text-3xl font-bold text-foreground mb-2">{card.name}</h1>
+                <p className="text-xl text-muted-foreground mb-6">{card.title}</p>
 
                 <div className="space-y-4 mb-6">
+                  {/* Color info */}
                   <div className="flex items-center gap-3">
                     <div className="h-9 w-9 rounded-md flex items-center justify-center bg-primary/10">
                       <Palette className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                      <span className="text-xs text-muted-foreground block">
-                        Brand Color
-                      </span>
+                      <span className="text-xs text-muted-foreground block">Brand Color</span>
                       <div className="flex items-center gap-2">
-                        <div
-                          className="h-4 w-4 rounded-full border border-border"
-                          style={{ backgroundColor: card.color }}
-                        />
-                        <span className="text-sm font-medium">
-                          {card.color}
-                        </span>
+                        <div className="h-4 w-4 rounded-full border border-border" style={{ backgroundColor: card.color }} />
+                        <span className="text-sm font-medium">{card.color}</span>
                       </div>
                     </div>
                   </div>
-
+                  
+                  {/* Company info (if available) */}
                   {card.company && (
                     <div className="flex items-center gap-3">
                       <div className="h-9 w-9 rounded-md flex items-center justify-center bg-primary/10">
                         <Briefcase className="h-5 w-5 text-primary" />
                       </div>
                       <div>
-                        <span className="text-xs text-muted-foreground block">
-                          Company
-                        </span>
-                        <span className="text-sm font-medium">
-                          {card.company}
-                        </span>
+                        <span className="text-xs text-muted-foreground block">Company</span>
+                        <span className="text-sm font-medium">{card.company}</span>
                       </div>
                     </div>
                   )}
-
+                  
+                  {/* Created date info */}
                   <div className="flex items-center gap-3">
                     <div className="h-9 w-9 rounded-md flex items-center justify-center bg-primary/10">
                       <Calendar className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                      <span className="text-xs text-muted-foreground block">
-                        Created
-                      </span>
-                      <span className="text-sm font-medium">
-                        {new Date(card.createdAt).toLocaleDateString()}
-                      </span>
+                      <span className="text-xs text-muted-foreground block">Created</span>
+                      <span className="text-sm font-medium">{new Date(card.createdAt).toLocaleDateString()}</span>
                     </div>
                   </div>
                 </div>
 
+                {/* Action buttons */}
                 <div className="flex flex-col sm:flex-row sm:items-center gap-3 mt-8">
-                  <Button
-                    onClick={handleShare}
-                    className="flex-1"
-                    variant="default"
-                  >
+                  <Button onClick={handleShare} className="flex-1" variant="default">
                     <Share2 className="mr-2 h-4 w-4" />
                     Share Card
                   </Button>
 
-                  <Button
-                    onClick={handleDownloadCard}
-                    variant="outline"
-                    className="flex-1"
-                  >
+                  <Button onClick={handleDownloadCard} variant="outline" className="flex-1">
                     <Download className="mr-2 h-4 w-4" />
                     Download Image
                   </Button>
@@ -469,12 +326,14 @@ export default function CardPage({ params }: CardPageProps) {
             {/* QR Code Section */}
             <div className="bg-muted/30 border-t border-border/30 p-5 sm:p-8">
               <div className="flex flex-col sm:flex-row items-center gap-8">
+                {/* QR Code */}
                 <div className="flex-shrink-0">
                   <div className="bg-white p-3 rounded-lg shadow-md">
                     <QRCodeComponent url={cardUrl} size={150} />
                   </div>
                 </div>
 
+                {/* Description */}
                 <div>
                   <h3 className="text-lg font-medium mb-2 flex items-center gap-2">
                     <QrCode className="h-4 w-4" />
@@ -482,25 +341,18 @@ export default function CardPage({ params }: CardPageProps) {
                   </h3>
                   <p className="text-muted-foreground max-w-md text-sm">
                     Scan this QR code with a smartphone camera to instantly view
-                    this digital business card. Share it in emails,
-                    presentations, or print it on physical materials.
+                    this digital business card. Share it in emails, presentations, or print it on physical materials.
                   </p>
                 </div>
 
+                {/* URL sharing */}
                 <div className="mt-4">
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Or share this link:
-                  </p>
+                  <p className="text-sm text-muted-foreground mb-2">Or share this link:</p>
                   <div className="flex items-center gap-2">
                     <div className="bg-background/80 border border-border/60 rounded-md px-3 py-1.5 text-xs text-foreground/80 overflow-hidden text-ellipsis max-w-[220px] sm:max-w-xs">
                       {cardUrl}
                     </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-8"
-                      onClick={handleShare}
-                    >
+                    <Button size="sm" variant="outline" className="h-8" onClick={handleShare}>
                       <Share2 className="h-3.5 w-3.5" />
                     </Button>
                   </div>
@@ -518,12 +370,9 @@ export default function CardPage({ params }: CardPageProps) {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="max-w-2xl mx-auto bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg border border-primary/20 p-6 text-center"
           >
-            <h2 className="text-xl font-semibold mb-2">
-              Create your own digital business card
-            </h2>
+            <h2 className="text-xl font-semibold mb-2">Create your own digital business card</h2>
             <p className="text-muted-foreground mb-4">
-              Join Vizify and create professional digital business cards that
-              stand out.
+              Join Vizify and create professional digital business cards that stand out.
             </p>
             <Button asChild size="lg">
               <Link href="/create">
@@ -535,30 +384,28 @@ export default function CardPage({ params }: CardPageProps) {
         )}
       </div>
 
+      {/* Dialogs */}
       {isDeleteDialogOpen && (
         <DeleteDialog
           open={isDeleteDialogOpen}
           onOpenChange={(open) => {
             setIsDeleteDialogOpen(open);
-            // If dialog is closing and we successfully deleted the card, redirect
-            if (!open) {
-              router.push("/dashboard");
-            }
+            if (!open) router.push("/dashboard");
           }}
           cardId={id}
           cardName={card.name}
-          onDelete={handleDeleteComplete}
+          onDelete={() => {
+            toast.success("Card deleted successfully");
+            router.push("/dashboard");
+          }}
         />
       )}
 
-      {isEditModalOpen && card && (
+      {isEditModalOpen && (
         <EditCardModal
           open={isEditModalOpen}
           onOpenChange={setIsEditModalOpen}
-          card={{
-            ...card,
-            template: card.template || "modern", // Ensure the template is never undefined
-          }}
+          card={{ ...card, template: card.template || "modern" }}
           onUpdate={refreshCard}
         />
       )}
