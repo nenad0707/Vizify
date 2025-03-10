@@ -161,20 +161,33 @@ function Card3D({
         break;
 
       case "classic":
-        // Add elegant banner and subtle gradient
+        // UPDATED CLASSIC DESIGN
+        // Create a more sophisticated layout that doesn't overlap with content
+        
+        // Add subtle background gradient
         const classicGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
         classicGradient.addColorStop(0, "rgba(0,0,0,0.05)");
         classicGradient.addColorStop(1, "rgba(0,0,0,0.25)");
         ctx.fillStyle = classicGradient;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
-        // Top header with brand color
+        // Vertical sidebar instead of top header
         ctx.fillStyle = color;
-        ctx.fillRect(0, 0, canvas.width, 40);
+        ctx.fillRect(0, 0, 40, canvas.height);
         
-        // Bottom subtle accent 
+        // Elegant accent line at top right
+        ctx.fillStyle = adjustColor(color, 20);
+        ctx.fillRect(40, 30, canvas.width - 40, 2);
+        
+        // Bottom accent design
         ctx.fillStyle = adjustColor(color, -30);
-        ctx.fillRect(0, canvas.height - 20, canvas.width, 20);
+        ctx.fillRect(40, canvas.height - 40, canvas.width - 40, 2);
+        
+        // Decorative element in bottom right
+        ctx.fillStyle = hexToRgba(color, 0.15);
+        ctx.beginPath();
+        ctx.arc(canvas.width - 100, canvas.height - 70, 50, 0, Math.PI * 2);
+        ctx.fill();
         break;
 
       case "minimalist":
@@ -227,7 +240,11 @@ function Card3D({
 
     // Draw name - display entered text or placeholder
     const displayName = name || "Your Name";
-    ctx.fillText(displayName, template === "minimalist" ? 50 : 80, 120);
+    ctx.fillText(
+      displayName, 
+      template === "minimalist" ? 50 : template === "classic" ? 60 : 80, 
+      120
+    );
 
     // Reset shadow for other text
     ctx.shadowColor = "transparent";
@@ -442,10 +459,10 @@ export const LivePreview = forwardRef<HTMLDivElement, LivePreviewProps>(
           };
         case "classic":
           return {
-            textColor: "#FFFFFF", // Changed to white for better contrast
+            textColor: "#FFFFFF", // Keeping white for better contrast
             secondaryColor: "rgba(255,255,255,0.9)",
             containerStyle: "bg-gradient-to-br from-gray-800 to-gray-900",
-            contentClass: "relative z-10",
+            contentClass: "relative z-10 ml-10", // Added margin to account for side bar
             overlayStyle: `absolute inset-0`,
             backgroundOpacity: 0.75, // Reduced opacity to show more of the color
           };
@@ -546,13 +563,13 @@ export const LivePreview = forwardRef<HTMLDivElement, LivePreviewProps>(
                       -20,
                     )}70, ${adjustColor(data.color, -80)}90)`
                   : data.template === "classic"
-                  ? `linear-gradient(to bottom, ${adjustColor(
+                  ? `linear-gradient(to right, ${adjustColor(
                       data.color, 
-                      0
-                    )}80 0%, ${adjustColor(
+                      -20
+                    )}95 0%, ${adjustColor(
                       data.color, 
-                      -40
-                    )}60 100%)`
+                      -60
+                    )}30 100%)`
                   : data.template === "minimalist"
                   ? `linear-gradient(to bottom, transparent, ${hexToRgba(data.color, 0.03)})`
                   : undefined,
@@ -562,13 +579,28 @@ export const LivePreview = forwardRef<HTMLDivElement, LivePreviewProps>(
           {/* Additional color layer for classic template */}
           {data.template === "classic" && (
             <>
+              {/* Left sidebar */}
               <div
-                className="absolute top-0 left-0 right-0 h-12 z-10"
+                className="absolute top-0 left-0 bottom-0 w-10 z-10"
                 style={{ backgroundColor: data.color }}
               />
+              
+              {/* Top accent line */}
               <div
-                className="absolute bottom-0 left-0 right-0 h-6 z-10"
+                className="absolute top-6 left-10 right-6 h-[2px] z-10"
+                style={{ backgroundColor: adjustColor(data.color, 20) }}
+              />
+              
+              {/* Bottom accent line */}
+              <div
+                className="absolute bottom-6 left-10 right-6 h-[2px] z-10"
                 style={{ backgroundColor: adjustColor(data.color, -30) }}
+              />
+              
+              {/* Decorative circle */}
+              <div
+                className="absolute bottom-10 right-10 w-[100px] h-[100px] rounded-full z-5 opacity-15"
+                style={{ backgroundColor: data.color }}
               />
             </>
           )}

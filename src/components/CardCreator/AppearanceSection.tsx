@@ -37,9 +37,9 @@ export function AppearanceSection() {
     {
       id: "classic",
       name: "Classic",
-      description: "Bold header with elegant dark styling",
+      description: "Elegant side accent with refined details",
       imagePath: "/images/classic.png",
-      features: ["Prominent header", "Dark theme", "Professional contrast"],
+      features: ["Side accent", "Elegant lines", "Dark sophisticated look"],
     },
     {
       id: "minimalist",
@@ -324,7 +324,7 @@ export function AppearanceSection() {
                 <p>Modern template works best with vibrant colors that create eye-catching gradients.</p>
               )}
               {formData.template === "classic" && (
-                <p>Classic template uses your brand color for the header bar with a dark elegant background for premium contrast.</p>
+                <p>Classic template features an elegant side accent with horizontal lines and a dark sophisticated background for a premium executive look.</p>
               )}
               {formData.template === "minimalist" && (
                 <p>Minimalist template features a distinctive corner accent and subtle geometric elements that highlight your information.</p>
