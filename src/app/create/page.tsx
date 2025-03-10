@@ -159,8 +159,8 @@ function CardCreatorContent() {
           </div>
         </motion.div>
 
-        {/* Mobile preview - Only show on small screens when on appearance step */}
-        {currentStep === 1 && (
+        {/* Mobile preview - Only show on small screens when on appearance step or review step */}
+        {(currentStep === 1 || currentStep === 2) && (
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -168,7 +168,7 @@ function CardCreatorContent() {
           >
             <div className="bg-gradient-to-br from-card/90 to-background border border-border/30 rounded-xl overflow-hidden shadow-sm">
               <div className="p-3 border-b border-border/10 flex justify-between items-center">
-                <h2 className="font-semibold text-sm">Live Preview</h2>
+                <h2 className="font-semibold text-sm">{currentStep === 1 ? "Live Preview" : "Final Preview"}</h2>
                 <span className="text-xs text-primary/80 bg-primary/5 px-2 py-1 rounded-full">
                   Tap to interact
                 </span>
@@ -215,7 +215,7 @@ function CardCreatorContent() {
             <div className="lg:sticky lg:top-8 space-y-6">
               <div className="bg-gradient-to-br from-card/90 to-background border border-border/30 rounded-xl overflow-hidden shadow-sm">
                 <div className="p-4 border-b border-border/10">
-                  <h2 className="font-semibold">Live Preview</h2>
+                  <h2 className="font-semibold">{currentStep === 2 ? "Final Preview" : "Live Preview"}</h2>
                   <p className="text-sm text-muted-foreground">
                     Interactive 3D preview - Hover to interact
                   </p>

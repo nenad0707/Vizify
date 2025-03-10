@@ -23,6 +23,10 @@ interface FormSectionWrapperProps {
   nextDisabled?: boolean;
   isLastStep?: boolean;
   onNextClick?: () => void;
+  nextLabel?: string;
+  nextIcon?: ReactNode;
+  showBackButton?: boolean;  // Add this prop
+  onBackClick?: () => void;  // Add this prop
 }
 
 export function FormSectionWrapper({
@@ -33,6 +37,10 @@ export function FormSectionWrapper({
   nextDisabled = false,
   isLastStep = false,
   onNextClick,
+  nextLabel = "Continue",
+  nextIcon,
+  showBackButton = false,  // Add default value
+  onBackClick,            // Add this parameter
 }: FormSectionWrapperProps) {
   const { goToNextStep, goToPrevStep, currentStep, isSubmitting, submitForm } =
     useCardCreator();
@@ -44,6 +52,14 @@ export function FormSectionWrapper({
       submitForm();
     } else {
       goToNextStep();
+    }
+  };
+
+  const handleBackClick = () => {
+    if (onBackClick) {
+      onBackClick();
+    } else {
+      goToPrevStep();
     }
   };
 
@@ -94,14 +110,15 @@ export function FormSectionWrapper({
         <CardFooter
           className={cn(
             "flex justify-between border-t border-border/10 bg-muted/5 pt-2 pb-2 px-4",
-            currentStep === 0 ? "justify-end" : "justify-between",
+            !showBackButton && currentStep === 0 ? "justify-end" : "justify-between",
           )}
         >
-          {currentStep > 0 && (
+          {/* Use showBackButton prop instead of currentStep check */}
+          {(showBackButton || currentStep > 0) && (
             <Button
               variant="outline"
               size="sm"
-              onClick={goToPrevStep}
+              onClick={handleBackClick}
               className="flex items-center gap-1.5 group hover:bg-background hover:text-foreground transition-all"
               disabled={isSubmitting}
             >
@@ -153,12 +170,12 @@ export function FormSectionWrapper({
               ) : (
                 <div className="flex items-center gap-2 group">
                   <span className="font-medium">
-                    {isLastStep ? "Create Card" : "Continue"}
+                    {isLastStep ? "Create Card" : nextLabel}
                   </span>
                   {isLastStep ? (
                     <CheckCircle2 className="w-4 h-4 ml-1 group-hover:scale-110 transition-transform" />
                   ) : (
-                    <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                    nextIcon || <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
                   )}
                 </div>
               )}
