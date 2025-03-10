@@ -35,7 +35,7 @@ interface CardCreatorContextValue {
   goToPrevStep: () => void;
   submitForm: () => Promise<void>;
   validateStep: (step?: number) => boolean;
-  resetForm: () => void;
+  resetForm: (keepCreatedCard?: boolean) => void;
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
   setCreatedCard: (card: any) => void;
@@ -130,11 +130,15 @@ export const CardCreatorProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // Reset form to initial state
-  const resetForm = () => {
+  const resetForm = (keepCreatedCard = false) => {
     setFormData(defaultFormData);
     setCurrentStep(0);
     setStatusMessage(null);
-    setCreatedCard(null);
+    
+    // Only reset createdCard if explicitly told to
+    if (!keepCreatedCard) {
+      setCreatedCard(null);
+    }
   };
 
   const submitForm = async () => {
@@ -189,7 +193,11 @@ export const CardCreatorProvider = ({ children }: { children: ReactNode }) => {
       }
 
       const data = await response.json();
+      
+     
       setCreatedCard(data);
+      
+      
 
       toast.success("Card Created Successfully!", {
         description: "Your card is ready to share!",
@@ -199,6 +207,7 @@ export const CardCreatorProvider = ({ children }: { children: ReactNode }) => {
         type: "success",
         message: "Your card has been successfully created!",
       });
+      
     } catch (error) {
       console.error("Network error while creating card:", error);
 

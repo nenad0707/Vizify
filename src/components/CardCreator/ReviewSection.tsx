@@ -17,7 +17,8 @@ export function ReviewSection() {
     isLoading,
     submitForm,
     statusMessage, 
-    createdCard 
+    createdCard,
+    resetForm  // Add resetForm
   } = useCardCreator();
   
   const [showModal, setShowModal] = useState(false);
@@ -29,8 +30,12 @@ export function ReviewSection() {
 
   const handleModalClose = (redirected = false) => {
     setShowModal(false);
+    
     if (redirected) {
       router.push("/dashboard");
+    } else {
+     
+      resetForm(true); 
     }
   };
 
