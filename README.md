@@ -83,18 +83,22 @@ Built with a focus on user experience and visual appeal, Vizify combines cutting
 
 ### 🏠 Home Page
 ![Home](./public/screenshots/home.png)
+
 *Welcome page showcasing interactive 3D business card examples and main features*
 
 ### 📊 Dashboard
 ![Dashboard](./public/screenshots/dashboard.png)
+
 *User dashboard for managing multiple digital business cards*
 
 ### ✏️ Create Page
 ![Create](./public/screenshots/create.png)
+
 *Interactive business card creator with customization options and live 3D preview*
 
 ### 📱 Mobile Experience
 ![Mobile View](./public/screenshots/mobile.png)
+
 *Responsive design optimized for mobile devices*
 
 ---
