@@ -6,6 +6,7 @@
 ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css&logoColor=white)
 ![Prisma](https://img.shields.io/badge/Prisma-2D3748?style=flat&logo=prisma&logoColor=white)
 ![Framer Motion](https://img.shields.io/badge/Framer_Motion-0055FF?style=flat&logo=framer&logoColor=white)
+[![Vercel](https://img.shields.io/badge/Vercel-Deployed-000000?style=flat&logo=vercel&logoColor=white)](https://vizify.vercel.app/)
 
 **Vizify** is a modern web application built with **Next.js** that allows users to create, customize, and share interactive 3D digital business cards. Leveraging cutting-edge technologies like **Three.js** for 3D rendering and **Framer Motion** for smooth animations, Vizify helps professionals stand out with stunning digital business cards that showcase their personal brand.
 
