@@ -1,47 +1,195 @@
-# Vizify - Digital Business Card Platform
+# 🌟 Vizify - Interactive 3D Digital Business Card Platform
 
-![Vizify Logo](/public/logo.png)
+![Next.js](https://img.shields.io/badge/Next.js-000000?style=flat&logo=next.js&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)
+![Three.js](https://img.shields.io/badge/Three.js-000000?style=flat&logo=three.js&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma-2D3748?style=flat&logo=prisma&logoColor=white)
+![Framer Motion](https://img.shields.io/badge/Framer_Motion-0055FF?style=flat&logo=framer&logoColor=white)
 
-Vizify is a modern platform that lets you create, customize, and share interactive 3D digital business cards. Stand out from the crowd with premium designs that showcase your professional identity.
+**Vizify** is a modern web application built with **Next.js** that allows users to create, customize, and share interactive 3D digital business cards. Leveraging cutting-edge technologies like **Three.js** for 3D rendering and **Framer Motion** for smooth animations, Vizify helps professionals stand out with stunning digital business cards that showcase their personal brand.
 
-[![Next.js](https://img.shields.io/badge/Next.js-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Three.js](https://img.shields.io/badge/Three.js-black?style=for-the-badge&logo=three.js&logoColor=white)](https://threejs.org/)
-[![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![Prisma](https://img.shields.io/badge/Prisma-3982CE?style=for-the-badge&logo=Prisma&logoColor=white)](https://www.prisma.io/)
+## 🌐 Live Demo
 
-## 📋 Table of Contents
+[![Vizify Demo](https://img.shields.io/badge/Vizify-Live%20Demo-5277C3?style=for-the-badge&logo=react&logoColor=white)](https://vizify.vercel.app/)
 
-- [Features](#-features)
-- [Getting Started](#-getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-- [Tech Stack](#️-tech-stack)
-- [Project Structure](#-project-structure)
-- [Card Templates](#-card-templates)
-- [Development](#-development)
-  - [Commands](#commands)
-  - [Contributing](#contributing)
-- [License](#-license)
-- [Acknowledgments](#-acknowledgments)
+> **⚠️ Note:** Registration is required for creating and managing your own digital business cards.
+
+---
+
+## 📖 Table of Contents
+
+- [🌟 Vizify - Interactive 3D Digital Business Card Platform](#-vizify---interactive-3d-digital-business-card-platform)
+  - [🌐 Live Demo](#-live-demo)
+  - [📖 Table of Contents](#-table-of-contents)
+  - [📚 Project Overview](#-project-overview)
+  - [✨ Features](#-features)
+  - [📸 Screenshots](#-screenshots)
+    - [🖥️ Desktop View](#️-desktop-view)
+      - [Dashboard](#dashboard)
+      - [Card Creator](#card-creator)
+      - [Card Sharing Page](#card-sharing-page)
+    - [📱 Mobile View](#-mobile-view)
+  - [🛠️ Tech Stack & Tools](#️-tech-stack--tools)
+    - [Frontend](#frontend)
+    - [Backend & Database](#backend--database)
+    - [Authentication](#authentication)
+    - [3D Rendering](#3d-rendering)
+    - [Deployment](#deployment)
+  - [🔍 Architecture Overview](#-architecture-overview)
+    - [Key Components](#key-components)
+  - [🎯 Design Decisions](#-design-decisions)
+  - [📱 Responsive Design](#-responsive-design)
+  - [🎨 Card Templates](#-card-templates)
+  - [💻 Development](#-development)
+    - [Prerequisites](#prerequisites)
+    - [Installation](#installation)
+    - [Commands](#commands)
+    - [Contributing](#contributing)
+  - [📄 License](#-license)
+  - [🙏 Acknowledgments](#-acknowledgments)
+
+---
+
+## 📚 Project Overview
+
+Vizify revolutionizes how professionals share their contact information by providing an immersive and interactive digital business card experience. Users can:
+
+- Create personalized business cards with custom colors and templates
+- Share cards via QR codes or direct links
+- Manage multiple cards through a streamlined dashboard
+- Showcase their professional identity with animated 3D cards
+
+Built with a focus on user experience and visual appeal, Vizify combines cutting-edge web technologies to deliver a seamless and memorable digital presence solution.
+
+---
 
 ## ✨ Features
 
-- **Interactive 3D Business Cards**: Create beautiful, animated digital business cards
-- **Multiple Design Templates**: Choose from modern, classic, and minimalist templates
-- **Custom Color Schemes**: Personalize your card with premium color options
-- **QR Code Generation**: Easily share your digital card in person
-- **Responsive Dashboard**: Manage all your digital cards in one place
-- **One-click Sharing**: Share your digital presence through multiple channels
-- **Download as Image**: Save your card for use in email signatures or print
-- **Secure & Private**: Your data is encrypted and stored securely
+- 🌈 **Interactive 3D Business Cards**: Stunning animated cards with realistic 3D effects powered by Three.js
+- 🎨 **Multiple Design Templates**: Choose from modern, classic, and minimalist templates to match your style
+- 🎭 **Custom Color Schemes**: Personalize your card with premium color options that reflect your brand
+- 📱 **Responsive Design**: Perfect viewing experience across all devices - desktop, tablet, and mobile
+- 📊 **User Dashboard**: Comprehensive dashboard to create, edit, and manage all your digital cards
+- 🔄 **Real-time Preview**: See your changes instantly as you customize your business card
+- 📤 **One-click Sharing**: Share your digital presence through multiple channels with ease
+- 🔒 **Secure Authentication**: Protected user accounts with NextAuth.js and secure data storage
+- 📱 **QR Code Generation**: Easily share your digital card in person with auto-generated QR codes
+- 🖼️ **Download as Image**: Save your card for use in email signatures or other digital platforms
+- 🔍 **SEO-Optimized Public Pages**: Card sharing pages designed for maximum discoverability
 
-## 🚀 Getting Started
+---
+
+## 📸 Screenshots
+
+### 🖥️ Desktop View
+
+#### Dashboard
+![Dashboard](/public/screenshots/dashboard.png)
+
+#### Card Creator
+![Card Creator](/public/screenshots/card-creator.png)
+
+#### Card Sharing Page
+![Card Sharing](/public/screenshots/card-view.png)
+
+### 📱 Mobile View
+![Mobile View](/public/screenshots/mobile-view.png)
+
+---
+
+## 🛠️ Tech Stack & Tools
+
+### Frontend
+- **Next.js**: React framework with server-side rendering and static site generation
+- **TypeScript**: Type safety and improved developer experience
+- **TailwindCSS**: Utility-first CSS framework for rapid UI development
+- **Framer Motion**: Advanced animations and transitions
+- **Shadcn UI**: Beautifully designed accessible UI components
+- **Lucide Icons**: Beautiful and consistent icon set
+
+### Backend & Database
+- **Next.js API Routes**: Serverless API endpoints
+- **Prisma ORM**: Type-safe database access and migrations
+- **PostgreSQL**: Robust relational database for data storage
+
+### Authentication
+- **NextAuth.js**: Flexible authentication solution with built-in providers
+- **JWT**: Secure token-based authentication
+
+### 3D Rendering
+- **Three.js**: JavaScript 3D library for rendering interactive 3D graphics
+- **React Three Fiber**: React renderer for Three.js
+- **@react-three/drei**: Helper components for React Three Fiber
+
+### Deployment
+- **Vercel**: Platform optimized for Next.js applications with CI/CD
+- **Docker**: Containerization for consistent development environments
+
+---
+
+## 🔍 Architecture Overview
+
+Vizify follows a modern Next.js architecture that separates concerns while keeping related code together for better maintainability:
+
+### Key Components
+
+1. **Pages & API Routes**: Next.js pages for the frontend with API routes handling backend logic
+2. **React Components**: Modular UI components organized by functionality
+3. **3D Rendering Engine**: Custom Three.js implementation for interactive card previews
+4. **Database Layer**: Type-safe database access through Prisma ORM
+5. **Authentication System**: Secure user authentication with NextAuth.js
+6. **Shared Types & Utilities**: Common types and helper functions
+
+The application uses a hybrid approach with both server-side rendering and client-side interactivity for optimal performance and SEO.
+
+---
+
+## 🎯 Design Decisions
+
+1. **3D Rendering Strategy**: For performance optimization, we implement different rendering approaches:
+   - Full 3D WebGL rendering for interactive card previews
+   - CSS 3D transforms for lighter card representations in listings
+   - Server-side generated previews for sharing images
+
+2. **Modular Components**: UI components are built with composition in mind, following atomic design principles to maximize reusability.
+
+3. **Design System**: A consistent design language using TailwindCSS with custom theme variables ensures visual coherence throughout the application.
+
+4. **Performance Optimization**: Dynamic imports, code splitting, and optimized assets keep the application fast and responsive even with complex 3D elements.
+
+---
+
+## 📱 Responsive Design
+
+Vizify is built with a mobile-first approach, ensuring a great user experience across all devices:
+
+- **Adaptive Layouts**: Flexbox and CSS Grid for responsive content organization
+- **Touch-Optimized**: Controls designed for both mouse and touch interaction
+- **Performance Focused**: Optimized 3D rendering based on device capabilities
+- **Progressive Enhancement**: Core functionality works on all devices, with enhanced experiences on capable browsers
+
+---
+
+## 🎨 Card Templates
+
+Vizify offers three premium card templates, each with distinct visual characteristics:
+
+- **Modern**: Dynamic color gradients with geometric accents and a sleek finish
+- **Classic**: Elegant side accent with refined details for a traditional business card feel
+- **Minimalist**: Clean design with subtle corner accents for a contemporary, uncluttered look
+
+Each template is fully customizable with your choice of premium colors and information fields.
+
+---
+
+## 💻 Development
 
 ### Prerequisites
 
 - Node.js 16.x or higher
 - npm or yarn package manager
+- PostgreSQL database
 - A modern web browser for optimal 3D rendering
 
 ### Installation
@@ -80,51 +228,13 @@ yarn dev
 
 6. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application
 
-## 🛠️ Tech Stack
-
-- **Frontend**: React, Next.js, TypeScript, TailwindCSS
-- **3D Rendering**: Three.js, React Three Fiber
-- **Animation**: Framer Motion
-- **Styling**: TailwindCSS, CSS Variables
-- **Database**: PostgreSQL (via Prisma ORM)
-- **Authentication**: NextAuth.js
-- **UI Components**: Radix UI, Shadcn UI
-- **Deployment**: Vercel
-
-## 📱 Project Structure
-
-```
-/src
-  /app                # Next.js App Router
-    /api              # API routes
-    /card             # Public card viewing
-    /create           # Card creation wizard
-    /dashboard        # User dashboard
-  /components         # React components
-    /CardCreator      # Card creation components
-    /ui               # UI component library
-  /lib                # Utility functions
-  /types              # TypeScript type definitions
-```
-
-## 🎨 Card Templates
-
-Vizify offers three premium card templates:
-
-- **Modern**: Dynamic color gradients with sleek finish
-- **Classic**: Elegant side accent with refined details
-- **Minimalist**: Clean design with elegant corner accent
-
-Each template is fully customizable with your choice of premium colors.
-
-## 💻 Development
-
 ### Commands
 
 - `npm run dev`: Start the development server
 - `npm run build`: Build the application for production
 - `npm run start`: Start the production server
 - `npm run lint`: Run ESLint to check code quality
+- `npm run test`: Run test suite (if configured)
 
 ### Contributing
 
@@ -134,9 +244,13 @@ Each template is fully customizable with your choice of premium colors.
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
+---
+
 ## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+---
 
 ## 🙏 Acknowledgments
 
@@ -149,4 +263,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ---
 
-📌 Created with ❤️ by Nenad
+📌 Created with ❤️ by Nenad | [Portfolio](https://nenad-portfolio.vercel.app) | [LinkedIn](https://linkedin.com/in/nenadtarailo)
