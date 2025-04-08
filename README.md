@@ -79,23 +79,23 @@ Built with a focus on user experience and visual appeal, Vizify combines cutting
 - 🖼️ **Download as Image**: Save your card for use in email signatures or other digital platforms
 - 🔍 **SEO-Optimized Public Pages**: Card sharing pages designed for maximum discoverability
 
----
-
 ## 📸 Screenshots
 
-### 🖥️ Desktop View
+### 🏠 Home Page
+![Home](./public/screenshots/home.png)
+*Welcome page showcasing interactive 3D business card examples and main features*
 
-#### Dashboard
-![Dashboard](/public/screenshots/dashboard.png)
+### 📊 Dashboard
+![Dashboard](./public/screenshots/dashboard.png)
+*User dashboard for managing multiple digital business cards*
 
-#### Card Creator
-![Card Creator](/public/screenshots/card-creator.png)
+### ✏️ Create Page
+![Create](./public/screenshots/create.png)
+*Interactive business card creator with customization options and live 3D preview*
 
-#### Card Sharing Page
-![Card Sharing](/public/screenshots/card-view.png)
-
-### 📱 Mobile View
-![Mobile View](/public/screenshots/mobile-view.png)
+### 📱 Mobile Experience
+![Mobile View](./public/screenshots/mobile.png)
+*Responsive design optimized for mobile devices*
 
 ---
 
