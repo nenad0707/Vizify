@@ -262,7 +262,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - [Three.js](https://threejs.org/)
 - [React Three Fiber](https://docs.pmnd.rs/react-three-fiber/)
 - [TailwindCSS](https://tailwindcss.com/)
-- [Framer Motion](https://www.framer.com/motion/)
+- [Framer Motion](https://framer.com/motion/)
 - [Shadcn UI](https://ui.shadcn.com/)
 
 ---
