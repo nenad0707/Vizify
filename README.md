@@ -111,7 +111,7 @@ Built with a focus on user experience and visual appeal, Vizify combines cutting
 ### Backend & Database
 - **Next.js API Routes**: Serverless API endpoints
 - **Prisma ORM**: Type-safe database access and migrations
-- **PostgreSQL**: Robust relational database for data storage
+- **MySQL**: Robust relational database for data storage
 
 ### Authentication
 - **NextAuth.js**: Flexible authentication solution with built-in providers
@@ -124,7 +124,6 @@ Built with a focus on user experience and visual appeal, Vizify combines cutting
 
 ### Deployment
 - **Vercel**: Platform optimized for Next.js applications with CI/CD
-- **Docker**: Containerization for consistent development environments
 
 ---
 
@@ -189,14 +188,14 @@ Each template is fully customizable with your choice of premium colors and infor
 
 - Node.js 16.x or higher
 - npm or yarn package manager
-- PostgreSQL database
+- MySQL database
 - A modern web browser for optimal 3D rendering
 
 ### Installation
 
 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/vizify.git
+git clone https://github.com/nenad0707/Vizify.git
 cd vizify
 ```
 
