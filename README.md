@@ -263,4 +263,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ---
 
-📌 Created with ❤️ by Nenad | [Portfolio](https://nenad-portfolio.vercel.app) | [LinkedIn](https://linkedin.com/in/nenadtarailo)
+📌 Created with ❤️ by Nenad | [Portfolio](https://risticnenad.com/) | [LinkedIn](https://linkedin.com/in/nenadtarailo)
